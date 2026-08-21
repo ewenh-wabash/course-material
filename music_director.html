@@ -79,7 +79,6 @@
   <!-- ORIGINAL SCENE -->
   <div class="section">
     <h2>Original Scene</h2>
-    <!-- <p class="desc">Paste the link to the film clip you were given.</p> -->
     <form class="urlrow" id="origForm">
       <input type="text" id="origUrl" placeholder="Paste original scene YouTube link here">
       <button type="submit">Load</button>
@@ -96,7 +95,6 @@
   <!-- NEEDLE DROP -->
   <div class="section">
     <h2>2. Needle Drop (your music choice)</h2>
-    <!-- <p class="desc">Paste the link to the song/score you want to use as the cue.</p> -->
     <form class="urlrow" id="needleForm">
       <input type="text" id="needleUrl" placeholder="Paste your music YouTube link here">
       <button type="submit">Load</button>
@@ -122,23 +120,19 @@
       <label>Cue point in ORIGINAL clip (when the music should start) <span class="val" id="cueInLabel">0:00</span></label>
       <input type="range" id="cueIn" min="0" max="600" step="0.1" value="0">
     </div>
-    <!-- <p class="hint">This is a timestamp in the film scene above — the moment your music kicks in.</p> -->
 
     <div class="field">
       <label>Start point in the NEEDLE DROP (offset into the song) <span class="val" id="offsetLabel">0:00</span></label>
       <input type="range" id="offset" min="0" max="600" step="0.1" value="0">
     </div>
-    <!-- <p class="hint">Where in the song playback begins — e.g. skip the intro and start at the chorus.</p> -->
 
     <div class="field">
       <label>Needle drop duration <span class="val" id="durationLabel">10s</span></label>
       <input type="range" id="duration" min="1" max="300" step="0.5" value="10">
     </div>
-    <!-- <p class="hint">How long the cue plays before it automatically stops.</p> -->
 
     <div class="row-buttons">
       <button type="button" id="shareBtn">🔗 Generate Share Link</button>
-      <!-- <a href="#" style="color:var(--muted); font-size:.8rem;">Start a new scene</a> -->
       To "submit" this needle drop, copy/paste in the share link
     </div>
     <div class="share-box">
@@ -146,9 +140,6 @@
     </div>
   </div>
 
-  <!-- <div class="section" style="font-size:.8rem; color:var(--muted);">
-    Note: this page must be opened via a web server (http/https), not a local double-clicked file, for YouTube's player controls to sync correctly.
-  </div> -->
 </div>
 
 <!-- MASTER TRANSPORT -->
@@ -253,25 +244,35 @@ function onYouTubeIframeAPIReady(){
   needlePlayer = new YT.Player('needlePlayerDiv', needleConfig);
 }
 
+function applyOriginalDuration(d){
+  originalDuration = d;
+  masterSeek.max = d || 600;
+  cueInSlider.max = d || 600;
+  if (parseFloat(cueInSlider.value) > (d || 600)) cueInSlider.value = 0;
+  masterTimeLabel.textContent = formatTime(0) + ' / ' + formatTime(d);
+  refreshLabels();
+}
+
+function applyNeedleDuration(d){
+  needleDuration = d;
+  offsetSlider.max = d || 600;
+  durationSlider.max = d || 300;
+  if (parseFloat(offsetSlider.value) > (d || 600)) offsetSlider.value = 0;
+  if (parseFloat(durationSlider.value) > (d || 300)) durationSlider.value = Math.min(10, d || 300);
+  refreshLabels();
+}
+
 function onOriginalReady(e){
   originalReady = true;
   e.target.setVolume(Number(el('origVolume').value));
-  waitForDuration(originalPlayer, d => {
-    originalDuration = d;
-    masterSeek.max = d || 600;
-    cueInSlider.max = d || 600;
-    masterTimeLabel.textContent = formatTime(0) + ' / ' + formatTime(d);
-  });
+  waitForDuration(originalPlayer, applyOriginalDuration);
 }
 function onNeedleReady(e){
   needleReady = true;
   e.target.setVolume(Number(el('needleVolume').value));
-  waitForDuration(needlePlayer, d => {
-    needleDuration = d;
-    offsetSlider.max = d || 600;
-    durationSlider.max = d || 300;
-  });
+  waitForDuration(needlePlayer, applyNeedleDuration);
 }
+
 function onOriginalStateChange(e){
   masterPlayBtn.textContent = (e.data === YT.PlayerState.PLAYING) ? '⏸ Pause' : '▶ Play';
 }
@@ -282,15 +283,23 @@ el('origForm').addEventListener('submit', ev => {
   const id = extractVideoId(el('origUrl').value);
   if(!id){ alert('Could not read a YouTube link there — please check it.'); return; }
   currentOriginalId = id;
-  if(originalReady) originalPlayer.loadVideoById(id);
+  if(originalReady){
+    originalPlayer.loadVideoById(id);
+    setTimeout(() => waitForDuration(originalPlayer, applyOriginalDuration), 300);
+  }
 });
+
 el('needleForm').addEventListener('submit', ev => {
   ev.preventDefault();
   const id = extractVideoId(el('needleUrl').value);
   if(!id){ alert('Could not read a YouTube link there — please check it.'); return; }
   currentNeedleId = id;
-  if(needleReady) needlePlayer.loadVideoById(id);
+  if(needleReady){
+    needlePlayer.loadVideoById(id);
+    setTimeout(() => waitForDuration(needlePlayer, applyNeedleDuration), 300);
+  }
 });
+
 
 /* ---------- volume ---------- */
 el('origVolume').addEventListener('input', () => {

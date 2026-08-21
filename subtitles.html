@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SRT Player</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; width:100%; height:100%; }
+  body {
+    background:#000;
+    color:#eee;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    overflow:hidden;
+    user-select:none;
+  }
+
+  #app {
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  #subtitle {
+    position:absolute;
+    left:8%;
+    right:8%;
+    bottom:18%;
+    text-align:center;
+    font-size:clamp(22px,3vw,142px);
+    line-height:1.25;
+    font-weight:400;
+    white-space:pre-line;
+    text-shadow:0 2px 10px #000, 0 1px 3px #000;
+  }
+
+  #drop {
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#777;
+    font-size:34px;
+    cursor:pointer;
+  }
+  #drop.hidden { display:none; }
+  #drop.drag { color:#fff; }
+
+  #controls {
+    position:absolute;
+    left:18px;
+    right:18px;
+    bottom:14px;
+    opacity:0;
+    transition:opacity .15s ease;
+  }
+  body:hover #controls,
+  #controls:hover,
+  #controls:focus-within { opacity:1; }
+
+  #time {
+    text-align:center;
+    font:24px ui-monospace,SFMono-Regular,Menlo,monospace;
+    color:#777;
+    margin-bottom:7px;
+  }
+
+  #track {
+    height:20px;
+    position:relative;
+    cursor:pointer;
+  }
+  #line {
+    position:absolute;
+    left:0; right:0;
+    top:9px;
+    height:1px;
+    background:#333;
+  }
+  .tick {
+    position:absolute;
+    top:5px;
+    width:1px;
+    height:9px;
+    background:#666;
+    transform:translateX(-.5px);
+  }
+  .tick.active { background:#eee; height:12px; top:3px; }
+
+  #bar {
+    position:absolute;
+    top:8px;
+    left:0;
+    height:3px;
+    width:0;
+    background:#aaa;
+    pointer-events:none;
+  }
+
+  #buttons {
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    margin-top:2px;
+  }
+  button {
+    border:0;
+    background:none;
+    color:#777;
+    font:18px ui-monospace,SFMono-Regular,Menlo,monospace;
+    cursor:pointer;
+    padding:2px 5px;
+  }
+  button:hover { color:#eee; }
+
+  input[type=file] { display:none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="drop">drop an .srt file</div>
+  <div id="subtitle"></div>
+
+  <div id="controls">
+    <div id="time">00:00:00 / 00:00:00</div>
+    <div id="track">
+      <div id="line"></div>
+      <div id="bar"></div>
+      <div id="ticks"></div>
+    </div>
+    <div id="buttons">
+      <button id="open">open</button>
+      <button id="play">play</button>
+      <button id="back5">−5s</button>
+      <button id="forward5">+5s</button>
+      <button id="back1">−1s</button>
+      <button id="forward1">+1s</button>
+      <button id="back12">−1/2s</button>
+      <button id="forward12">+1/2s</button>
+    </div>
+  </div>
+</div>
+
+<input id="file" type="file" accept=".srt,text/plain">
+
+<script>
+const $ = id => document.getElementById(id);
+const fileInput = $('file');
+const drop = $('drop');
+const subtitle = $('subtitle');
+const timeEl = $('time');
+const ticks = $('ticks');
+const bar = $('bar');
+const track = $('track');
+
+let cues = [];
+let duration = 0;
+let current = 0;
+let playing = false;
+let lastFrame = performance.now();
+
+function parseTime(s) {
+  const m = s.trim().replace(',', '.').match(/^(\d+):(\d{2}):(\d{2})\.(\d{3})$/);
+  return m ? (+m[1])*3600 + (+m[2])*60 + (+m[3]) + (+m[4])/1000 : 0;
+}
+
+function parseSRT(text) {
+  text = text.replace(/^\uFEFF/, '').replace(/\r/g, '');
+  const blocks = text.split(/\n\s*\n/);
+  const result = [];
+
+  for (const block of blocks) {
+    const lines = block.split('\n');
+    const timingIndex = lines.findIndex(x => x.includes('-->'));
+    if (timingIndex < 0) continue;
+
+    const parts = lines[timingIndex].split('-->');
+    if (parts.length < 2) continue;
+
+    const start = parseTime(parts[0]);
+    const end = parseTime(parts[1].trim().split(/\s+/)[0]);
+    if (!(end > start)) continue;
+
+    const text = lines.slice(timingIndex + 1)
+      .join('\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+      .trim();
+
+    result.push({start, end, text});
+  }
+
+  return result.sort((a,b) => a.start - b.start);
+}
+
+function fmt(seconds) {
+  seconds = Math.max(0, seconds);
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor(seconds % 3600 / 60);
+  const s = Math.floor(seconds % 60);
+  return [h,m,s].map(x => String(x).padStart(2,'0')).join(':');
+}
+
+function loadSRT(text) {
+  cues = parseSRT(text);
+  current = 0;
+  duration = cues.length ? cues[cues.length - 1].end : 0;
+  playing = false;
+  drop.classList.add('hidden');
+  buildTicks();
+  render();
+}
+
+function buildTicks() {
+  ticks.innerHTML = '';
+  if (!duration) return;
+
+  for (const cue of cues) {
+    const tick = document.createElement('div');
+    tick.className = 'tick';
+    tick.style.left = (cue.start / duration * 100) + '%';
+    tick.title = fmt(cue.start);
+    tick.dataset.time = cue.start;
+    ticks.appendChild(tick);
+  }
+}
+
+function activeCue() {
+  for (let i = 0; i < cues.length; i++) {
+    if (current >= cues[i].start && current < cues[i].end) return i;
+  }
+  return -1;
+}
+
+function render() {
+  const i = activeCue();
+  subtitle.textContent = i >= 0 ? cues[i].text : '';
+  timeEl.textContent = `${fmt(current)} / ${fmt(duration)}`;
+  bar.style.width = duration ? (current / duration * 100) + '%' : '0%';
+
+  [...ticks.children].forEach((el, n) => {
+    el.classList.toggle('active', n === i);
+  });
+
+  $('play').textContent = playing ? 'pause' : 'play';
+}
+
+function loop(now) {
+  const dt = (now - lastFrame) / 1000;
+  lastFrame = now;
+
+  if (playing) {
+    current += dt;
+    if (current >= duration) {
+      current = duration;
+      playing = false;
+    }
+    render();
+  }
+
+  requestAnimationFrame(loop);
+}
+
+function seek(t) {
+  current = Math.max(0, Math.min(duration, t));
+  render();
+}
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => loadSRT(e.target.result);
+  reader.readAsText(file);
+});
+
+$('open').onclick = () => fileInput.click();
+
+$('play').onclick = () => {
+  if (!cues.length) return fileInput.click();
+  if (current >= duration) current = 0;
+  playing = !playing;
+  render();
+};
+
+$('back5').onclick = () => seek(current - 5);
+$('back1').onclick = () => seek(current - 1);
+$('back12').onclick = () => seek(current - 1/2);
+$('forward12').onclick = () => seek(current + 1/2);
+$('forward1').onclick = () => seek(current + 1);
+$('forward5').onclick = () => seek(current + 5);
+
+track.addEventListener('click', e => {
+  const r = track.getBoundingClientRect();
+  seek((e.clientX - r.left) / r.width * duration);
+});
+
+drop.addEventListener('click', () => fileInput.click());
+
+document.addEventListener('dragover', e => {
+  e.preventDefault();
+  drop.classList.add('drag');
+});
+
+document.addEventListener('dragleave', e => {
+  if (e.relatedTarget === null) drop.classList.remove('drag');
+});
+
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  drop.classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = ev => loadSRT(ev.target.result);
+  reader.readAsText(file);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+
+  if (e.code === 'Space') {
+    e.preventDefault();
+    $('play').click();
+  } else if (e.code === 'ArrowLeft') {
+    seek(current - 5);
+  } else if (e.code === 'ArrowRight') {
+    seek(current + 5);
+  } else if (e.key.toLowerCase() === 'o') {
+    fileInput.click();
+  }
+});
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

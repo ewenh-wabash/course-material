@@ -1,0 +1,1478 @@
+<!-- Highlight the dynamism, diversity, flexibility, and transmedia quality of the subject matter -->
+<!-- I'm adding visual friction to the experience to get them to engage more carefully -->
+<!-- we don't necessarily want it clear and clean and uniform -->
+<!-- Variety of fonts (and no helvetica for non-serif) to avoid highway hypnosis -->
+<!-- I'm choosing to make the opening video more about the course than an introduction to me (though the way it's styled, it serves as a subtextual introduction) -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link
+  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&display=swap"
+  rel="stylesheet">
+  <link
+  href="https://fonts.googleapis.com/css2?family=Nosifer&family=Butcherman&display=swap"
+  rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Mock liquid syllabus template for a Wabash College music course.">
+  <title>MUS-104 Syllabus</title>
+  <link rel="stylesheet" href="index.css">
+  <script src="schedule.js"></script>
+  <meta name="robots" content="noindex, nofollow">
+</head>
+
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <header class="site-header">
+    <div class="brand-lockup">
+      <!-- <div class="brand-mark" aria-hidden="true">W</div> -->
+      <img class="brand-mark" src="wabash.jpg" aria-hidden="true">
+      <div>
+        <p class="eyebrow ignore-md">Wabash College • Music Department</p>
+        <h1>MUS-104<br/>Sound &amp; <span class="blood">Scary</span> Movies</h1>
+      </div>
+    </div>
+    <p class="semester">Fall 2026</p>
+  </header>
+
+  <nav class="jump-nav" aria-label="Course sections">
+    <a href="#welcome">Welcome</a>
+    <a href="#course">The Course</a>
+    <a href="#participation">Participation</a>
+    <a href="#policies">Policies</a>
+    <a href="#schedule">Schedule</a>
+    <a href="#resources">Resources</a>
+    <a href="#contact">Contact</a>
+  </nav>
+
+  <main id="main-content">
+
+    <!-- HERO / LARGE HORIZONTAL MEDIA BAR -->
+    <section id="welcome" class="hero-media media-section"
+      aria-label="Welcome to the course"
+      style="--hero-image: url('phantom.jpg');">
+
+      <!-- Optional silent background video:
+           Uncomment and replace the source URL with your own .mp4/.webm file.
+           The CSS falls back to the image above when video is unavailable. -->
+      <!--
+      <video class="hero-video" autoplay muted loop playsinline poster="images/music-hero.jpg" aria-hidden="true">
+        <source src="media/music-hero.mp4" type="video/mp4">
+      </video>
+      -->
+
+      <div class="media-overlay"></div>
+      <div class="media-content hero-content ignore-md">
+        <p class="kicker ignore-md">Welcome, everyone</p>
+        <h2>What is the sound of fear?</h2>
+        <p class="hero-copy">
+          Listen closely. This page is your living syllabus: part roadmap, part contract, part FAQ.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#schedule">See the schedule</a>
+          <a class="button button-ghost" href="#resources">Open resources</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK INFO CARDS -->
+    <section class="section-shell">
+      <div class="section-heading">
+        <p class="kicker crimson-text ignore-md">At a glance</p>
+        <h2>Course essentials</h2>
+      </div>
+
+      <div class="info-grid">
+        <article class="info-card">
+          <span class="card-icon" aria-hidden="true">🎧</span>
+          <h3>Class</h3>
+          <p class="bullet-md">TR - 2:40–3:55 pm</p>
+          <small class="bullet-md">Fine Arts Center <span class="open-map-modal">M-140</span></small>
+          <br/><br/><br/>
+          <h3>Drop in Office Hours</h3>
+          <p class="bullet-md">MWF - usually before 3:00</p>
+          <p class="bullet-md">TR - until 1:10, after class</p>
+          <p class="bullet-md">or schedule an appointment</p>
+          <small class="bullet-md">Fine Arts Center <span class="open-map-modal">M-121</span></small>
+        </article>
+
+        <article class="info-card">
+          <span class="card-icon" aria-hidden="true">🎼</span>
+          <h3>Instructor</h3>
+          <p class="bullet-md">Dr. Hunter Ewen,<br>Assistant Professor of Music</p>
+          <p class="bullet-md">
+            <a href="sms:+8593387871" class="nounderline italic">(859) 338-7871</a>
+          </p>
+          <p class="bullet-md">
+            <a class="nounderline italic" href="mailto:ewenh@wabash.edu"><b>ewenh@wabash.edu</b></a>
+          </p>
+          <p class="bullet-md">Pronounced "YOU-win" (he/him)</p>
+        </article>
+
+        <article class="info-card ignore-md">
+          <span class="card-icon" aria-hidden="true">🎹</span>
+          <h3>Materials</h3>
+          <p>Coursework is on <a class="nounderline" href="http://canvas.wabash.edu" target="_blank">Canvas</a></p>
+          <p>Films are on <a class="nounderline" href="https://login.wcproxy.palni.edu/login?url=https://digitalcampus.swankmp.net/wabash284421/" target="_blank">Swank</a></p>
+          <p>Classroom <a href="#" class="open-conduct-modal nounderline">Code of Conduct</a></p>
+          <small>No textbook or required purcases</small>
+        </article>
+
+        <article class="info-card accent-card ignore-md">
+          <span class="card-icon" aria-hidden="true">★</span>
+          <h3>Policies</h3>
+          <ul class="check-list">
+            <li>attendance & participation required for every class</li>
+            <li>30% off for late work</li>
+            <li>email for excused absences</li>
+            <li><strong>4th hour:</strong> excursion, film screenings & reflections</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+
+    <!-- SECOND BIG MEDIA BAR -->
+    <section class="media-section band-section"
+      aria-label="Grand Piano"
+      style="--hero-image: url('grand_piano.mp4');">
+
+      <div class="media-overlay dark-overlay"></div>
+      <div class="media-content split-media">
+        <div>
+          <video class="inline-video" controls>
+            <source src="intro_movie.mp4" type="video/mp4">
+          </video>
+          <div class="policy-accordion ignore-md">
+            <details class="plain-black">
+              <summary>Transcript</summary>
+              <p>
+                Hello everybody! And welcome—this is MUS-104, Sound and Scary Movies. And I'm Hunter Ewen, your professor. I'm <b>so excited</b> you're here.
+              </p>
+              <p>
+                This is a brand new class, and I'm a brand new professor at Wabash—so we'll be figuring some of this out together, as we go.
+              </p>
+              <p>
+                Music classes are always a little bit weird, because it can be hard to tell what you've  signing up for. Some music classes are like language classes, some are like history, some like philosophy, some language arts, some math, some are like PE.
+              </p>
+              <p>
+                This class is going to be like a <b>book club</b>. We're going to watch a lot...we're going to discuss a lot. You'll see some movies you know...and some you've never heard of. We'll talk about filmmaking and film scoring technique, creative practices, genre, culture, aesthetics.
+              </p>
+              <p>
+                By the end of this class, I want you to learn about the canon of scary movies and to recognize the classic soundtracks.
+              </p>
+              <p>
+                I want you to develop critical listening skills—to understand the creative decisions that go into making scary movies scary.
+              </p>
+              <p>
+                I want you to understand the transformative power that music has over film...how it can take a neutral scene and make it scary, or silly, or exciting, or boring. And I want you to understand the deep connection between film music and history, culture, aesthetic, and tradition.
+              </p>
+              <p>
+                I want you to better recognize 20th century styles, and how film genres relate to music, visual art, dance, prose. And I want you to understand how scary movies serve as a window into what our society is most worried about at any given time—the "truth" hiding behind fiction. Subtext, nuance, empathy, self-reflection, open-mindedness.
+              </p>
+              <p>
+                I want you to learn to listen deeply, to watch actively—and with purpose, and to become better, more informed citizens because of it. <b>Your brain is a muscle</b>, and flexing it...training it...in this class will help you develop in other parts of your life.
+              </p>
+              <p>
+                Music skills are life skills—and a foundation in music helps in the boardroom, helps in the courtroom, helps in the operating room, helps us live better, more reflective lives.
+              </p>
+              <p>
+                So I'm not interested in having you memorize what year William Peter Blatty wrote The Exorcist (1971). But I am going to demand that you engage with <b>creative and challenging</b> work. That you communicate authentically and effectively. That you take subjects where there isn't a right answer, like art, and make real insights from them.
+              </p>
+              <p>
+                This isn't a science class or a math class. There's not a clear pathway from question to answer. This is something much harder. In music, the questions often <b>are</b> the answers.
+              </p>
+              <p>
+                Music is a language of communication, of opinion, of emotion. And I'm here to help grow your communication skills. So feel free to reach out. Visit my office. Keep me in the loop. Email, email, email!
+              </p>
+              <p>
+                In fact, if you made it to the end of this video, congratulations for fully engaging with this content! Send me an email right now, and I'll give you some bonus points!
+              </p>
+              <p>
+                Thank you for joining. I'm excited to get to know you better. Bye!
+              </p>
+              <p class="ghost">
+                🎵 Jerry Goldsmith's main theme from Poltergeist plays throughout 🎵
+              </p>
+            </details>
+          </div>
+        </div>
+        <blockquote class="ignore-md">
+          Welcome
+          <cite>— I'm thrilled you're here</cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <section class="section-shell ignore-md">
+      <div class="two-column">
+        <div class="text-block ">
+          <p class="kicker crimson-text ignore-md">Professor (Hunter) Ewen</p>
+          <h2>A bit about me...</h2>
+          <p>
+            I grew up in Lexington, Kentucky...playing soccer, horseback riding, and rock climbing. I went to college at Case Western Reserve University, where I was on the fencing team, Tau Beta Pi, and studied mechanical engineering and music (composition). I played the saxophone and studied a lot and didn't really know what I wanted to be when I grew up. I met my wife, Megan there...she's was studying biomedical engineering. We've been together since 2002!
+          </p>
+          <p>
+
+            I got my masters and doctorate afterwards—in music—at CU-Boulder. And after I graduated, I stuck around to teach music, technology, and media for a new department I helped found, <a href="https://www.colorado.edu/cmdi/dcmp" target="_blank">Critical Media Practices</a>.
+          </p>
+          <p>
+            I left CU in 2016 to move to Columbus, Ohio and work in the music technology industry. My speciaty was building tools for empowering creativity, leading teams of music technologists at <a href="https://www.forbes.com/sites/davidhenkin/2023/12/05/orchestrating-the-future-ai-in-the-music-industry/" target="_blank">Amper Music</a>, <a href="https://www.shutterstock.com/music" target="_blank">Shutterstock</a>/<a href="https://www.premiumbeat.com/" target="_blank">PremiumBeat</a>, and eventually <a href="https://www.bandlab.com/" target="_blank">BandLab</a>. In a decade of service, I'm proud to have never trained using anyone else's music, never scraped a user's data, and never strayed from the <a href="https://www.humanartistrycampaign.com/" target="_blank">ethical frameworks</a> we established. At the time, I was still moonlighting as an educator (private lessons and teaching music/computer programming at IvyTech), but my days were spent leading teams and coding project.
+          </p>
+          <p>
+            In 2026, my wife and I packed up and moved to Crawfordsville, so I could get back to the thing I enjoyed most about my career—teaching! Nowadays, I love puzzles, making wine, food, bicycling, and other esoteric interests.
+          </p>
+
+          <!-- <ul class="check-list">
+            <li>Listen before class and arrive with one observation.</li>
+            <li>Make connections across genres, eras, and communities.</li>
+            <li>Perform, compose, improvise, or curate at least once.</li>
+          </ul> -->
+        </div>
+
+        <figure class="image-card very-minor">
+          <img
+            src="headshot.jpg"
+            alt="Headshot of instructor, he is extremely handsome"
+            loading="lazy">
+          <figcaption>
+            This is what I look like
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="course" class="media-section band-section"
+      aria-label="Grand Piano"
+      style="--hero-image: url('grand_piano.mp4');">
+
+      <video class="hero-video" autoplay muted loop playsinline aria-hidden="true">
+        <source src="grand_piano.mp4" type="video/mp4">
+      </video>
+
+
+      <div class="media-overlay dark-overlay"></div>
+      <div class="media-content split-media">
+        <div>
+
+          <h2 class="ignore-md">The Course</h2>
+        </div>
+        <blockquote class="ignore-md">
+          “Play one wrong note, and you DIE.”
+          <cite>— Grand Piano (2013) <a target="_blank" class="magnifying-glass" href="https://www.youtube.com/watch?v=aTetpEr74xc">🔎</a></cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="two-column">
+        <figure class="image-card very-minor">
+          <img
+            src="spiderman.png"
+            alt="Red string board from The Amazing Spiderman 2 (2014)"
+            loading="lazy">
+          <figcaption>
+            Red string board from The Amazing Spiderman 2 (2014) <a target="_blank" class="magnifying-glass" href="https://slate.com/podcasts/decoder-ring/2025/10/red-string-boards-are-conspiracy-thriller-staples-but-are-they-real">🔎</a>
+          </figcaption>
+        </figure>
+        <div class="text-block">
+          <p class="kicker crimson-text ignore-md">What we'll do</p>
+          <h2>Projects</h2>
+          <p>
+            This is subject to change if needed. Specifics are on <a href="http://canvas.wabash.edu" target="_blank">Canvas</a>.
+          </p>
+          <h3>Regular Classwork</h3>
+          <ul class="check-list">
+            <li>Class Participation - 30%</li>
+            <li>Film Reflections - 10%</li>
+          </ul>
+
+          <hr><br/>
+          <h3>One-Off Projects</h3>
+          <ul class="check-list">
+            <li>Presentations - 10%</li>
+            <li>Film Scoring Project - 5%</li>
+            <li>Music Director Project - 5%</li>
+            <li>Hollywood Halloween Playlist Project - 5%</li>
+            <li>Score Review Project - 5%</li>
+          </ul>
+
+          <hr><br/>
+          <h3>Assessments</h3>
+          <ul class="check-list">
+            <li>Soundtrack ID Challenge - 10%</li>
+            <li>Vocab Challenge - 10%</li>
+            <li>On-Site Analysis Challenge - 10%</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="two-column">
+        <div class="text-block">
+          <p class="kicker crimson-text ignore-md">What to Bring</p>
+          <h2>Materials</h2>
+          <p>
+            There are no textbook or other material to purchase. If you have access to films through the library, DVDs, or a streaming service, you may use those—but you are not required to pay for a streaming service for this class.
+          </p>
+          <ul class="check-list">
+            <li>Films will be streaming on <a href="https://login.wcproxy.palni.edu/login?url=https://digitalcampus.swankmp.net/wabash284421/" target="_blank">Swank</a></li>
+            <li>Course content will be on <a href="http://canvas.wabash.edu" target="_blank">Canvas</a></li>
+
+            <li>Classroom <a href="#" class="open-conduct-modal">Code of Conduct</a></li>
+          </ul>
+        </div>
+        <figure class="image-card very-minor">
+          <img
+            src="mean-girls.gif"
+            alt="Burn book from Mean Girls (2004)"
+            loading="lazy">
+          <figcaption>
+            Burn book from Mean Girls (2004) <a target="_blank" class="magnifying-glass" href="https://decider.com/2022/10/20/mean-girls-horror-movie/">🔎</a>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="two-column">
+        <figure class="image-card very-minor">
+          <img
+            src="american-psycho.gif"
+            alt="Patrick Bateman sees a better business card - American Psycho (2000)"
+            loading="lazy">
+          <figcaption>
+            Patrick Bateman sees a better business card - American Psycho (2000) <a target="_blank" class="magnifying-glass" href="https://www.youtube.com/watch?v=rC0HFwnK_5E">🔎</a>
+          </figcaption>
+        </figure>
+        <div class="text-block">
+          <p class="kicker crimson-text ignore-md">How your work is evaluated</p>
+          <h2>Grades</h2>
+          <p>
+            Final grades are calculated as a total of the projects above, the assessments below, and any extra credit. Rounding is not guaranteed and is up to my discression. There is no D+ or D-. See more information on credit/no credit and GPA on the <a href="https://bulletin.wabash.edu/academic-policies/grading-system/">Academic Policies</a> page.
+          </p>
+          <p>
+            Assessments can generally be retaken, if you reach out to me to discuss what happened, strategize for success, and we agree on a good time to do the retake.
+          </p>
+
+          <h4>Grade Breakdown</h4>
+          <ul>
+            <li class="grade-row">
+              <span>97–100% A+</span>
+              <span class="untabbed-bullet-md">93–97% A</span>
+              <span class="untabbed-bullet-md">90–93% A-</span>
+            </li>
+            <li class="grade-row">
+              <span>87–90% B+</span>
+              <span class="untabbed-bullet-md">83–87% B</span>
+              <span class="untabbed-bullet-md">80–83% B-</span>
+            </li>
+            <li class="grade-row">
+              <span>77–80% C+</span>
+              <span class="untabbed-bullet-md">73–77% C</span>
+              <span class="untabbed-bullet-md">70–73% C-</span>
+            </li>
+            <li class="grade-row">
+              <span>64%–70% D</span>
+              <span class="untabbed-bullet-md">&lt;64% F</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="participation" class="media-section band-section"
+      aria-label="The Perfection"
+      style="--hero-image: url('the_perfection.mp4');">
+
+      <video class="hero-video" autoplay muted loop playsinline aria-hidden="true">
+        <source src="the_perfection.mp4" type="video/mp4">
+      </video>
+
+
+      <div class="media-overlay dark-overlay"></div>
+      <div class="media-content split-media">
+        <div>
+
+          <h2>Participation</h2>
+          <!-- <p class="kicker">I'm thrilled you're here</p> -->
+        </div>
+        <blockquote class="ignore-md">
+          “It's what's expected of us...”
+          <cite>— The Perfection (2018) <a target="_blank" class="magnifying-glass" href="https://www.youtube.com/watch?v=q57D6kF5B1k">🔎</a></cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <section id="participation-pyramid" class="participation-pyramid">
+      <img src="wally.png" class="wally" alt="Wally, looking studious" loading="lazy">
+      <div class="section-heading">
+        <p class="kicker crimson-text ignore-md">How to do well in class</p>
+        <h2 class="ignore-md"><em>Attendance, Participation, Leadership</em></h2>
+        <p>
+          Wabash asks a great deal from its future leaders. It is not enough to attend class, to raise your hand, to ask questions. You must demonstrate leadership by helping foster our classroom community—by elevating voices around you. I have challenging and robust requirements for attendance, participation, and leadership based on accumulating tiers of engagement. Click below to learn more about each tier.
+        </p>
+      </div>
+
+      <div class="pyramid" role="list">
+        <button class="pyramid-tier tier-5" type="button" role="listitem" aria-haspopup="dialog">
+          <span class="pyramid-points">5</span>
+          <span class="pyramid-title">Leads through service</span>
+          <div class="pyramid-tier-data" hidden>
+          <b>
+            <ul class="pyramid-tier-data check-list">
+              <li>Finds ways to invite others into the conversation</li>
+              <li>Cultivates collective learning</li>
+              <li>Facilitates discussion, doesn’t dominate</li>
+              <li>Helps the group navigate challenges together</li>
+              <li>Connects ideas and people</li>
+            </ul>
+          </b>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Builds on the ideas of others</li>
+            <li>Listens generously</li>
+            <li>Speaks when appropriate, asks the right questions</li>
+            <li>Makes space for outside perspectives</li>
+            <li>Is genuinely curious</li>
+          </ul>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Actively contributes to the conversation, unprompted</li>
+            <li>Voices opinions and asks questions</li>
+            <li>Offers ideas, clarity, and pushback where appropriate</li>
+            <li>Visits during office hours</li>
+            <li>Maintains a professional work ethic</li>
+          </ul>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Prepares homework assignments</li>
+            <li>Mentally engaged, thinking through discussion concepts</li>
+            <li>Understands the syllabus, course policies, and expectations</li>
+            <li>Up-to-date with prior work, ready for new material</li>
+          </ul>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Attends class, 4th hour events</li>
+            <li>Is punctual, reliable, and ready</li>
+            <li>Communicates well outside of class, as needed</li>
+            <li>Keeps distractions out of the classroom</li>
+          </ul>
+        </div>
+        </button>
+
+        <button class="pyramid-tier tier-4" type="button" role="listitem" aria-haspopup="dialog">
+          <span class="pyramid-points">4</span>
+          <span class="pyramid-title">Elevates the voices of others</span>
+          <div class="pyramid-tier-data" hidden>
+          <b>
+            <ul class="pyramid-tier-data check-list">
+              <li>Builds on the ideas of others</li>
+              <li>Listens generously</li>
+              <li>Speaks when appropriate, asks the right questions</li>
+              <li>Makes space for outside perspectives</li>
+              <li>Is genuinely curious</li>
+            </ul>
+          </b>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Actively contributes to the conversation, unprompted</li>
+            <li>Voices opinions and asks questions</li>
+            <li>Offers ideas, clarity, and pushback where appropriate</li>
+            <li>Visits during office hours</li>
+            <li>Maintains a professional work ethic</li>
+          </ul>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Prepares homework assignments</li>
+            <li>Mentally engaged, thinking through discussion concepts</li>
+            <li>Understands the syllabus, course policies, and expectations</li>
+            <li>Up-to-date with prior work, ready for new material</li>
+          </ul>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Attends class, 4th hour events</li>
+            <li>Is punctual, reliable, and ready</li>
+            <li>Communicates well outside of class, as needed</li>
+            <li>Keeps distractions out of the classroom</li>
+          </ul>
+        </button>
+
+        <button class="pyramid-tier tier-3" type="button" role="listitem" aria-haspopup="dialog">
+          <span class="pyramid-points">3</span>
+          <span class="pyramid-title">Enthusiastically contributes to class</span>
+          <div class="pyramid-tier-data" hidden>
+          <b>
+            <ul class="pyramid-tier-data check-list">
+              <li>Actively contributes to the conversation, unprompted</li>
+              <li>Voices opinions and asks questions</li>
+              <li>Offers ideas, clarity, and pushback where appropriate</li>
+              <li>Visits during office hours</li>
+              <li>Maintains a professional work ethic</li>
+            </ul>
+          </b>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Prepares homework assignments</li>
+            <li>Mentally engaged, thinking through discussion concepts</li>
+            <li>Understands the syllabus, course policies, and expectations</li>
+            <li>Up-to-date with prior work, ready for new material</li>
+          </ul>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Attends class, 4th hour events</li>
+            <li>Is punctual, reliable, and ready</li>
+            <li>Communicates well outside of class, as needed</li>
+            <li>Keeps distractions out of the classroom</li>
+          </ul>
+        </button>
+
+        <button class="pyramid-tier tier-2" type="button" role="listitem" aria-haspopup="dialog">
+          <span class="pyramid-points">2</span>
+          <span class="pyramid-title">Mentally present in class</span>
+          <div class="pyramid-tier-data" hidden>
+          <b>
+            <ul class="pyramid-tier-data check-list">
+              <li>Prepares homework assignments</li>
+              <li>Mentally engaged, thinking through discussion concepts</li>
+              <li>Understands the syllabus, course policies, and expectations</li>
+              <li>Up-to-date with prior work, ready for new material</li>
+            </ul>
+          </b>
+          <hr>
+          <ul class="check-list ghost">
+            <li>Attends class, 4th hour events</li>
+            <li>Is punctual, reliable, and ready</li>
+            <li>Communicates well outside of class, as needed</li>
+            <li>Keeps distractions out of the classroom</li>
+          </ul>
+        </button>
+
+        <button class="pyramid-tier tier-1" type="button" role="listitem" aria-haspopup="dialog">
+          <span class="pyramid-points">1</span>
+          <span class="pyramid-title">Physically present in class</span>
+          <div class="pyramid-tier-data" hidden>
+          <b>
+            <ul class="pyramid-tier-data check-list">
+              <li>Attends class, 4th hour events</li>
+              <li>Is punctual, reliable, and ready</li>
+              <li>Communicates well outside of class, as needed</li>
+              <li>Keeps distractions out of the classroom</li>
+            </ul>
+          </b>
+        </button>
+      </div>
+    </section>
+
+    <dialog id="pyramid-modal" class="resource-modal">
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
+      <h3 id="pyramid-modal-title"></h3>
+      <ul class="modal-body pyramid-modal-list check-list" id="pyramid-modal-body"></ul>
+    </dialog>
+
+    <section class="gif-band">
+      <div class="gif-placeholder">
+        <div>
+          <h2><em>on fear...</em></h2>
+          <p>
+            <b>This is not a scary class</b>, but we will watch, hear, and discuss scary things here. It’s okay to be frightened—the point of the media we’re studying is to scare you. But if something is too much, you don’t have to force yourself to endure it. In this class, It is always okay to leave if a film, score, or conversation becomes too much. It’s okay to close your eyes, plug your ears, or walk out of the room if something feels too intense or if you need a breather. It’s okay to look up <a class="nounderline" href="https://wheresthejump.com" target="_blank">jumpscares</a> or <a class="nounderline" href="https://www.doesthedogdie.com">trigger warnings</a>beforehand and identify movies you don’t want to consume for class. If there are specific movies or topics you want to avoid, send me an email so we can figure out another way for you to engage with the material.
+          </p>
+          <p>
+            Some good resources for content warnings:
+          </p>
+          <ul>
+            <li><a class="nounderline" href="https://www.doesthedogdie.com">DoesTheDogDie.com</a> (trigger and content warnings)</li>
+            <li><a class="nounderline" href="https://www.imdb.com/title/tt0075005/parentalguide">IMDB.com</a>'s parental guides (sex/nudity, violence/gore, alcohol/drugs, frightening scenes)</li>
+            <li><a class="nounderline" href="https://wheresthejump.com">WheresTheJump.com</a> (timestampted jumpscare locations)</li>
+            <li><a class="nounderline" href="https://google.com">Jumpscare Subtitles</a> (my script that takes <a class="nounderline" href="https://wheresthejump.com" target="_blank">jumpscare</a> or <a class="nounderline" href="https://kickasssubtitles.com/en/search" target="_blank">translation</a> subtitles and syncs them to the movie)</li>
+          </ul>
+        </div>
+        <div class="minor">
+          <a target="_blank" href="https://www.youtube.com/watch?v=UjxQQ5PGSFU">
+            <img
+              src="shining.gif"
+              alt="Danny Torence covering his eyes, from The Shining"
+              loading="lazy">
+            </a>
+        </div>
+        <div class="full-width">
+          <p>
+            Our goal is to study fiction, but sometimes reality sneaks in. There are lots of movies we won't watch because real-life bad things found their way into the fiction. This course will focus on <b>fictional</b> horror by avoiding the following:
+          </p>
+
+          <ul>
+            <li>films with actual, real-life physical violence <a class="nounderline" href="imdb.com/title/tt1522846/parentalguide">🔎</a></li>
+            <li>films that make light of real-world atrocities <a class="nounderline" href="https://www.imdb.com/title/tt1935896/parentalguide">🔎</a></li>
+            <li>films with actual, real-life sexual abuse or nonconsensual sexual activity <a class="nounderline" href="https://www.imdb.com/title/tt0103772/parentalguide">🔎</a></li>
+            <li>films where consent cannot be given <a class="nounderline" href="https://www.imdb.com/title/tt0218871/parentalguide">🔎</a></li>
+            <li>films with actual, real-life animal abuse <a class="nounderline" href="https://www.imdb.com/title/tt0078935/parentalguide">🔎</a></li>
+          </ul>
+          <p>
+            While these subjects or films may come up in conversation, we will not be viewing films like these for this class. I encourage you to use these criteria as you are identifying projects for independent study and presentation.
+          </p>
+          <p>
+            N.B. The film industry has a history of offscreen <a href="https://www.amazon.com/dp/0063269279">abuse</a>, much of which is hidden. We must acknowledge and reflect on this abuse. In class, we will explore <a href="https://chscommunicator.com/90269/opinion/2024/04/the-working-environment-of-the-shining/">The Shining</a>, <a href="https://vocal.media/horror/the-real-and-terrifying-injury-caused-on-the-set-of-the-exorcist">The Exorcist</a>, and <a href="https://collider.com/the-birds-production-history-explained/">The Birds</a>, which are all films where the actors suffered offscreen abuse.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="gif-band">
+        <div class="gif-placeholder">
+          <div class="minor">
+            <a target="_blank" href="https://www.youtube.com/watch?v=Sn5SkCvPEYo">
+              <img
+              src="scream.gif"
+              alt="Woman on phone, getting the answer wrong, from Scream"
+              loading="lazy">
+            </a>
+          </div>
+          <div>
+            <h2><em>on being wrong...</em></h2>
+            <p>
+              <b>I WANT YOU TO BE WRONG</b>. I want you to ask why. I want you to be unsure. I want you to be confused. I want you to change your mind.
+            </p>
+            <p>
+              Saying “I don’t know” builds radical trust. It strips away ego and creates room for curiosity. It signals confidence without pretending to have all the answers. Some of the most powerful intellectual moves we can make are also the simplest: <b>I don’t know. I might be wrong. Tell me more. I hadn’t thought about it that way.</b>
+              Keep in mind: this is not med school or law school class. The work we’re doing here is deeply personal, creative, and uninterpretable. You are not here to memorize the most facts or produce the most “right” answers.
+            </p>
+            <p>
+              The most successful student in my class is the one willing to reach down deep in their soul—to grab hold of the strange, difficult, beautiful thing that makes us human, and be brave enough to wrench it back up and examine it in the light of day.
+              My goal is to help you understand the world better. To help you understand yourselves better. To help you understand each other better.
+            </p>
+            <p>
+              So get something wrong. Be curious. Change your mind. Take intellectual risks.
+            </p>
+          </div>
+        </div>
+    </section>
+
+    <section id="policies" class="section-shell">
+      <img src="wally2.png" class="wally2" alt="Wally, looking studious" loading="lazy">
+      <div class="two-column policies-layout">
+        <div>
+          <p class="kicker crimson-text ignore-md">The red tape</p>
+          <h2>Course policies</h2>
+          <p>
+            In general, I am flexible and open to rescheduling, make-up work, excused absences, quiz retakes, etc. However, <b>you and I will need to agree on any change beforehand</b> (and document in writing) of the scope and timing of the work. In general, if anything comes up that will affect your semester, <a class="nounderline" href="mailto:ewenh@wabash.edu"><b>email</b></a> or <a class="open-map-modal"><b>visit me</b></a> as soon as possible so we can help build workarounds.
+          </p>
+          <p>
+            The only truly inflexible rule I have is that I am unable to accept work beyond the end of the semester.
+          </p>
+        </div>
+
+        <div class="policy-accordion">
+          <details open>
+            <summary>Attendance</summary>
+            <p>
+              <b>I expect you to attend every class and event</b>. However, with enough notice, I am generous with excused absences. Let me know as soon as you know you'll need to miss class—for sports, illness, emergencies, etc.
+            </p>
+            <p>
+              If you miss a class (excused or not), I still expect you to engage with the day's material to receive full attendance/participation points. It is not possible for me to re-teach a previous lecture following an absense, so asking "what did I miss in class yesterday" is not a viable way to engage with that day's material. <a class="nounderline" href="mailto:ewenh@wabash.edu"><b>Contact me</b></a> so we can agree on the scope of make-up work required to receive full points.
+            </p>
+          </details>
+
+          <details>
+            <summary>Late Work</summary>
+            <p>
+              This class moves quickly, and it's important work is completed on time. That being said, I understand that other factors sometimes cause delays in turning in work. My blanket policy is to take <b>30% off for all late work</b> unless an extension is granted in advance.
+            </p>
+          </details>
+
+          <details>
+            <summary>Extra Credit</summary>
+            <p>
+              I love extra credit! <a class="nounderline" href="mailto:ewenh@wabash.edu"><b>Reach out</b></a> or <a class="open-map-modal"><b>drop by my office</b></a> if you have an idea or if you want me to come up with some suggestions. My only policy around extra credit is to talk to me first, so we can agree on a timeframe and points value. Each bonus point works out to about 2% of your final grade, so for small projects or rewards, I might give fractions of a bonus point too!
+            </p>
+          </details>
+
+          <details>
+            <summary>AI Policy</summary>
+            <p>
+              <b>tl;dr don't use AI</b>
+            </p>
+            <p>
+              Using AI for this class is like going to the gym, sitting on a bench, and watching a video of someone else working out.
+            </p>
+            <p>
+
+              Your brain is a muscle. Your attention span is a muscle. Your analytic prowess is a muscle. You are here to exercise your brain. Generatie AI use can lead to <a target="_blank" class="nounderline" href="ai-cognitive-decline.pdf">cognitive decline</a>, and it can <a target="_blank" class="nounderline" href="ai-dependence-and-cognitive-intertia.pdf">make you more dependent</a> on it in the future (cognitive intertia). Using it in class is lazy and rude—and it's an academic integrity violation. Last year, we had a record breaking amount of academic dishonestly, and that was overwhelmingly from unauthorized use of AI. It’s too easy to circumvent the friction that you’re here to experience.
+            </p>
+            <p>
+              I don’t want polished, lazy, ChatGPT-fueled responses from you. I want weird, buzzy, human writing that crackles with the uncertainty of original thought. Do not use generative AI, including but not limited to:
+              <ul>
+                <li>generate part of an assignment</li>
+                <li>get summaries of movies</li>
+                <li>wordsmith your written work</li>
+                <li>summarize ideas or arguments</li>
+                <li>help format an email or other written document</li>
+              </ul>
+            </p>
+            <p>
+              <b>Use of generative AI in any similar context is a strike on your academic record</b>—and possible expulsion if you already have a strike.
+            </p>
+            <p>
+              If you feel yourself slipping, or you’re running out of time on an assignment, or you’re stressed about other commitments, and you start to reach for ChatGPT, <a class="nounderline" href="mailto:ewenh@wabash.edu"><b>REACH OUT TO ME</b></a>. I want you to be successful in this class, and I will bend over backwards to make sure you can find success without AI.
+            </p>
+          </details>
+
+          <details>
+            <summary>Academic integrity</summary>
+            <p>
+              The Gentleman’s Rule applies to this course in several ways but particularly concerning academic integrity.
+            </p>
+            <p>
+              Unless stated in the assignment guidelines, collaboration on assignments is not allowed.
+              More generally, plagiarism (quoting, paraphrasing, or taking ideas from any source—
+              machine or human—without explicit citation), duplicate submission of the same work, or
+              the unauthorized possession of tests and other assessment materials is strictly forbidden.
+              Academic dishonesty may result in the failing of the assignment and further disciplinary
+              action by the College. Visit the <a target="_blank" href="https://www.wabash.edu/news/docs/AcademicHonestyGuide.pdf">Academic Honesty Guide</a> for more:
+            </p>
+            <p>
+
+            </p>
+            <p>
+              Negligence or ignorance are not acceptable excuses for violation of this policy. It is
+              possible to commit plagiarism without fully knowing it so, when in doubt, ask me for
+              guidance.
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section id="schedule-intro" class="media-section band-section" aria-label="Whiplash">
+      <video class="hero-video" autoplay muted loop playsinline aria-hidden="true">
+        <source src="whiplash.mp4" type="video/mp4">
+      </video>
+
+      <div class="media-overlay dark-overlay"></div>
+      <div class="media-content split-media">
+        <div>
+          <h2>Schedule</h2>
+        </div>
+        <blockquote class="ignore-md">
+          “Were you rushing or were you dragging?”
+          <cite>— Whiplash (2014) <a target="_blank" class="magnifying-glass" href="https://www.youtube.com/watch?v=7pA_xYbJIbM">🔎</a></cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <section id="schedule" class="section-shell section-tinted">
+      <div class="section-heading">
+        <p class="kicker crimson-text ignore-md">The road ahead</p>
+        <h2 class="ignore-md">Classes and 4th Hour Events</h2>
+        <p>
+          This course follows the <a href="https://www.ed.gov/laws-and-policy/higher-education-laws-and-policy/program-integrity-information-questions-and-12" target="_blank">federal guidelines</a> for standard college course workload (4 'hours' of direct instruction plus 8+ hours of homework per week).
+        </p>
+        <p>
+          This course complies with Option 3 of the Wabash College Academic Credit Policy. In addition to regular class meetings, the course requires direct instruction through these additional structured activities. These structured activites total 14 hours, including:
+          <ul class="check-list">
+            <li>Excursion to Indianapolis for tapas and film screening</li>
+            <li>Film screenings, reflections, and discussions</li>
+            <li>Organ performance at Chapel</li>
+            <!-- <li>Possible other events or excursions (haunted house, movie theater) if I can arrange</li> -->
+          </ul>
+        </p>
+        <p>A rough schedule is included below—though this syllabus is fluid and subject to change</p>
+        <!-- <p>
+          This course complies with Option 1 of the Wabash College Academic Credit Policy. The course has four academic hours of scheduled in-class direct instruction each week.
+        </p> -->
+        <!-- <p>
+          This course complies with Option 2 of the Wabash College Academic Credit Policy. In addition to regular class meetings, the course has a required laboratory each week providing 1-3 additional academic hours of in-class direct instruction.
+        </p> -->
+
+        <!-- This course complies with Option 3 of the Wabash College Academic Credit Policy. In addition to regular class meetings, the course requires direct instruction through these additional structured activities: __________________________ ( ____ hours); __________________________ ( ____ hours); __________________________ ( ____ hours).-->
+
+        <!-- <p>
+          This course complies with Option 3a of the Wabash College Academic Credit Policy. As a capstone or advanced research course, on average it requires fewer than 4 hours of direct instruction and more than 8 hours out-of-class work per week per credit. Compliance with the Academic Credit Policy has been affirmed by the department and division chairs.
+        </p> -->
+      </div>
+
+      <div id="week-list" class="week-list">
+        <article class="week-card">
+          <div class="week-number">Aug 27</div>
+          <div class="week-content">
+            <h3>How do we listen?</h3>
+            <p>Sound, attention, active listening, and the vocabulary musicians use to describe what they hear.</p>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>To-do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Listening set: Three opening tracks</a></li>
+                  <li><a href="#">Reading: “Ways of Hearing” (PDF)</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>To-do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Prompt: Describe one sound without naming it</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="week-card">
+          <div class="week-number">Sep 1</div>
+          <div class="week-content">
+            <h3>Pulse, meter, and groove, Dies irae</h3>
+            <p>Compare a marching band groove, a West African ensemble, and a contemporary pop track.</p>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>To-do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Listening map template</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>To-do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">In-class rhythm lab</a></li>
+                  <li><a href="#">Mini-performance sign-up</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="week-card week-card">
+          <div class="week-number">Sep 3</div>
+          <div class="week-content">
+            <h3>Dies irae</h3>
+            <p>Compare a marching band groove, a West African ensemble, and a contemporary pop track.</p>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>To-do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Listening map template</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>To-do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">In-class rhythm lab</a></li>
+                  <li><a href="#">Mini-performance sign-up</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="week-card-accent week-card">
+          <div class="week-number">Sep 4</div>
+          <div class="week-content">
+            <h3>7:00pm screening: The Shining (<a href="#" class="open-map-modal">Ball Theater</a>)</h3>
+            <p>4th hour requirement</p>
+            <div class="week-column">
+              <h4>To-do</h4>
+              <ul class="check-list">
+                <li>Attend the screening or stream on your own (on <a href="https://login.wcproxy.palni.edu/login?url=https://digitalcampus.swankmp.net/wabash284421/" target="_blank">Swank</a>)</li>
+                <li>Complete a reflection on the film</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="week-card week-card">
+          <div class="week-number">Sep 8</div>
+          <div class="week-content">
+            <h3>Dies irae</h3>
+            <p>Compare a marching band groove, a West African ensemble, and a contemporary pop track.</p>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>To-do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Listening map template</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>To-do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">In-class rhythm lab</a></li>
+                  <li><a href="#">Mini-performance sign-up</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="week-card week-card">
+          <div class="week-number">Sep 10</div>
+          <div class="week-content">
+            <h3>Dies irae</h3>
+            <p>Compare a marching band groove, a West African ensemble, and a contemporary pop track.</p>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>To-do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Listening map template</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>To-do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">In-class rhythm lab</a></li>
+                  <li><a href="#">Mini-performance sign-up</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="week-card week-card">
+          <div class="week-number">Sep 15</div>
+          <div class="week-content">
+            <h3>Dies irae</h3>
+            <p>Compare a marching band groove, a West African ensemble, and a contemporary pop track.</p>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>To-do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Listening map template</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>To-do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">In-class rhythm lab</a></li>
+                  <li><a href="#">Mini-performance sign-up</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="week-card week-card">
+          <div class="week-number">Sep 17</div>
+          <div class="week-content">
+            <h3>Dies irae</h3>
+            <p>Compare a marching band groove, a West African ensemble, and a contemporary pop track.</p>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>To-do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Listening map template</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>To-do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">In-class rhythm lab</a></li>
+                  <li><a href="#">Mini-performance sign-up</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="week-card week-card">
+          <div class="week-number">Sep 22</div>
+          <div class="week-content">
+            <h3>Dies irae</h3>
+            <p>Compare a marching band groove, a West African ensemble, and a contemporary pop track.</p>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>To-do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Listening map template</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>To-do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">In-class rhythm lab</a></li>
+                  <li><a href="#">Mini-performance sign-up</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="week-card week-card">
+          <div class="week-number">Sep 24</div>
+          <div class="week-content">
+            <h3>Dies irae</h3>
+            <p>Compare a marching band groove, a West African ensemble, and a contemporary pop track.</p>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>To-do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Listening map template</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>To-do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">In-class rhythm lab</a></li>
+                  <li><a href="#">Mini-performance sign-up</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- <article class="week-card">
+          <div class="week-number">03</div>
+          <div class="week-content">
+            <h3>Voice, identity, and storytelling</h3>
+            <p>Explore how performers use timbre, phrasing, language, and persona to tell stories.</p>
+            <div class="tag-row">
+              <span class="tag">Voice</span>
+              <span class="tag">Identity</span>
+            </div>
+            <div class="week-columns">
+              <div class="week-column">
+                <h4>Do before class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Playlist: Voice as character</a></li>
+                </ul>
+              </div>
+              <div class="week-column">
+                <h4>Do in class</h4>
+                <ul class="check-list">
+                  <li><a href="#">Discussion questions</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article> -->
+      </div>
+    </section>
+
+    <section class="announcement-bar">
+      <div class="section-shell announcement-inner">
+        <span class="announcement-icon very-minor" aria-hidden="true">♫</span>
+        <div>
+          <p class="kicker ignore-md">Help?!</p>
+          <h2 class="ignore-md">If you're lost, in a pickle, need help, or don't know what to do...drop by my office or send me a note. We'll figure it out together!
+          </h2>
+          <br/>
+          <h2 class="centered ignore-md">
+            <a class="plain-white" href="mailto:ewenh@wabash.edu"><em>ewenh@wabash.edu</em></a></h2>
+        </div>
+        <div class="vertical-buttons">
+          <a class="plain-white" href="mailto:ewenh@wabash.edu"><button class="vertical-button button button-primary">Email&nbsp;me</button></a>
+          <button class="vertical-button button button-primary open-text-modal" type="button">Text&nbsp;me</button>
+          <button class="vertical-button button button-primary open-map-modal" type="button">Visit&nbsp;me</button>
+        </div>
+        <div class="wally3"><img src="wally3.png"></div>
+      </div>
+    </section>
+
+    <section id="resources" class="section-shell">
+      <div class="section-heading">
+        <p class="kicker crimson-text ignore-md">Your toolkit</p>
+        <h2>Resources &amp; outside help</h2>
+        This class is <b>not</b> more important than your health and well-being. You have a huge network of people—including me—dedicated to helping you flourish. If you can't find what you need below, <a class="nounderline" href="mailto:ewenh@wabash.edu"><b>reach out</b></a> to me directly to help route you to the right resource. I want you to be successful. You want you to be successful. And all of the resources below are focused on helping you find success.
+      </div>
+
+      <div class="resource-grid">
+        <button class="resource-card" type="button">
+          <span class="resource-label ignore-md">Disability Support</span>
+          <h3>Accessibility Services</h3>
+          <p>Students with disabilities (apparent or invisible) are invited to confidentially discuss their situation with the Accessibility Services Coordinator, Heather Jones, Associate Dean for Student Engagement and Success (in the Armory). If a student wishes to receive an academic accommodation, it is required that his documentation of the disability be on file with Dean Jones, who can, in confidence, provide information and guidance. Early notification helps us all work together more effectively. To make an appointment with Dean Jones, call x6347 or email <a href="mailto:jonesh@wabash.edu">jonesh@wabash.edu</a></h2>.</p>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="resource-card" type="button">
+          <span class="resource-label ignore-md">Mental Support</span>
+          <h3>Counseling Services</h3>
+          <p>The purpose of the Wabash College Counseling Center is to promote mental wellness by providing brief, therapeutic interventions and support as well as continued care for more chronic mental health conditions. Counseling is available at no additional charge to students, their dependents, if any, and the college FLTAs and is located in the Kendall House (503 Milligan Street, the 2-story brick house with the white picket fence between the Allen Center and Grub Hollow). There are no session limits. Counseling sessions are by appointment and can be made by sending an email to: <a href="mailto:counseling@wabash.edu">counseling@wabash.edu</a>. For life-threatening emergencies, call 911. Call Campus Security at: 765-361-6000 for evening and weekend emergencies. 24/7 crisis and suicide prevention phone and text line: 988</p>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="resource-card" type="button">
+          <span class="resource-label ignore-md">Physical Support</span>
+          <h3>Student Health Center</h3>
+          <p>The Student Health Center is located on the second floor of the Allen Athletics Center, and is open from 8:30 am - 2:00 pm M-F while school is in session.  Visits to the Student Health Center are unlimited and are covered by the annual Health Services fee. To schedule a visit, please send the SHC a message via the secure health portal. Instructions are on our <a href="https://www.wabash.edu/studentlife/health">website</a>. If you have had new onset of a fever, cough, vomiting, or diarrhea in the last 24 hours, please contact the instructor and isolate yourself from others in your living unit. You may walk in at the SHC between 9-11am if you wish to have rapid testing done for flu, COVID, strep throat, etc. and to have your condition evaluated. Services include evaluation of new illness or injury, allergy shots, mental health services, STI screening and treatment, sports medicine, travel consults, and physicals.</p>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="resource-card" type="button">
+          <span class="resource-label ignore-md">Writing Support</span>
+          <h3>The Writing Center</h3>
+          <p>Do you have questions about how to start a paper? Are you struggling to get all of your ideas to fit? Do you have a draft but want someone to review it? Are you unsure of how to incorporate comments from your professor? Head to the Writing Center! No matter what your writing questions or needs, the Wabash Writing Center Consultants are eager and able to help you! Please visit the webpage, <a href="https://www.wabash.edu/ace/writing">https://www.wabash.edu/ace/writing</a>, for the link to schedule an appointment. If you have any questions, please email the director, Dr. Koppelmann, at <a href="mailto:koppelmz@wabash.edu">koppelmz@wabash.edu</a>. Due to the rapidly changing generative AI resources, it is recommended that faculty include a statement about it on their syllabi and discuss with students the role and place of AI in their particular class. If you have any questions concerning AI writing, please talk with Dr. Koppelmann at <a href="mailto:koppelmz@wabash.edu">koppelmz@wabash.edu</a>.</p>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="resource-card" type="button">
+          <span class="resource-label ignore-md">Planning & Time Management</span>
+          <h3>The Office of Student Enrichment</h3>
+          <p>Succeeding at Wabash College takes a great deal of effort and planning. Life is complex, assignments are time consuming, and staying involved keeps you running. When you have questions about how to make everything fit into your schedule, how to study more efficiently, how to take better notes, or any other question about developing your college skills, visit the Office of Student Enrichment (OSE).<br/>
+          Go to <a href="https://www.wabash.edu/ace/office">https://www.wabash.edu/ace/office</a> and follow the “Make an Appointment” link to arrange a one-on-one, personalized meeting. No matter your questions, we will work with you to find a solution that helps you achieve your goals.</p>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="resource-card" type="button">
+          <span class="resource-label ignore-md">Fire & Weather</span>
+          <h3>Emergency Response</h3>
+          <p>In case of a fire, proceed from the classroom, out the nearest exit, and move at least 50 yards away from the building. You should join your instructor and class outside to make sure that everyone got out of the building ok. Then move as a group to the Chapel to report to the emergency personnel in charge.<br/><br/>
+          In the event of a severe weather storm, proceed either to the basement and shelter in the basement hallway near the green rooms or in the shelter location behind Salter Hall.</p>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="resource-card" type="button">
+          <span class="resource-label ignore-md">Science & Math Training</span>
+          <h3>Quantitative Skills Center (QSC)</h3>
+          <p>The Quantitative Skills Center (QSC) provides free tutoring to students in biology, chemistry, computer science, economics, mathematics, or physics. Department-selected tutors will work with you to answer your questions and deepen your understanding of each subject. The QSC operates Sundays, Tuesdays, and Thursdays from 7-11pm on the second floor of the Library. Please check out the QSC <a href="https://www.wabash.edu/ace/qsc">webpage</a> for specific tutor availability.</p>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="resource-card" type="button">
+          <span class="resource-label ignore-md">Support in Other Classes</span>
+          <h3>Supplemental Instruction (SI)</h3>
+          <p>Generally, music courses are not covered under SI Sessions, but this may useful for other classes. SI Sessions are highly structured, peer-led group study designed to give students additional ways of learning the course material and processing new knowledge. SI is held twice a week, and each session will be distinct in content. Outside of class, the SI Leader and instructor will confer on the material and concepts that will be most useful to study. Attendance at SI, while encouraged, is strictly voluntary. SI Sessions are not the place to go over homework questions; you can use the QSC and office hours for that. SI Sessions are, however, a place to gain fuller mastery of the material and to collaborate with peers who are committed to on-task group study. Based on data we collected from SI attendance at Wabash in previous semesters, we can predict higher final course grades for students who attend at least one-quarter of the SI Sessions. For more information about SI at Wabash and the session schedule for all courses, visit <a href="https://www.wabash.edu/ace/si">wabash.edu/ace/si</a>.</p>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </section>
+
+    <dialog id="resource-modal" class="resource-modal">
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
+      <h3 id="resource-modal-title"></h3>
+      <div class="modal-body" id="resource-modal-body"></div>
+    </dialog>
+
+    <dialog id="map-modal" class="resource-modal">
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
+      <h3>Map of the Fine Arts Center</h3>
+      <img src="map.png" alt="Campus map showing my office location" style="width: 100%; border-radius: 8px;">
+    </dialog>
+
+    <dialog id="text-modal" class="resource-modal">
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
+      <h3>Text me... or call</h3>
+      <p>I'll try to respond as quickly as possible, but it may take a day or two if I'm out of town or busy. Resist the urge to text me if the sun isn't out.</p>
+      <p style="font-size: 1.4rem; font-weight: 800;">
+        <a href="sms:+8593387871" class="crimson-text nounderline">(859) 338-7871</a>
+      </p>
+    </dialog>
+
+    <dialog id="conduct-modal" class="resource-modal">
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
+      <h3>Classroom Code of Conduct</h3>
+      <div class="modal-body">
+        <blockquote class="ignore-md">
+          "Beware of artists. They mix with all classes of society and are therefore most dangerous."
+        </blockquote>
+        <cite>- Queen Victoria.</cite>
+        <br/><br/><hr><br/>
+        <h4>How it Works</h4>
+        <p>
+          Music is the language of emotions, and the deeper you get into studying music the more you realize how deeply interconnected music is with other social and political structures. Even though we're studying music...other things may come up. The term "safe space" has become politically charged, so I won't use that here. But I do want to create an environment where we feel comfortable, supported, and free around one another. I'm open to updating this code of conduct based on your feedback, but here's a list of a few tenets, based on the <a href="https://www.wabash.edu/aboutwabash/rule" class="nounderline" target="_blank">gentleman's rule</a> I'd like to see and model in my classroom:
+        </p>
+
+        <ul class="check-list">
+          <li>We've got your back</li>
+          <li>We don't yuck each other's yums</li>
+          <li>We don't punish others for their opinions</li>
+          <li>We have a duty to be wrong in front of each other</li>
+          <li>We listen and try not to interrupt</li>
+          <li>We respect personal choices and boundaries (especially when it comes to scary stuff)</li>
+        </ul>
+        <br/><br/><hr><br/>
+        <h4>What it Means</h4>
+        <ul class="check-list">
+          <li>We don't dunk on other people</li>
+          <li>You don't have to hide your real thoughts in this class because you're worried they'll conflict with my or your classmates opinions</li>
+          <li>You can feel comfortable "trying on" a new point of view, playing devil's advocate for a bit, or being confidently wrong</li>
+          <li>There's no such thing as "guilty pleasure" music...only "pleasure" music</li>
+          <li>Arguments aren't meant to be "won" in here</li>
+          <li>There are no penalties for having opinions</li>
+        </ul>
+      </div>
+    </dialog>
+
+    <section id="contact" class="media-section footer-media">
+      <video class="hero-video" autoplay muted loop playsinline aria-hidden="true">
+        <source src="sinners.mp4" type="video/mp4">
+      </video>
+
+      <div class="media-content footer-content">
+        <p class="kicker">Questions? Ideas? A great movie to share?</p>
+        <h2>Let's keep the syllabus <span class="blood">alive</span></h2>
+        <p>
+          Dr. Hunter Ewen • <a class="plain-white" href="mailto:ewenh@wabash.edu">ewenh@wabash.edu</a> • <a href="sms:+8593387871" class="plain-white" style="text-decoration: none;">(859) 338-7871</a> • <a class="plain-white open-map-modal" type="button">FAC M-121</a>
+        </p>
+        <a class="button button-light ignore-md" href="mailto:ewenh@wabash.edu">Email me</a>
+        <a target="_blank" class="magnifying-glass bottom-right ignore-md" href="https://www.youtube.com/watch?v=JWZZ4o9LubM">🔎</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>MUS-104</strong>
+      <span>•</span>
+      <span>Wabash College</span>
+    </div>
+    <p>© 2026 Hunter Ewen, all rights reserved • all em-dashes are the author's own</p>
+  </footer>
+
+  <script>
+    // MAP MODAL
+    (function () {
+      var triggers = document.querySelectorAll('.open-map-modal');
+      var modal = document.getElementById('map-modal');
+      var closeButton = modal.querySelector('.modal-close');
+
+      triggers.forEach(function (trigger) {
+        trigger.addEventListener('click', function (event) {
+          event.preventDefault(); // harmless on <button>, needed if you use an <a>
+          modal.showModal();
+        });
+      });
+
+      closeButton.addEventListener('click', function () {
+        modal.close();
+      });
+
+      modal.addEventListener('click', function (event) {
+        var box = modal.getBoundingClientRect();
+        var clickedInside =
+          event.clientX >= box.left && event.clientX <= box.right &&
+          event.clientY >= box.top && event.clientY <= box.bottom;
+        if (!clickedInside) {
+          modal.close();
+        }
+      });
+    })();
+
+    // TEXT ME MODAL
+    (function () {
+      var triggers = document.querySelectorAll('.open-text-modal');
+      var modal = document.getElementById('text-modal');
+      var closeButton = modal.querySelector('.modal-close');
+
+      triggers.forEach(function (trigger) {
+        trigger.addEventListener('click', function (event) {
+          event.preventDefault();
+          modal.showModal();
+        });
+      });
+
+      closeButton.addEventListener('click', function () {
+        modal.close();
+      });
+
+      modal.addEventListener('click', function (event) {
+        var box = modal.getBoundingClientRect();
+        var clickedInside =
+          event.clientX >= box.left && event.clientX <= box.right &&
+          event.clientY >= box.top && event.clientY <= box.bottom;
+        if (!clickedInside) {
+          modal.close();
+        }
+      });
+    })();
+
+    // CODE OF CONDUCT MODAL
+    (function () {
+      var triggers = document.querySelectorAll('.open-conduct-modal');
+      var modal = document.getElementById('conduct-modal');
+      var closeButton = modal.querySelector('.modal-close');
+
+      triggers.forEach(function (trigger) {
+        trigger.addEventListener('click', function (event) {
+          event.preventDefault();
+          modal.showModal();
+        });
+      });
+
+      closeButton.addEventListener('click', function () {
+        modal.close();
+      });
+
+      modal.addEventListener('click', function (event) {
+        var box = modal.getBoundingClientRect();
+        var clickedInside =
+          event.clientX >= box.left && event.clientX <= box.right &&
+          event.clientY >= box.top && event.clientY <= box.bottom;
+        if (!clickedInside) {
+          modal.close();
+        }
+      });
+    })();
+
+    // RESOURCE MODAL
+    (function () {
+      var modal = document.getElementById('resource-modal');
+      var modalTitle = document.getElementById('resource-modal-title');
+      var modalBody = document.getElementById('resource-modal-body');
+      var closeButton = modal.querySelector('.modal-close');
+
+      document.querySelectorAll('.resource-card').forEach(function (card) {
+        card.addEventListener('click', function (event) {
+          if (event.target.closest('a')) {
+            return;
+          }
+          var titleEl = card.querySelector('h3');
+          var bodyEl = card.querySelector('p');
+          modalTitle.textContent = titleEl ? titleEl.textContent : '';
+          modalBody.innerHTML = bodyEl ? bodyEl.innerHTML : '';
+          modal.showModal();
+        });
+      });
+
+      closeButton.addEventListener('click', function () {
+        modal.close();
+      });
+
+      modal.addEventListener('click', function (event) {
+        var box = modal.getBoundingClientRect();
+        var clickedInside =
+          event.clientX >= box.left && event.clientX <= box.right &&
+          event.clientY >= box.top && event.clientY <= box.bottom;
+        if (!clickedInside) {
+          modal.close();
+        }
+      });
+    })();
+
+    // PARTICIPATION PYRAMID
+    (function () {
+      var modal = document.getElementById('pyramid-modal');
+      var modalTitle = document.getElementById('pyramid-modal-title');
+      var modalBody = document.getElementById('pyramid-modal-body');
+      var closeButton = modal.querySelector('.modal-close');
+
+      document.querySelectorAll('.pyramid-tier').forEach(function (tier) {
+        tier.addEventListener('click', function () {
+          var titleEl = tier.querySelector('.pyramid-title');
+          var pointsEl = tier.querySelector('.pyramid-points');
+          var listEl = tier.querySelector('.pyramid-tier-data');
+
+          var points = pointsEl ? pointsEl.textContent : '';
+          modalTitle.textContent =
+            'Tier ' + points + ': ' + titleEl.textContent;
+
+          modalBody.innerHTML = listEl ? listEl.innerHTML : '';
+          modal.showModal();
+        });
+      });
+
+      closeButton.addEventListener('click', function () {
+        modal.close();
+      });
+
+      modal.addEventListener('click', function (event) {
+        var box = modal.getBoundingClientRect();
+        var clickedInside =
+          event.clientX >= box.left && event.clientX <= box.right &&
+          event.clientY >= box.top && event.clientY <= box.bottom;
+        if (!clickedInside) {
+          modal.close();
+        }
+      });
+    })();
+
+    // JUMP NAV
+    (function () {
+      var navLinks = document.querySelectorAll('.jump-nav a');
+      var linkFor = {};
+
+      navLinks.forEach(function (link) {
+        var id = link.getAttribute('href').slice(1);
+        linkFor[id] = link;
+      });
+
+      var sections = Object.keys(linkFor)
+        .map(function (id) { return document.getElementById(id); })
+        .filter(Boolean);
+
+      var observer = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            var link = linkFor[entry.target.id];
+            if (!link) return;
+            if (entry.isIntersecting) {
+              navLinks.forEach(function (l) { l.classList.remove('active'); });
+              link.classList.add('active');
+            }
+          });
+        },
+        {
+          rootMargin: '-45% 0px -50% 0px',
+          threshold: 0
+        }
+      );
+
+      sections.forEach(function (section) {
+        observer.observe(section);
+      });
+    })();
+
+    function buildTodoItem(item) {
+      // Items come from the CSV pipeline as { text, url }. If a link was
+      // found in the original cell, render it as a real hyperlink; if not,
+      // just render the plain text (no fake href="#" link).
+      if (item && item.url) {
+        return `<li><a href="${item.url}" target="_blank">${item.text}</a></li>`;
+      }
+      const text = item && typeof item === "object" ? item.text : item;
+      return `<li>${text}</li>`;
+    }
+
+    function buildTodoColumn(heading, items) {
+      if (!items || items.length === 0) return "";
+      const listItems = items.map(buildTodoItem).join("");
+      return `
+        <div class="week-column">
+          <h4>${heading}</h4>
+          <ul class="check-list">
+            ${listItems}
+          </ul>
+        </div>`;
+    }
+
+    function buildWeekCard(week) {
+      const cardClasses = `${week.cardClass} week-card`.trim();
+
+      // 4th-hour rows use a single "To do" column (column G).
+      // Regular rows use "To do before class" / "To do in class" (columns E/F).
+      const columnsHtml = week.fourthHour
+        ? `
+          <div class="week-column">
+            <h4>To-do</h4>
+            <ul class="check-list">
+              ${week.todo.map(buildTodoItem).join("")}
+            </ul>
+          </div>`
+        : `
+          <div class="week-columns">
+            ${buildTodoColumn("To-do before class", week.todoBeforeClass)}
+            ${buildTodoColumn("To-do in class", week.todoDuringClass)}
+          </div>`;
+
+      return `
+        <article class="${cardClasses}">
+          <div class="week-number">${week.date}</div>
+          <div class="week-content">
+            <h3>${week.title}</h3>
+            <p>${week.description}</p>
+            ${columnsHtml}
+          </div>
+        </article>`;
+    }
+
+    function renderSchedule(containerId = "week-list") {
+      const container = document.getElementById(containerId);
+      if (!container) {
+        console.error(`renderSchedule: no element with id="${containerId}" found`);
+        return;
+      }
+      container.innerHTML = SCHEDULE_DATA.map(buildWeekCard).join("\n");
+      console.log("hi")
+    }
+
+    document.addEventListener("DOMContentLoaded", () => renderSchedule());
+  </script>
+</body>
+</html>

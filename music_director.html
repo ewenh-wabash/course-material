@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2Music Director: Needle Drop Sandbox</title>
+<title>Music Director: Needle Drop Sandbox</title>
 <style>
   :root{
     --bg:#14161a; --panel:#1e2127; --panel2:#262a32; --accent:#4fa3ff;
@@ -91,11 +91,11 @@
       <input type="range" id="origVolume" min="0" max="100" value="100">
     </div>
     <div class="field">
-      <label>Clip start point <span class="val" id="clipStartLabel">0:00</span></label>
+      <label>Original clip start point <span class="val" id="clipStartLabel">0:00</span></label>
       <input type="range" id="clipStart" min="0" max="600" step="0.1" value="0">
     </div>
     <div class="field">
-      <label>Clip stop point <span class="val" id="clipEndLabel">10:00</span></label>
+      <label>Original clip stop point <span class="val" id="clipEndLabel">10:00</span></label>
       <input type="range" id="clipEnd" min="0" max="600" step="0.1" value="600">
     </div>
     <div class="hint">These trim the usable window of the scene — the master transport and playback will stay within this range.</div>
@@ -142,11 +142,10 @@
     </div>
 
     <div class="row-buttons">
-      <button type="button" id="shareBtn">🔗 Generate Share Link</button>
-      To "submit" this needle drop, copy/paste in the share link
+      <button type="button" id="shareBtn">Copy Share Link</button>
     </div>
     <div class="share-box">
-      <input type="text" id="shareLink" readonly placeholder="Your shareable link will appear here">
+      <input type="text" id="shareLink" readonly placeholder="Turn in the share link">
     </div>
   </div>
 
@@ -161,6 +160,12 @@
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
+
+const DRIFT_TOLERANCE = 0.75;      // seconds of allowed drift before correcting
+const CORRECTION_COOLDOWN = 2500;  // ms minimum time between corrections
+let lastCorrectionTime = 0;
+
+
 /* ---------- helpers ---------- */
 function extractVideoId(url){
   if(!url) return null;
@@ -452,19 +457,32 @@ function tick(){
     const offset = parseFloat(offsetSlider.value);
     const inWindow = isOriginalPlaying && t >= cueIn && t < (cueIn + dur);
 
-    if(inWindow){
+    if (inWindow) {
       const desired = offset + (t - cueIn);
       const needleState = needlePlayer.getPlayerState();
-      let curNeedleTime = 0;
-      try{ curNeedleTime = needlePlayer.getCurrentTime(); }catch(e){}
-      if(needleState !== YT.PlayerState.PLAYING || Math.abs(curNeedleTime - desired) > 0.4){
+
+      if (needleState !== YT.PlayerState.PLAYING) {
+        // Just entering the cue window (or was paused) — hard sync once, no tolerance check
         needlePlayer.seekTo(desired, true);
         needlePlayer.playVideo();
+        lastCorrectionTime = Date.now();
+      } else {
+        // Already playing — only correct if drift is large AND we're not cooling down
+        const current = needlePlayer.getCurrentTime();
+        const drift = Math.abs(current - desired);
+        const cooledDown = (Date.now() - lastCorrectionTime) > CORRECTION_COOLDOWN;
+
+        if (drift > DRIFT_TOLERANCE && cooledDown) {
+          needlePlayer.seekTo(desired, true);
+          lastCorrectionTime = Date.now();
+        }
       }
     } else {
-      const needleState = needlePlayer.getPlayerState();
-      if(needleState === YT.PlayerState.PLAYING) needlePlayer.pauseVideo();
+      if (needlePlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+        needlePlayer.pauseVideo();
+      }
     }
+
   }
 }
 setInterval(tick, 200);

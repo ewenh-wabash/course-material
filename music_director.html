@@ -58,6 +58,11 @@
   .row-buttons{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:6px;}
   .share-box{display:flex; gap:8px; margin-top:10px;}
   .share-box input{font-size:.8rem;}
+  .copied-msg{
+    color:var(--good); font-size:.85rem; font-weight:600;
+    opacity:0; transition:opacity .3s ease; pointer-events:none;
+  }
+  .copied-msg.show{opacity:1; transition:opacity .15s ease;}
 
   /* Master transport bar, fixed to bottom */
   .transport{
@@ -74,7 +79,7 @@
 
 <div class="container">
   <h1>Music Director Project</h1>
-  <p class="sub">This is a sandbox for you to play with different cues and try out different timings. This is also the interface I'm going to use to play these back in class</p>
+  <p class="sub">This is a sandbox for you to play with different cues and try out different timings. This is also the interface I'm going to use to play these back in class. All clips must be from YouTube.</p>
 
   <!-- ORIGINAL SCENE -->
   <div class="section">
@@ -102,7 +107,7 @@
 
   <!-- NEEDLE DROP -->
   <div class="section">
-    <h2>2. Needle Drop (your music choice)</h2>
+    <h2>Needle Drop Cue (your music choice)</h2>
     <form class="urlrow" id="needleForm">
       <input type="text" id="needleUrl" placeholder="Paste your music YouTube link here">
       <button type="submit">Load</button>
@@ -142,6 +147,7 @@
 
     <div class="row-buttons">
       <button type="button" id="shareBtn">Copy Share Link</button>
+      <span class="copied-msg" id="copiedMsg">Copied!</span>
     </div>
     <div class="share-box">
       <input type="text" id="shareLink" readonly placeholder="Turn in the share link">
@@ -522,7 +528,18 @@ el('shareBtn').addEventListener('click', () => {
   box.value = url;
   box.select();
   if(navigator.clipboard){ navigator.clipboard.writeText(url).catch(()=>{}); }
-});
+  showCopiedMsg();
+  });
+
+let copiedMsgTimeout = null;
+function showCopiedMsg(){
+  const msg = el('copiedMsg');
+  clearTimeout(copiedMsgTimeout);
+  msg.classList.remove('show'); // reset in case it's already fading
+  void msg.offsetWidth; // force reflow so the transition restarts cleanly
+  msg.classList.add('show');
+  copiedMsgTimeout = setTimeout(() => msg.classList.remove('show'), 1500);
+}
 </script>
 </body>
 </html>

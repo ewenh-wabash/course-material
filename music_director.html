@@ -201,6 +201,7 @@ let originalReady = false, needleReady = false;
 let originalDuration = 0, needleDuration = 0;
 let isSeekingMaster = false;
 let previewMode = false, previewTimeout = null;
+let wasInWindow = false; // tracks cue-window entry so we only hard-sync once per entry
 let currentOriginalId = null, currentNeedleId = null;
 let clipEndInitialized = false; // becomes true once user (or a share link) sets a real clip end
 
@@ -387,9 +388,11 @@ previewBtn.addEventListener('click', () => {
     clearTimeout(previewTimeout);
     needlePlayer.pauseVideo();
     previewMode = false;
+    wasInWindow = false; // force a fresh hard sync if we're still in the cue window
     previewBtn.textContent = '▶ Preview Cue';
   } else {
     previewMode = true;
+    wasInWindow = false;
     const offset = parseFloat(offsetSlider.value);
     const dur = parseFloat(durationSlider.value);
     needlePlayer.seekTo(offset, true);
@@ -398,6 +401,7 @@ previewBtn.addEventListener('click', () => {
     previewTimeout = setTimeout(() => {
       needlePlayer.pauseVideo();
       previewMode = false;
+      wasInWindow = false;
       previewBtn.textContent = '▶ Preview Cue';
     }, Math.max(dur,0.2) * 1000);
   }
@@ -460,22 +464,36 @@ function tick(){
     if (inWindow) {
       const desired = offset + (t - cueIn);
       const needleState = needlePlayer.getPlayerState();
+      const justEntered = !wasInWindow;
 
-      if (needleState !== YT.PlayerState.PLAYING) {
-        // Just entering the cue window (or was paused) — hard sync once, no tolerance check
+      if (justEntered) {
+        // The one moment we sync unconditionally: the tick where we cross
+        // into the cue window. This also starts the cooldown, so a slow
+        // buffer afterwards doesn't cause repeated reseeks below.
         needlePlayer.seekTo(desired, true);
         needlePlayer.playVideo();
         lastCorrectionTime = Date.now();
       } else {
-        // Already playing — only correct if drift is large AND we're not cooling down
-        const current = needlePlayer.getCurrentTime();
-        const drift = Math.abs(current - desired);
         const cooledDown = (Date.now() - lastCorrectionTime) > CORRECTION_COOLDOWN;
 
-        if (drift > DRIFT_TOLERANCE && cooledDown) {
+        if (needleState === YT.PlayerState.PLAYING) {
+          // Already playing — only correct if drift is large AND cooled down
+          const current = needlePlayer.getCurrentTime();
+          const drift = Math.abs(current - desired);
+          if (drift > DRIFT_TOLERANCE && cooledDown) {
+            needlePlayer.seekTo(desired, true);
+            lastCorrectionTime = Date.now();
+          }
+        } else if (cooledDown) {
+          // Not playing mid-window (stalled/paused/still buffering from a
+          // previous correction) — nudge it back, but only once per
+          // cooldown window so a slow buffer can't retrigger every tick.
           needlePlayer.seekTo(desired, true);
+          needlePlayer.playVideo();
           lastCorrectionTime = Date.now();
         }
+        // else: not playing, but still cooling down — leave it alone and
+        // let the buffer/seek from the last correction finish.
       }
     } else {
       if (needlePlayer.getPlayerState() === YT.PlayerState.PLAYING) {
@@ -483,6 +501,7 @@ function tick(){
       }
     }
 
+    wasInWindow = inWindow;
   }
 }
 setInterval(tick, 200);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>1 Music Director: Needle Drop Sandbox</title>
+<title>Music Director: Needle Drop Sandbox</title>
 <style>
   :root{
     --bg:#14161a; --panel:#1e2127; --panel2:#262a32; --accent:#4fa3ff;
@@ -73,13 +73,13 @@
 <body>
 
 <div class="container">
-  <h1>🎬 Music Director — Needle Drop Sandbox</h1>
-  <p class="sub">Watch the scene, then dial in a music cue underneath it. Use the transport bar at the bottom to play everything together.</p>
+  <h1>Music Director Project</h1>
+  <p class="sub">This is a sandbox for you to play with different cues and try out different timings. This is also the interfect I'm going to use to play these back in class</p>
 
   <!-- ORIGINAL SCENE -->
   <div class="section">
-    <h2>1. Original Scene</h2>
-    <p class="desc">Paste the link to the film clip you were given.</p>
+    <h2>Original Scene</h2>
+    <!-- <p class="desc">Paste the link to the film clip you were given.</p> -->
     <form class="urlrow" id="origForm">
       <input type="text" id="origUrl" placeholder="Paste original scene YouTube link here">
       <button type="submit">Load</button>
@@ -96,7 +96,7 @@
   <!-- NEEDLE DROP -->
   <div class="section">
     <h2>2. Needle Drop (your music choice)</h2>
-    <p class="desc">Paste the link to the song/score you want to use as the cue.</p>
+    <!-- <p class="desc">Paste the link to the song/score you want to use as the cue.</p> -->
     <form class="urlrow" id="needleForm">
       <input type="text" id="needleUrl" placeholder="Paste your music YouTube link here">
       <button type="submit">Load</button>
@@ -122,23 +122,24 @@
       <label>Cue point in ORIGINAL clip (when the music should start) <span class="val" id="cueInLabel">0:00</span></label>
       <input type="range" id="cueIn" min="0" max="600" step="0.1" value="0">
     </div>
-    <p class="hint">This is a timestamp in the film scene above — the moment your music kicks in.</p>
+    <!-- <p class="hint">This is a timestamp in the film scene above — the moment your music kicks in.</p> -->
 
     <div class="field">
       <label>Start point in the NEEDLE DROP (offset into the song) <span class="val" id="offsetLabel">0:00</span></label>
       <input type="range" id="offset" min="0" max="600" step="0.1" value="0">
     </div>
-    <p class="hint">Where in the song playback begins — e.g. skip the intro and start at the chorus.</p>
+    <!-- <p class="hint">Where in the song playback begins — e.g. skip the intro and start at the chorus.</p> -->
 
     <div class="field">
       <label>Needle drop duration <span class="val" id="durationLabel">10s</span></label>
       <input type="range" id="duration" min="1" max="300" step="0.5" value="10">
     </div>
-    <p class="hint">How long the cue plays before it automatically stops.</p>
+    <!-- <p class="hint">How long the cue plays before it automatically stops.</p> -->
 
     <div class="row-buttons">
       <button type="button" id="shareBtn">🔗 Generate Share Link</button>
-      <a href="." style="color:var(--muted); font-size:.8rem;">Start a new scene</a>
+      <!-- <a href="#" style="color:var(--muted); font-size:.8rem;">Start a new scene</a> -->
+      To "submit" this needle drop, copy/paste in the share link
     </div>
     <div class="share-box">
       <input type="text" id="shareLink" readonly placeholder="Your shareable link will appear here">

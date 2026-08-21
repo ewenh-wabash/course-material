@@ -74,7 +74,7 @@
 
 <div class="container">
   <h1>Music Director Project</h1>
-  <p class="sub">This is a sandbox for you to play with different cues and try out different timings. This is also the interfect I'm going to use to play these back in class</p>
+  <p class="sub">This is a sandbox for you to play with different cues and try out different timings. This is also the interface I'm going to use to play these back in class</p>
 
   <!-- ORIGINAL SCENE -->
   <div class="section">
@@ -98,7 +98,6 @@
       <label>Original clip stop point <span class="val" id="clipEndLabel">10:00</span></label>
       <input type="range" id="clipEnd" min="0" max="600" step="0.1" value="600">
     </div>
-    <div class="hint">These trim the usable window of the scene — the master transport and playback will stay within this range.</div>
   </div>
 
   <!-- NEEDLE DROP -->
@@ -127,12 +126,12 @@
     </div>
 
     <div class="field">
-      <label>Cue point in ORIGINAL clip (when the music should start) <span class="val" id="cueInLabel">0:00</span></label>
+      <label>When in the original clip to play the needle drop <span class="val" id="cueInLabel">0:00</span></label>
       <input type="range" id="cueIn" min="0" max="600" step="0.1" value="0">
     </div>
 
     <div class="field">
-      <label>Start point in the NEEDLE DROP (offset into the song) <span class="val" id="offsetLabel">0:00</span></label>
+      <label>Where in the needle drop clip to play <span class="val" id="offsetLabel">0:00</span></label>
       <input type="range" id="offset" min="0" max="600" step="0.1" value="0">
     </div>
 
@@ -162,7 +161,7 @@
 <script>
 
 const DRIFT_TOLERANCE = 0.75;      // seconds of allowed drift before correcting
-const CORRECTION_COOLDOWN = 2500;  // ms minimum time between corrections
+const CORRECTION_COOLDOWN = 500;  // ms minimum time between corrections
 let lastCorrectionTime = 0;
 
 

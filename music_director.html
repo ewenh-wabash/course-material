@@ -90,6 +90,15 @@
       <label>Original clip volume <span class="val" id="origVolLabel">100%</span></label>
       <input type="range" id="origVolume" min="0" max="100" value="100">
     </div>
+    <div class="field">
+      <label>Clip start point <span class="val" id="clipStartLabel">0:00</span></label>
+      <input type="range" id="clipStart" min="0" max="600" step="0.1" value="0">
+    </div>
+    <div class="field">
+      <label>Clip stop point <span class="val" id="clipEndLabel">10:00</span></label>
+      <input type="range" id="clipEnd" min="0" max="600" step="0.1" value="600">
+    </div>
+    <div class="hint">These trim the usable window of the scene — the master transport and playback will stay within this range.</div>
   </div>
 
   <!-- NEEDLE DROP -->
@@ -109,11 +118,12 @@
           <button type="button" class="secondary" id="toggleVideoBtn">Show video</button>
           <button type="button" class="secondary" id="previewBtn">▶ Preview Cue</button>
         </div>
-        <div class="field">
-          <label>Needle drop volume <span class="val" id="needleVolLabel">100%</span></label>
-          <input type="range" id="needleVolume" min="0" max="100" value="100">
-        </div>
       </div>
+    </div>
+
+    <div class="field">
+      <label>Needle drop volume <span class="val" id="needleVolLabel">100%</span></label>
+      <input type="range" id="needleVolume" min="0" max="100" value="100">
     </div>
 
     <div class="field">
@@ -187,6 +197,7 @@ let originalDuration = 0, needleDuration = 0;
 let isSeekingMaster = false;
 let previewMode = false, previewTimeout = null;
 let currentOriginalId = null, currentNeedleId = null;
+let clipEndInitialized = false; // becomes true once user (or a share link) sets a real clip end
 
 const params = new URLSearchParams(location.search);
 const initOrig = params.get('orig');
@@ -200,6 +211,8 @@ if(params.get('nv')) document.getElementById('needleVolume').value = params.get(
 if(params.get('cue')) document.getElementById('cueIn').value = params.get('cue');
 if(params.get('off')) document.getElementById('offset').value = params.get('off');
 if(params.get('dur')) document.getElementById('duration').value = params.get('dur');
+if(params.get('cs')) document.getElementById('clipStart').value = params.get('cs');
+if(params.get('ce')){ document.getElementById('clipEnd').value = params.get('ce'); clipEndInitialized = true; }
 
 /* ---------- element refs ---------- */
 const el = id => document.getElementById(id);
@@ -207,6 +220,8 @@ const origVolLabel = el('origVolLabel'), needleVolLabel = el('needleVolLabel');
 const cueInSlider = el('cueIn'), cueInLabel = el('cueInLabel');
 const offsetSlider = el('offset'), offsetLabel = el('offsetLabel');
 const durationSlider = el('duration'), durationLabel = el('durationLabel');
+const clipStartSlider = el('clipStart'), clipStartLabel = el('clipStartLabel');
+const clipEndSlider = el('clipEnd'), clipEndLabel = el('clipEndLabel');
 const masterSeek = el('masterSeek'), masterTimeLabel = el('masterTimeLabel');
 const masterPlayBtn = el('masterPlayBtn');
 const needleWrapper = el('needleWrapper');
@@ -219,8 +234,27 @@ function refreshLabels(){
   cueInLabel.textContent = formatTime(cueInSlider.value);
   offsetLabel.textContent = formatTime(offsetSlider.value);
   durationLabel.textContent = Math.round(durationSlider.value) + 's';
+  clipStartLabel.textContent = formatTime(clipStartSlider.value);
+  clipEndLabel.textContent = formatTime(clipEndSlider.value);
 }
 refreshLabels();
+
+/* ---------- keep master seek + cue bounds in sync with clip start/stop ---------- */
+function syncClipBounds(){
+  const lo = parseFloat(clipStartSlider.value) || 0;
+  const hi = parseFloat(clipEndSlider.value) || (originalDuration || 600);
+
+  masterSeek.min = lo;
+  masterSeek.max = hi;
+  cueInSlider.min = lo;
+  cueInSlider.max = hi;
+
+  if(parseFloat(cueInSlider.value) < lo) cueInSlider.value = lo;
+  if(parseFloat(cueInSlider.value) > hi) cueInSlider.value = hi;
+
+  masterTimeLabel.textContent = formatTime(masterSeek.value) + ' / ' + formatTime(hi);
+  refreshLabels();
+}
 
 /* ---------- YouTube API ---------- */
 function onYouTubeIframeAPIReady(){
@@ -246,11 +280,16 @@ function onYouTubeIframeAPIReady(){
 
 function applyOriginalDuration(d){
   originalDuration = d;
-  masterSeek.max = d || 600;
-  cueInSlider.max = d || 600;
-  if (parseFloat(cueInSlider.value) > (d || 600)) cueInSlider.value = 0;
-  masterTimeLabel.textContent = formatTime(0) + ' / ' + formatTime(d);
-  refreshLabels();
+  clipStartSlider.max = d || 600;
+  clipEndSlider.max = d || 600;
+
+  if(!clipEndInitialized){
+    clipEndSlider.value = d || 600;
+  }
+  if(parseFloat(clipStartSlider.value) > (d || 600)) clipStartSlider.value = 0;
+  if(parseFloat(clipEndSlider.value) > (d || 600)) clipEndSlider.value = d || 600;
+
+  syncClipBounds();
 }
 
 function applyNeedleDuration(d){
@@ -283,6 +322,7 @@ el('origForm').addEventListener('submit', ev => {
   const id = extractVideoId(el('origUrl').value);
   if(!id){ alert('Could not read a YouTube link there — please check it.'); return; }
   currentOriginalId = id;
+  clipEndInitialized = false; // let the new video's real duration set a fresh default stop point
   if(originalReady){
     originalPlayer.loadVideoById(id);
     setTimeout(() => waitForDuration(originalPlayer, applyOriginalDuration), 300);
@@ -309,6 +349,21 @@ el('origVolume').addEventListener('input', () => {
 el('needleVolume').addEventListener('input', () => {
   refreshLabels();
   if(needleReady) needlePlayer.setVolume(Number(el('needleVolume').value));
+});
+
+/* ---------- clip start/stop sliders ---------- */
+clipStartSlider.addEventListener('input', () => {
+  if(parseFloat(clipStartSlider.value) > parseFloat(clipEndSlider.value)){
+    clipStartSlider.value = clipEndSlider.value;
+  }
+  syncClipBounds();
+});
+clipEndSlider.addEventListener('input', () => {
+  clipEndInitialized = true;
+  if(parseFloat(clipEndSlider.value) < parseFloat(clipStartSlider.value)){
+    clipEndSlider.value = clipStartSlider.value;
+  }
+  syncClipBounds();
 });
 
 /* ---------- cue sliders (just live labels; tick() reads values directly) ---------- */
@@ -348,11 +403,17 @@ masterPlayBtn.addEventListener('click', () => {
   if(!originalReady) return;
   const state = originalPlayer.getPlayerState();
   if(state === YT.PlayerState.PLAYING) originalPlayer.pauseVideo();
-  else originalPlayer.playVideo();
+  else {
+    const t = originalPlayer.getCurrentTime();
+    const lo = parseFloat(clipStartSlider.value);
+    const hi = parseFloat(clipEndSlider.value);
+    if(t < lo || t >= hi) originalPlayer.seekTo(lo, true);
+    originalPlayer.playVideo();
+  }
 });
 masterSeek.addEventListener('input', () => {
   isSeekingMaster = true;
-  masterTimeLabel.textContent = formatTime(masterSeek.value) + ' / ' + formatTime(originalDuration);
+  masterTimeLabel.textContent = formatTime(masterSeek.value) + ' / ' + formatTime(clipEndSlider.value);
 });
 masterSeek.addEventListener('change', () => {
   if(originalReady) originalPlayer.seekTo(parseFloat(masterSeek.value), true);
@@ -365,13 +426,25 @@ function tick(){
   let t = 0;
   try{ t = originalPlayer.getCurrentTime(); }catch(e){ return; }
 
-  if(!isSeekingMaster){
-    masterSeek.value = t;
-    masterTimeLabel.textContent = formatTime(t) + ' / ' + formatTime(originalDuration);
-  }
+  const clipStart = parseFloat(clipStartSlider.value) || 0;
+  const clipEnd = parseFloat(clipEndSlider.value) || (originalDuration || 600);
 
   const originalState = originalPlayer.getPlayerState();
   const isOriginalPlaying = originalState === YT.PlayerState.PLAYING;
+
+  if(isOriginalPlaying && t >= clipEnd){
+    originalPlayer.pauseVideo();
+    originalPlayer.seekTo(clipEnd, true);
+    t = clipEnd;
+  } else if(isOriginalPlaying && t < clipStart){
+    originalPlayer.seekTo(clipStart, true);
+    t = clipStart;
+  }
+
+  if(!isSeekingMaster){
+    masterSeek.value = t;
+    masterTimeLabel.textContent = formatTime(t) + ' / ' + formatTime(clipEnd);
+  }
 
   if(!previewMode && needleReady){
     const cueIn = parseFloat(cueInSlider.value);
@@ -406,6 +479,8 @@ el('shareBtn').addEventListener('click', () => {
   p.set('cue', cueInSlider.value);
   p.set('off', offsetSlider.value);
   p.set('dur', durationSlider.value);
+  p.set('cs', clipStartSlider.value);
+  p.set('ce', clipEndSlider.value);
   const url = location.origin + location.pathname + '?' + p.toString();
   const box = el('shareLink');
   box.value = url;

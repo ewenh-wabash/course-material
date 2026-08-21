@@ -232,21 +232,24 @@ refreshLabels();
 
 /* ---------- YouTube API ---------- */
 function onYouTubeIframeAPIReady(){
-  originalPlayer = new YT.Player('originalPlayerDiv', {
+  const origConfig = {
     height: '360', width: '640',
-    videoId: currentOriginalId || undefined,
     playerVars: { playsinline: 1, rel: 0 },
     events: {
       onReady: onOriginalReady,
       onStateChange: onOriginalStateChange
     }
-  });
-  needlePlayer = new YT.Player('needlePlayerDiv', {
+  };
+  if (currentOriginalId) origConfig.videoId = currentOriginalId;
+  originalPlayer = new YT.Player('originalPlayerDiv', origConfig);
+
+  const needleConfig = {
     height: '135', width: '240',
-    videoId: currentNeedleId || undefined,
     playerVars: { playsinline: 1, rel: 0 },
     events: { onReady: onNeedleReady }
-  });
+  };
+  if (currentNeedleId) needleConfig.videoId = currentNeedleId;
+  needlePlayer = new YT.Player('needlePlayerDiv', needleConfig);
 }
 
 function onOriginalReady(e){

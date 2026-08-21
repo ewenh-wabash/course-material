@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reflection Journal — Admin</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body class="mode-admin">
+
+  <!-- ===================== AUTH SCREEN ===================== -->
+  <div id="auth-screen" class="auth-wrap" hidden>
+    <h1>Reflection <em>Journal</em></h1>
+    <p class="sub">Admin sign-in.</p>
+    <div class="panel">
+      <div class="field">
+        <label for="auth-email">Email</label>
+        <input id="auth-email" type="email" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="auth-password">Password</label>
+        <input id="auth-password" type="password" autocomplete="current-password" />
+      </div>
+      <button id="auth-submit-btn" class="btn" style="width:100%;">Sign in</button>
+      <p id="auth-error" class="error-text" hidden></p>
+    </div>
+  </div>
+
+  <!-- ===================== NOT AUTHORIZED ===================== -->
+  <div id="unauthorized-screen" class="auth-wrap" hidden>
+    <h1>Not authorized</h1>
+    <p class="sub">This account isn't on the admin list.</p>
+    <button id="unauth-signout-btn" class="btn secondary" style="width:100%;">Sign out</button>
+  </div>
+
+  <!-- ===================== MAIN APP ===================== -->
+  <div id="app-screen" class="app-shell" hidden>
+    <div class="topbar">
+      <div class="brand">Reflection <em>Journal</em> · Admin</div>
+      <div class="who">
+        <span id="who-email"></span>
+        <button id="signout-btn" class="link-btn" type="button">Sign out</button>
+      </div>
+    </div>
+
+    <!-- Assignment list (defined in assignments.js) -->
+    <div class="panel">
+      <h2>Assignments</h2>
+      <table class="assign-table" id="assignments-table">
+        <thead>
+          <tr><th>Title</th><th>Timer</th></tr>
+        </thead>
+        <tbody id="assignments-tbody"></tbody>
+      </table>
+      <p class="hint" style="margin-top:12px;">To add, remove, rename, or re-time an assignment, edit <code>assignments.js</code> directly.</p>
+    </div>
+
+    <!-- View submissions -->
+    <div class="panel">
+      <h2>Review submissions</h2>
+      <div class="field">
+        <label for="review-select">Assignment</label>
+        <select id="review-select">
+          <option value="">Select an assignment…</option>
+        </select>
+      </div>
+      <div class="sub-list" id="sub-list"></div>
+      <p class="empty-state" id="sub-list-empty" hidden>No submissions yet for this assignment.</p>
+    </div>
+
+    <!-- Replay viewer -->
+    <div class="panel" id="replay-panel" hidden>
+      <h2 id="replay-heading"></h2>
+      <div class="replay-text" id="replay-text"></div>
+      <div class="replay-controls">
+        <button id="replay-play-btn" class="replay-play-btn" type="button" title="Play">▶</button>
+        <input id="replay-slider" type="range" min="0" max="1000" value="1000" />
+        <span class="replay-timestamp" id="replay-timestamp"></span>
+      </div>
+      <div class="replay-stats">
+        <span><b id="stat-elapsed">—</b> elapsed at this point</span>
+        <span><b id="stat-words">—</b> words at this point</span>
+        <span><b id="stat-events">—</b> keystroke events total</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

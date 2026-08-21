@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reflection Journal — Student</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===================== AUTH SCREEN ===================== -->
+  <div id="auth-screen" class="auth-wrap" hidden>
+    <h1>Reflection <em>Journal</em></h1>
+    <p class="sub">Sign in to begin today's reflection.</p>
+
+    <div class="panel">
+      <div class="field">
+        <label for="auth-email">Email</label>
+        <input id="auth-email" type="email" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="auth-password">Password</label>
+        <input id="auth-password" type="password" autocomplete="current-password" />
+      </div>
+      <button id="auth-submit-btn" class="btn" style="width:100%;">Sign in</button>
+      <p id="auth-error" class="error-text" hidden></p>
+    </div>
+
+    <div class="auth-toggle">
+      <button id="mode-signin" class="active" type="button">Sign in</button>
+      <button id="mode-signup" type="button">Create account</button>
+    </div>
+  </div>
+
+  <!-- ===================== MAIN APP ===================== -->
+  <div id="app-screen" class="app-shell" hidden>
+    <div class="topbar">
+      <div class="brand">Reflection <em>Journal</em></div>
+      <div class="who">
+        <span id="who-email"></span>
+        <button id="signout-btn" class="link-btn" type="button">Sign out</button>
+      </div>
+    </div>
+
+    <!-- Assignment picker -->
+    <div class="panel" id="picker-panel">
+      <h2>Choose an assignment</h2>
+      <div class="field">
+        <select id="assignment-select">
+          <option value="">Select…</option>
+        </select>
+      </div>
+      <p class="hint" id="picker-hint">Pick the reflection you'd like to work on. Once you click 'start' a timer will start and you must complete the reflection right then.</p>
+      <button id="start-btn" class="btn" type="button" hidden style="margin-top:14px;">Start</button>
+    </div>
+
+    <!-- Already-submitted view -->
+    <div id="submitted-view" hidden>
+      <div class="submitted-banner">You already submitted this reflection. It's locked for editing.</div>
+      <div class="panel">
+        <h2 id="submitted-title"></h2>
+        <div class="replay-text" id="submitted-text"></div>
+      </div>
+    </div>
+
+    <!-- Writing view -->
+    <div id="writing-view" hidden>
+      <div class="panel">
+        <h2 id="writing-title"></h2>
+
+        <div class="timer-block">
+          <div class="timer-ring-wrap locked" id="timer-ring-wrap">
+            <svg width="78" height="78" viewBox="0 0 78 78">
+              <circle class="timer-ring-bg" cx="39" cy="39" r="34"></circle>
+              <circle class="timer-ring-fg" id="timer-ring-fg" cx="39" cy="39" r="34"
+                stroke-dasharray="213.6" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="timer-label" id="timer-label">--:--</div>
+          </div>
+          <div class="timer-copy">
+            <span class="status-word" id="timer-status-word">Still thinking</span>
+            <span class="status-sub" id="timer-status-sub">Take your time. The submit button unlocks when the timer ends.</span>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:14px;">This screen stays in fullscreen for the whole reflection. Leaving fullscreen, switching tabs or windows, or closing/reloading the page will immediately submit your reflection early — exactly as it is at that moment — and it will be flagged for your teacher.</p>
+      </div>
+
+      <div class="panel">
+        <div class="editor-wrap">
+          <textarea id="editor" class="reflection-editor" placeholder="Start writing your reflection here…" spellcheck="true"></textarea>
+        </div>
+        <div class="editor-meta">
+          <span id="word-count">0 words</span>
+        </div>
+        <div class="submit-row">
+          <button id="submit-btn" class="btn" disabled>Submit reflection</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen / focus lockdown warning -->
+  <div id="lockdown-overlay" hidden>
+    <div class="lockdown-box">
+      <div class="lockdown-icon">⚠</div>
+      <p id="lockdown-message">You left the reflection screen. This has been recorded.</p>
+      <button id="lockdown-return-btn" class="btn" type="button">OK</button>
+    </div>
+  </div>
+
+  <script type="module" src="student.js"></script>
+</body>
+</html>

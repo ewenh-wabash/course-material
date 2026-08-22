@@ -663,7 +663,7 @@ promptBtn.addEventListener("click", () => {
   const prompt = session.promptPool[session.promptCursor];
   session.promptCursor++;
 
-  promptDisplay.textContent = prompt;
+  promptDisplay.innerHTML = "<em>" + prompt + "</em>";
   promptDisplay.hidden = false;
 
   recordPromptEvent(prompt);

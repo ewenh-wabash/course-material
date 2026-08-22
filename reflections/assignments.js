@@ -28,10 +28,10 @@ export const assignments = [
   { name: "Raw", length: 20, prompts: [] },
   { name: "Silence of the Lambs", length: 20, prompts: [] },
   { name: "The Cell (the 2000 one)", length: 20, prompts: [] },
-  { name: "The Shining", length: 20, prompts: [] },
-  { name: "Room 237", length: 20, prompts: [] },
-  { name: "Sinners", length: 20, prompts: [] },
-  { name: "From Dusk Till Dawn", length: 20, prompts: ["here's a prompt to try", "here's another prompt", "and a third"] },
+  { name: "The Shining", length: 1, prompts: ["here's a prompt to try", "here's another prompt", "and a third"] },
+  { name: "Room 237", length: 1, prompts: ["here's a prompt to try", "here's another prompt", "and a third"] },
+  { name: "Sinners", length: 1, prompts: ["here's a prompt to try", "here's another prompt", "and a third"] },
+  { name: "From Dusk Till Dawn", length: 1, prompts: ["here's a prompt to try", "here's another prompt", "and a third"] },
   { name: "28 Years Later: The Bone Temple", length: 1, prompts: [] },
 ];
 

@@ -260,6 +260,8 @@ promptsAssignmentSelect.addEventListener("change", async () => {
 // Replay / scrub viewer
 // ---------------------------------------------------------------
 let replayEvents = []; // sorted [{t, text}]
+let promptEventsAll = []; // sorted [{t, prompt}], full list for the open submission
+let replayStartMs = 0;
 let playTimer = null;
 
 async function openReplay(submissionId, subData) {
@@ -288,12 +290,17 @@ async function openReplay(submissionId, subData) {
   }
 
   replayEvents = events;
+  promptEventsAll = [...(subData.promptEvents || [])].sort((a, b) => a.t - b.t);
+  replayStartMs = subData.startedAt
+    ? subData.startedAt.toMillis()
+    : (promptEventsAll[0]?.t ?? events[0]?.t ?? Date.now());
 
   if (replayEvents.length === 0) {
     replayText.textContent = "No keystroke history recorded for this submission.";
     replaySlider.disabled = true;
     renderViolations(subData);
-    renderPromptEvents(subData);
+    // No timeline to scrub, so just show every prompt that was ever shown.
+    renderPromptsUpTo(Infinity);
     return;
   }
 
@@ -304,7 +311,6 @@ async function openReplay(submissionId, subData) {
   statEvents.textContent = replayEvents.length;
 
   renderViolations(subData);
-  renderPromptEvents(subData);
   renderReplayAt(replayEvents.length - 1);
 }
 
@@ -338,26 +344,36 @@ function renderViolations(subData) {
   `;
 }
 
-// Prompt-button presses: when in the reflection the student asked for a
-// prompt, and which prompt they were shown, so a teacher can see how the
-// writing responds to (or ignores) it.
-function renderPromptEvents(subData) {
-  const events = subData.promptEvents || [];
-  if (events.length === 0) {
+// Prompt-button presses, filtered to only the ones shown up through
+// cutoffT — so the list grows/shrinks as the replay slider is scrubbed,
+// same as the transcript text itself does.
+function renderPromptsUpTo(cutoffT) {
+  const upTo = promptEventsAll.filter((e) => e.t <= cutoffT);
+
+  if (promptEventsAll.length === 0) {
     replayPrompts.innerHTML = "";
     return;
   }
-  const startMs = subData.startedAt ? subData.startedAt.toMillis() : events[0].t;
-  const sorted = [...events].sort((a, b) => a.t - b.t);
-  const lines = sorted.map((e) => {
-    const elapsedMs = Math.max(0, e.t - startMs);
+  if (upTo.length === 0) {
+    replayPrompts.innerHTML = `<p class="hint">No prompts requested yet at this point.</p>`;
+    return;
+  }
+
+  const lines = upTo.map((e) => {
+    const elapsedMs = Math.max(0, e.t - replayStartMs);
     const mins = Math.floor(elapsedMs / 60000);
     const secs = Math.floor((elapsedMs % 60000) / 1000);
-    return `<span class="violation-row">Prompt shown at ${mins}m ${secs}s — "${escapeHtml(e.prompt)}"</span>`;
+    return `<span class="violation-row">${mins}m ${secs}s — "${escapeHtml(e.prompt)}"</span>`;
   });
+
+  const countLabel =
+    upTo.length === promptEventsAll.length
+      ? `${upTo.length} prompt${upTo.length === 1 ? "" : "s"} shown`
+      : `${upTo.length} of ${promptEventsAll.length} prompts shown so far`;
+
   replayPrompts.innerHTML = `
-    <div class="violation-alert">
-      <div class="violation-alert-title">Prompt button used — ${events.length} time${events.length === 1 ? "" : "s"}</div>
+    <div class="violation-alert" style="margin-top:10px;">
+      <div class="violation-alert-title">${countLabel}</div>
       ${lines.join("")}
     </div>
   `;
@@ -367,6 +383,7 @@ function hideReplay() {
   stopPlayback();
   replayPanel.hidden = true;
   replayEvents = [];
+  promptEventsAll = [];
   replayViolations.innerHTML = "";
   replayPrompts.innerHTML = "";
 }
@@ -390,6 +407,8 @@ function renderReplayAt(index) {
 
   const words = ev.text.trim().split(/\s+/).filter(Boolean).length;
   statWords.textContent = words;
+
+  renderPromptsUpTo(ev.t);
 }
 
 replayPlayBtn.addEventListener("click", () => {

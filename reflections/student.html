@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Reflection Journal — Student</title>
 <link rel="stylesheet" href="styles.css" />
+<style>
+  /* Prompt display: sized to its text, not stretched like the replay box */
+  .prompt-display {
+    display: inline-block;
+    width: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    margin: 0 0 14px 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+</style>
 </head>
 <body>
 
@@ -102,7 +116,7 @@
           <button id="prompt-btn" class="btn secondary" type="button">Show a prompt</button>
           <span class="hint" id="prompt-hint">Stuck? Get a random prompt about this film — it won't repeat until you've seen them all.</span>
         </div>
-        <p id="prompt-display" class="replay-text" hidden style="margin-bottom:14px;"></p>
+        <p id="prompt-display" class="prompt-display" hidden></p>
         <div class="editor-wrap">
           <textarea id="editor" class="reflection-editor" placeholder="Start writing your reflection here…" spellcheck="true"></textarea>
         </div>

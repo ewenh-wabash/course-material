@@ -19,18 +19,18 @@
     line-height: 1.4;
   }
 
-  /* Small webcam preview shown at the top of the page */
+  /* Small webcam preview, pinned to top-center of the page */
   #webcam-preview {
     display: block;
     position: absolute;
     top: 0;
+    left: 50%;
+    transform: translateX(-50%) scaleX(-1); /* center, then mirror */
     width: 160px;
     height: 120px;
     object-fit: cover;
     border-radius: 10px;
     background: #000;
-    transform: scaleX(-1); /* mirror, so it feels like a normal reflection */
-    margin: 0 auto 16px auto;
   }
 
 </style>

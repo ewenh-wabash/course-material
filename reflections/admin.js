@@ -34,9 +34,15 @@ const unauthSignoutBtn = document.getElementById("unauth-signout-btn");
 
 const assignmentsTbody = document.getElementById("assignments-tbody");
 
-const reviewSelect = document.getElementById("review-select");
+const reviewPanel = document.getElementById("review-panel");
+const reviewHeading = document.getElementById("review-heading");
 const subList = document.getElementById("sub-list");
 const subListEmpty = document.getElementById("sub-list-empty");
+
+const promptsPanel = document.getElementById("prompts-panel");
+const promptsHeading = document.getElementById("prompts-heading");
+const communityPromptsList = document.getElementById("community-prompts-list");
+const communityPromptsEmpty = document.getElementById("community-prompts-empty");
 
 const replayPanel = document.getElementById("replay-panel");
 const replayHeading = document.getElementById("replay-heading");
@@ -49,10 +55,6 @@ const statWords = document.getElementById("stat-words");
 const statEvents = document.getElementById("stat-events");
 const replayViolations = document.getElementById("replay-violations");
 const replayPrompts = document.getElementById("replay-prompts");
-
-const promptsAssignmentSelect = document.getElementById("prompts-assignment-select");
-const communityPromptsList = document.getElementById("community-prompts-list");
-const communityPromptsEmpty = document.getElementById("community-prompts-empty");
 
 // ---------------------------------------------------------------
 // Auth
@@ -121,51 +123,39 @@ function loadAssignments() {
     tr.innerHTML = `
       <td>${escapeHtml(a.title)}</td>
       <td>${a.timerMinutes} min</td>
+      <td><button class="link-btn" type="button" data-panel="prompts" data-id="${a.id}">View prompts</button></td>
+      <td><button class="link-btn" type="button" data-panel="review" data-id="${a.id}">Review</button></td>
     `;
     assignmentsTbody.appendChild(tr);
   });
 
-  populateReviewSelect();
-  populatePromptsSelect();
+  assignmentsTbody.querySelectorAll('button[data-panel="prompts"]').forEach((btn) => {
+    btn.addEventListener("click", () => showPromptsFor(btn.dataset.id, btn));
+  });
+  assignmentsTbody.querySelectorAll('button[data-panel="review"]').forEach((btn) => {
+    btn.addEventListener("click", () => showReviewFor(btn.dataset.id, btn));
+  });
 }
 
-function populateReviewSelect() {
-  const current = reviewSelect.value;
-  reviewSelect.innerHTML = `<option value="">Select an assignment…</option>`;
-  Object.values(assignmentsById)
-    .sort((a, b) => a.title.localeCompare(b.title))
-    .forEach((a) => {
-      const opt = document.createElement("option");
-      opt.value = a.id;
-      opt.textContent = a.title;
-      reviewSelect.appendChild(opt);
-    });
-  if (current && assignmentsById[current]) reviewSelect.value = current;
-}
-
-function populatePromptsSelect() {
-  const current = promptsAssignmentSelect.value;
-  promptsAssignmentSelect.innerHTML = `<option value="">Select an assignment…</option>`;
-  Object.values(assignmentsById)
-    .sort((a, b) => a.title.localeCompare(b.title))
-    .forEach((a) => {
-      const opt = document.createElement("option");
-      opt.value = a.id;
-      opt.textContent = a.title;
-      promptsAssignmentSelect.appendChild(opt);
-    });
-  if (current && assignmentsById[current]) promptsAssignmentSelect.value = current;
+// Highlights the clicked button and un-highlights any previously-active
+// button for the same column (prompts or review), so it's clear which
+// assignment each open panel is currently showing.
+function setActiveButton(panelName, activeBtn) {
+  assignmentsTbody.querySelectorAll(`button[data-panel="${panelName}"]`).forEach((btn) => {
+    btn.classList.toggle("active", btn === activeBtn);
+  });
 }
 
 // ---------------------------------------------------------------
 // Submission listing for a chosen assignment
 // ---------------------------------------------------------------
-reviewSelect.addEventListener("change", async () => {
+async function showReviewFor(assignmentId, activeBtn) {
+  setActiveButton("review", activeBtn);
   hideReplay();
-  const assignmentId = reviewSelect.value;
+  reviewHeading.textContent = `Review submissions — ${assignmentsById[assignmentId]?.title || ""}`;
+  reviewPanel.hidden = false;
   subList.innerHTML = "";
   subListEmpty.hidden = true;
-  if (!assignmentId) return;
 
   const q = query(collection(db, "submissions"), where("assignmentId", "==", assignmentId));
   const snap = await getDocs(q);
@@ -202,16 +192,17 @@ reviewSelect.addEventListener("change", async () => {
   subList.querySelectorAll("button[data-id]").forEach((btn) => {
     btn.addEventListener("click", () => openReplay(btn.dataset.id, rows.find((r) => r.id === btn.dataset.id)));
   });
-});
+}
 
 // ---------------------------------------------------------------
 // Community-submitted prompts (moderation)
 // ---------------------------------------------------------------
-promptsAssignmentSelect.addEventListener("change", async () => {
-  const assignmentId = promptsAssignmentSelect.value;
+async function showPromptsFor(assignmentId, activeBtn) {
+  setActiveButton("prompts", activeBtn);
+  promptsHeading.textContent = `Community prompts — ${assignmentsById[assignmentId]?.title || ""}`;
+  promptsPanel.hidden = false;
   communityPromptsList.innerHTML = "";
   communityPromptsEmpty.hidden = true;
-  if (!assignmentId) return;
 
   const q = query(collection(db, "promptSubmissions"), where("assignmentId", "==", assignmentId));
   const snap = await getDocs(q);
@@ -254,7 +245,7 @@ promptsAssignmentSelect.addEventListener("change", async () => {
       }
     });
   });
-});
+}
 
 // ---------------------------------------------------------------
 // Replay / scrub viewer

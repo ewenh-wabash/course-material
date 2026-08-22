@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Reflection Journal — Admin</title>
 <link rel="stylesheet" href="styles.css" />
+<style>
+  .assign-table .link-btn.active { font-weight: 700; text-decoration: underline; }
+</style>
 </head>
 <body class="mode-admin">
 
@@ -48,36 +51,25 @@
       <h2>Assignments</h2>
       <table class="assign-table" id="assignments-table">
         <thead>
-          <tr><th>Title</th><th>Timer</th></tr>
+          <tr><th>Title</th><th>Timer</th><th>Prompts</th><th>Review</th></tr>
         </thead>
         <tbody id="assignments-tbody"></tbody>
       </table>
       <p class="hint" style="margin-top:12px;">To add, remove, rename, or re-time an assignment, edit <code>assignments.js</code> directly.</p>
     </div>
 
-    <!-- Community-submitted prompts (moderation) -->
-    <div class="panel">
-      <h2>Community prompts</h2>
+    <!-- Community-submitted prompts (moderation) — populated by clicking
+         "View prompts" on a row above -->
+    <div class="panel" id="prompts-panel" hidden>
+      <h2 id="prompts-heading">Community prompts</h2>
       <p class="hint">Prompts students added for each other after submitting their own reflection. Built-in prompts (from <code>assignments.js</code>) aren't shown here — edit that file to change those.</p>
-      <div class="field">
-        <label for="prompts-assignment-select">Assignment</label>
-        <select id="prompts-assignment-select">
-          <option value="">Select an assignment…</option>
-        </select>
-      </div>
       <div class="sub-list" id="community-prompts-list"></div>
       <p class="empty-state" id="community-prompts-empty" hidden>No community-submitted prompts yet for this assignment.</p>
     </div>
 
-    <!-- View submissions -->
-    <div class="panel">
-      <h2>Review submissions</h2>
-      <div class="field">
-        <label for="review-select">Assignment</label>
-        <select id="review-select">
-          <option value="">Select an assignment…</option>
-        </select>
-      </div>
+    <!-- View submissions — populated by clicking "Review" on a row above -->
+    <div class="panel" id="review-panel" hidden>
+      <h2 id="review-heading">Review submissions</h2>
       <div class="sub-list" id="sub-list"></div>
       <p class="empty-state" id="sub-list-empty" hidden>No submissions yet for this assignment.</p>
     </div>
@@ -87,12 +79,12 @@
       <h2 id="replay-heading"></h2>
       <div id="replay-violations"></div>
       <div class="replay-text" id="replay-text"></div>
+      <div id="replay-prompts"></div>
       <div class="replay-controls">
         <button id="replay-play-btn" class="replay-play-btn" type="button" title="Play">▶</button>
         <input id="replay-slider" type="range" min="0" max="1000" value="1000" />
         <span class="replay-timestamp" id="replay-timestamp"></span>
       </div>
-      <div id="replay-prompts"></div>
       <div class="replay-stats">
         <span><b id="stat-elapsed">—</b> elapsed at this point</span>
         <span><b id="stat-words">—</b> words at this point</span>

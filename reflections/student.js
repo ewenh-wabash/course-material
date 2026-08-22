@@ -59,6 +59,9 @@ const lockdownOverlay = document.getElementById("lockdown-overlay");
 const lockdownMessage = document.getElementById("lockdown-message");
 const lockdownReturnBtn = document.getElementById("lockdown-return-btn");
 
+const webcamPreview = document.getElementById("webcam-preview");
+let webcamStream = null;
+
 const promptBtn = document.getElementById("prompt-btn");
 const promptDisplay = document.getElementById("prompt-display");
 
@@ -68,6 +71,36 @@ const addPromptBtn = document.getElementById("add-prompt-btn");
 const addPromptStatus = document.getElementById("add-prompt-status");
 
 const RING_CIRCUMFERENCE = 2 * Math.PI * 34; // matches r=34 in svg
+
+// ---------------------------------------------------------------
+// Webcam preview — just a live feed of the student's own camera,
+// shown at the top of the page. Nothing is recorded, streamed, or
+// stored anywhere; it never leaves the browser.
+// ---------------------------------------------------------------
+async function startWebcamPreview() {
+  if (webcamStream) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    webcamPreview.hidden = true;
+    return;
+  }
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    webcamPreview.srcObject = webcamStream;
+    webcamPreview.hidden = false;
+  } catch (err) {
+    console.warn("Webcam preview unavailable:", err);
+    webcamPreview.hidden = true;
+  }
+}
+
+function stopWebcamPreview() {
+  if (webcamStream) {
+    webcamStream.getTracks().forEach((track) => track.stop());
+    webcamStream = null;
+  }
+  webcamPreview.srcObject = null;
+  webcamPreview.hidden = true;
+}
 
 // ---------------------------------------------------------------
 // Fullscreen + focus lockdown
@@ -278,6 +311,7 @@ function friendlyAuthError(err) {
 
 signoutBtn.addEventListener("click", () => {
   teardownSession();
+  stopWebcamPreview();
   signOut(auth);
 });
 
@@ -293,10 +327,12 @@ onAuthStateChanged(auth, async (user) => {
     appScreen.hidden = false;
     whoEmail.textContent = user.email;
     loadAssignments();
+    startWebcamPreview();
     await finalizeAnyAbandonedSession();
   } else {
     appScreen.hidden = true;
     authScreen.hidden = false;
+    stopWebcamPreview();
   }
 });
 

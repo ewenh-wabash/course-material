@@ -18,6 +18,19 @@
     font-weight: 600;
     line-height: 1.4;
   }
+
+  /* Small webcam preview shown at the top of the page */
+  #webcam-preview {
+    display: block;
+    width: 160px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: #000;
+    transform: scaleX(-1); /* mirror, so it feels like a normal reflection */
+    margin: 0 auto 16px auto;
+  }
+
 </style>
 </head>
 <body>
@@ -56,6 +69,8 @@
       </div>
     </div>
 
+    <video id="webcam-preview" autoplay muted playsinline hidden></video>
+
     <!-- Assignment picker -->
     <div class="panel" id="picker-panel">
       <h2>Choose an assignment</h2>
@@ -78,7 +93,7 @@
 
       <!-- Contribute prompts for other students, for this same film -->
       <div class="panel" id="add-prompt-panel">
-        <h2>Add a discussion prompt for others</h2>
+        <h2>Add a discussion prompt</h2>
         <p class="hint">Now that you've submitted, you can add prompt(s) for other students who write about this film. Add as many as you'd like, one at a time.</p>
         <div class="field">
           <label for="new-prompt-input">New prompt</label>

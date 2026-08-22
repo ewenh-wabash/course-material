@@ -10,12 +10,15 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
   addDoc,
   arrayUnion,
   serverTimestamp,
   Timestamp,
+  query,
+  where,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 // ---------------------------------------------------------------
@@ -55,6 +58,14 @@ const timerStatusSub = document.getElementById("timer-status-sub");
 const lockdownOverlay = document.getElementById("lockdown-overlay");
 const lockdownMessage = document.getElementById("lockdown-message");
 const lockdownReturnBtn = document.getElementById("lockdown-return-btn");
+
+const promptBtn = document.getElementById("prompt-btn");
+const promptDisplay = document.getElementById("prompt-display");
+
+const addPromptPanel = document.getElementById("add-prompt-panel");
+const newPromptInput = document.getElementById("new-prompt-input");
+const addPromptBtn = document.getElementById("add-prompt-btn");
+const addPromptStatus = document.getElementById("add-prompt-status");
 
 const RING_CIRCUMFERENCE = 2 * Math.PI * 34; // matches r=34 in svg
 
@@ -301,7 +312,7 @@ function loadAssignments() {
   assignmentsById = {};
   assignmentList.forEach((a) => {
     const id = slugify(a.name);
-    assignmentsById[id] = { id, title: a.name, timerMinutes: a.length };
+    assignmentsById[id] = { id, title: a.name, timerMinutes: a.length, prompts: a.prompts || [] };
   });
   const sorted = Object.values(assignmentsById).sort((a, b) =>
     a.title.localeCompare(b.title)
@@ -315,6 +326,57 @@ function loadAssignments() {
   if (sorted.length === 0) {
     assignmentSelect.innerHTML = `<option value="">No assignments available yet</option>`;
   }
+}
+
+// ---------------------------------------------------------------
+// Prompts: built-in (from assignments.js) + community-submitted
+// (from Firestore, added by students after they submit).
+// ---------------------------------------------------------------
+const communityPromptsByAssignment = {}; // id -> string[] (cached once fetched)
+
+// Kick off (or reuse a cached) fetch of community prompts for an
+// assignment. Called as soon as a film is picked, so the list is
+// ready by the time "Start" is clicked.
+function ensureCommunityPromptsLoaded(assignmentId) {
+  if (communityPromptsByAssignment[assignmentId]) return communityPromptsByAssignment[assignmentId];
+  const promise = (async () => {
+    try {
+      const q = query(collection(db, "promptSubmissions"), where("assignmentId", "==", assignmentId));
+      const snap = await getDocs(q);
+      const texts = [];
+      snap.forEach((d) => {
+        const text = (d.data().text || "").trim();
+        if (text) texts.push(text);
+      });
+      return texts;
+    } catch (err) {
+      console.error("Couldn't load community prompts:", err);
+      return [];
+    }
+  })();
+  communityPromptsByAssignment[assignmentId] = promise;
+  return promise;
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Reshuffle the pool once it's been exhausted, without letting the
+// prompt that was just shown immediately repeat as the next one.
+function reshufflePromptPool(sess) {
+  const lastShown = sess.promptPool[sess.promptPool.length - 1];
+  let reshuffled = shuffle(sess.promptPool);
+  if (reshuffled.length > 1 && reshuffled[0] === lastShown) {
+    [reshuffled[0], reshuffled[1]] = [reshuffled[1], reshuffled[0]];
+  }
+  sess.promptPool = reshuffled;
+  sess.promptCursor = 0;
 }
 
 // There's no "resume" for an in-progress reflection — leaving it (however
@@ -366,6 +428,21 @@ async function finalizeAnyAbandonedSession() {
   return finalizedTitles.length > 0;
 }
 
+// Tracks which assignment the currently-visible submitted-view (and its
+// "add a prompt" panel) belongs to, so the add-prompt handler knows where
+// to file a new prompt.
+let submittedViewAssignmentId = null;
+
+function showSubmittedView(assignmentId, data) {
+  submittedViewAssignmentId = assignmentId;
+  submittedTitle.textContent = assignmentsById[assignmentId].title;
+  submittedText.textContent = data.finalText || "";
+  submittedView.hidden = false;
+  addPromptPanel.hidden = false;
+  newPromptInput.value = "";
+  addPromptStatus.hidden = true;
+}
+
 assignmentSelect.addEventListener("change", async () => {
   const assignmentId = assignmentSelect.value;
   teardownSession();
@@ -373,14 +450,15 @@ assignmentSelect.addEventListener("change", async () => {
   startBtn.hidden = true;
   if (!assignmentId) return;
 
+  // Warm the community-prompts cache for this film right away so it's
+  // ready by the time the student clicks Start.
+  ensureCommunityPromptsLoaded(assignmentId);
+
   const submissionId = `${assignmentId}_${currentUser.uid}`;
   const subSnap = await getDoc(doc(db, "submissions", submissionId));
 
   if (subSnap.exists() && subSnap.data().status === "submitted") {
-    const data = subSnap.data();
-    submittedTitle.textContent = assignmentsById[assignmentId].title;
-    submittedText.textContent = data.finalText || "";
-    submittedView.hidden = false;
+    showSubmittedView(assignmentId, subSnap.data());
     return;
   }
 
@@ -441,10 +519,14 @@ function teardownSession() {
   session = null;
   writingView.hidden = true;
   submittedView.hidden = true;
+  addPromptPanel.hidden = true;
+  submittedViewAssignmentId = null;
   startBtn.hidden = true;
   hideLockdown();
   editor.value = "";
   editor.removeEventListener("input", onEditorInput);
+  promptDisplay.hidden = true;
+  promptDisplay.textContent = "";
   // Always leave the picker interactive after tearing a session down —
   // whatever flow disabled the dropdown is responsible for re-disabling
   // it if it's about to start a new one.
@@ -461,10 +543,7 @@ async function openAssignment(assignmentId) {
 
   if (subSnap.exists() && subSnap.data().status === "submitted") {
     // Already turned in — read only view
-    const data = subSnap.data();
-    submittedTitle.textContent = assignment.title;
-    submittedText.textContent = data.finalText || "";
-    submittedView.hidden = false;
+    showSubmittedView(assignmentId, subSnap.data());
     return;
   }
 
@@ -479,6 +558,9 @@ async function openAssignment(assignmentId) {
     lastSyncedAt: startTs,
   });
 
+  const communityPrompts = await ensureCommunityPromptsLoaded(assignmentId);
+  const combinedPrompts = [...(assignment.prompts || []), ...communityPrompts];
+
   session = {
     assignmentId,
     submissionId,
@@ -486,6 +568,8 @@ async function openAssignment(assignmentId) {
     timerMinutes: assignment.timerMinutes,
     buffer: [],
     armedAt: 0,
+    promptPool: shuffle(combinedPrompts),
+    promptCursor: 0,
   };
 
   writingTitle.textContent = assignment.title;
@@ -494,6 +578,10 @@ async function openAssignment(assignmentId) {
   submitBtn.disabled = true;
   updateWordCount();
   writingView.hidden = false;
+  promptDisplay.hidden = true;
+  promptDisplay.textContent = "";
+  promptBtn.disabled = session.promptPool.length === 0;
+  promptBtn.title = session.promptPool.length === 0 ? "No prompts available for this film yet" : "";
 
   editor.addEventListener("input", onEditorInput);
 
@@ -523,6 +611,37 @@ function onEditorInput() {
   if (!session) return;
   session.buffer.push({ t: Date.now(), text: editor.value });
   updateWordCount();
+}
+
+// ---------------------------------------------------------------
+// Prompt button — shows a random (shuffled, non-repeating) prompt
+// and records the press + which prompt was shown on the submission
+// doc, the same way violations are recorded, so it shows up in the
+// admin replay view.
+// ---------------------------------------------------------------
+promptBtn.addEventListener("click", () => {
+  if (!session || !session.promptPool || session.promptPool.length === 0) return;
+  if (session.promptCursor >= session.promptPool.length) {
+    reshufflePromptPool(session);
+  }
+  const prompt = session.promptPool[session.promptCursor];
+  session.promptCursor++;
+
+  promptDisplay.textContent = prompt;
+  promptDisplay.hidden = false;
+
+  recordPromptEvent(prompt);
+});
+
+async function recordPromptEvent(prompt) {
+  if (!session) return;
+  try {
+    await updateDoc(doc(db, "submissions", session.submissionId), {
+      promptEvents: arrayUnion({ t: Date.now(), prompt }),
+    });
+  } catch (err) {
+    console.error("Couldn't record prompt event:", err);
+  }
 }
 
 function updateWordCount() {
@@ -614,17 +733,70 @@ submitBtn.addEventListener("click", async () => {
     submitBtn.textContent = "Submitted";
     if (session.flushTimer) clearInterval(session.flushTimer);
     if (session.minuteSyncTimer) clearInterval(session.minuteSyncTimer);
+    const finishedAssignmentId = session.assignmentId;
+    const finalText = editor.value;
     session = null;
     hideLockdown();
     assignmentSelect.disabled = false;
     if (isFullscreen() && document.exitFullscreen) {
       document.exitFullscreen().catch(() => {});
     }
+    writingView.hidden = true;
+    showSubmittedView(finishedAssignmentId, { finalText });
   } catch (err) {
     console.error(err);
     submitBtn.textContent = "Submit reflection";
     submitBtn.disabled = false;
     alert("Couldn't submit — check your connection and try again.");
+  }
+});
+
+// ---------------------------------------------------------------
+// Add a prompt for other students (only available once the
+// student has submitted their own reflection for this film).
+// They can add as many as they like, one at a time.
+// ---------------------------------------------------------------
+addPromptBtn.addEventListener("click", async () => {
+  const assignmentId = submittedViewAssignmentId;
+  const text = newPromptInput.value.trim();
+  if (!assignmentId) return;
+  if (!text) {
+    addPromptStatus.textContent = "Write something first.";
+    addPromptStatus.hidden = false;
+    return;
+  }
+  addPromptBtn.disabled = true;
+  addPromptStatus.hidden = true;
+  try {
+    await addDoc(collection(db, "promptSubmissions"), {
+      assignmentId,
+      text,
+      createdAt: serverTimestamp(),
+      addedByUid: currentUser.uid,
+      addedByEmail: currentUser.email,
+    });
+    // Keep the local cache in sync so this prompt is immediately eligible
+    // if the same student starts another film's reflection this session.
+    const cached = communityPromptsByAssignment[assignmentId];
+    if (cached) {
+      communityPromptsByAssignment[assignmentId] = Promise.resolve(cached).then((list) => [...list, text]);
+    }
+    newPromptInput.value = "";
+    addPromptStatus.textContent = "Added! Feel free to add another.";
+    addPromptStatus.hidden = false;
+  } catch (err) {
+    console.error("Couldn't add prompt:", err);
+    addPromptStatus.textContent = "Couldn't add that prompt — check your connection and try again.";
+    addPromptStatus.hidden = false;
+  } finally {
+    addPromptBtn.disabled = false;
+  }
+});
+
+newPromptInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addPromptBtn.click();
   }
 });
 

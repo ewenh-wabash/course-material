@@ -55,6 +55,20 @@
       <p class="hint" style="margin-top:12px;">To add, remove, rename, or re-time an assignment, edit <code>assignments.js</code> directly.</p>
     </div>
 
+    <!-- Community-submitted prompts (moderation) -->
+    <div class="panel">
+      <h2>Community prompts</h2>
+      <p class="hint">Prompts students added for each other after submitting their own reflection. Built-in prompts (from <code>assignments.js</code>) aren't shown here — edit that file to change those.</p>
+      <div class="field">
+        <label for="prompts-assignment-select">Assignment</label>
+        <select id="prompts-assignment-select">
+          <option value="">Select an assignment…</option>
+        </select>
+      </div>
+      <div class="sub-list" id="community-prompts-list"></div>
+      <p class="empty-state" id="community-prompts-empty" hidden>No community-submitted prompts yet for this assignment.</p>
+    </div>
+
     <!-- View submissions -->
     <div class="panel">
       <h2>Review submissions</h2>
@@ -71,6 +85,7 @@
     <!-- Replay viewer -->
     <div class="panel" id="replay-panel" hidden>
       <h2 id="replay-heading"></h2>
+      <div id="replay-violations"></div>
       <div class="replay-text" id="replay-text"></div>
       <div class="replay-controls">
         <button id="replay-play-btn" class="replay-play-btn" type="button" title="Play">▶</button>
@@ -82,6 +97,7 @@
         <span><b id="stat-words">—</b> words at this point</span>
         <span><b id="stat-events">—</b> keystroke events total</span>
       </div>
+      <div id="replay-prompts"></div>
     </div>
   </div>
 

@@ -13,6 +13,7 @@ import {
   query,
   where,
   orderBy,
+  deleteDoc,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 // ---------------------------------------------------------------
@@ -47,6 +48,11 @@ const statElapsed = document.getElementById("stat-elapsed");
 const statWords = document.getElementById("stat-words");
 const statEvents = document.getElementById("stat-events");
 const replayViolations = document.getElementById("replay-violations");
+const replayPrompts = document.getElementById("replay-prompts");
+
+const promptsAssignmentSelect = document.getElementById("prompts-assignment-select");
+const communityPromptsList = document.getElementById("community-prompts-list");
+const communityPromptsEmpty = document.getElementById("community-prompts-empty");
 
 // ---------------------------------------------------------------
 // Auth
@@ -120,6 +126,7 @@ function loadAssignments() {
   });
 
   populateReviewSelect();
+  populatePromptsSelect();
 }
 
 function populateReviewSelect() {
@@ -134,6 +141,20 @@ function populateReviewSelect() {
       reviewSelect.appendChild(opt);
     });
   if (current && assignmentsById[current]) reviewSelect.value = current;
+}
+
+function populatePromptsSelect() {
+  const current = promptsAssignmentSelect.value;
+  promptsAssignmentSelect.innerHTML = `<option value="">Select an assignment…</option>`;
+  Object.values(assignmentsById)
+    .sort((a, b) => a.title.localeCompare(b.title))
+    .forEach((a) => {
+      const opt = document.createElement("option");
+      opt.value = a.id;
+      opt.textContent = a.title;
+      promptsAssignmentSelect.appendChild(opt);
+    });
+  if (current && assignmentsById[current]) promptsAssignmentSelect.value = current;
 }
 
 // ---------------------------------------------------------------
@@ -184,6 +205,58 @@ reviewSelect.addEventListener("change", async () => {
 });
 
 // ---------------------------------------------------------------
+// Community-submitted prompts (moderation)
+// ---------------------------------------------------------------
+promptsAssignmentSelect.addEventListener("change", async () => {
+  const assignmentId = promptsAssignmentSelect.value;
+  communityPromptsList.innerHTML = "";
+  communityPromptsEmpty.hidden = true;
+  if (!assignmentId) return;
+
+  const q = query(collection(db, "promptSubmissions"), where("assignmentId", "==", assignmentId));
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    communityPromptsEmpty.hidden = false;
+    return;
+  }
+
+  const rows = [];
+  snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
+  rows.sort((a, b) => {
+    const at = a.createdAt ? a.createdAt.toMillis() : 0;
+    const bt = b.createdAt ? b.createdAt.toMillis() : 0;
+    return bt - at; // newest first
+  });
+
+  rows.forEach((p) => {
+    const row = document.createElement("div");
+    row.className = "sub-row";
+    row.innerHTML = `
+      <span>${escapeHtml(p.text || "")} <span class="hint">— added by ${escapeHtml(p.addedByEmail || p.addedByUid || "unknown")}</span></span>
+      <button data-id="${p.id}" type="button">Delete</button>
+    `;
+    communityPromptsList.appendChild(row);
+  });
+
+  communityPromptsList.querySelectorAll("button[data-id]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.textContent = "Deleting…";
+      try {
+        await deleteDoc(doc(db, "promptSubmissions", btn.dataset.id));
+        btn.closest(".sub-row").remove();
+        if (!communityPromptsList.children.length) communityPromptsEmpty.hidden = false;
+      } catch (err) {
+        console.error("Couldn't delete prompt:", err);
+        btn.disabled = false;
+        btn.textContent = "Delete";
+      }
+    });
+  });
+});
+
+// ---------------------------------------------------------------
 // Replay / scrub viewer
 // ---------------------------------------------------------------
 let replayEvents = []; // sorted [{t, text}]
@@ -220,6 +293,7 @@ async function openReplay(submissionId, subData) {
     replayText.textContent = "No keystroke history recorded for this submission.";
     replaySlider.disabled = true;
     renderViolations(subData);
+    renderPromptEvents(subData);
     return;
   }
 
@@ -230,6 +304,7 @@ async function openReplay(submissionId, subData) {
   statEvents.textContent = replayEvents.length;
 
   renderViolations(subData);
+  renderPromptEvents(subData);
   renderReplayAt(replayEvents.length - 1);
 }
 
@@ -263,10 +338,37 @@ function renderViolations(subData) {
   `;
 }
 
+// Prompt-button presses: when in the reflection the student asked for a
+// prompt, and which prompt they were shown, so a teacher can see how the
+// writing responds to (or ignores) it.
+function renderPromptEvents(subData) {
+  const events = subData.promptEvents || [];
+  if (events.length === 0) {
+    replayPrompts.innerHTML = "";
+    return;
+  }
+  const startMs = subData.startedAt ? subData.startedAt.toMillis() : events[0].t;
+  const sorted = [...events].sort((a, b) => a.t - b.t);
+  const lines = sorted.map((e) => {
+    const elapsedMs = Math.max(0, e.t - startMs);
+    const mins = Math.floor(elapsedMs / 60000);
+    const secs = Math.floor((elapsedMs % 60000) / 1000);
+    return `<span class="violation-row">Prompt shown at ${mins}m ${secs}s — "${escapeHtml(e.prompt)}"</span>`;
+  });
+  replayPrompts.innerHTML = `
+    <div class="violation-alert">
+      <div class="violation-alert-title">Prompt button used — ${events.length} time${events.length === 1 ? "" : "s"}</div>
+      ${lines.join("")}
+    </div>
+  `;
+}
+
 function hideReplay() {
   stopPlayback();
   replayPanel.hidden = true;
   replayEvents = [];
+  replayViolations.innerHTML = "";
+  replayPrompts.innerHTML = "";
 }
 
 replaySlider.addEventListener("input", () => {

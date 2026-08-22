@@ -61,6 +61,18 @@
         <h2 id="submitted-title"></h2>
         <div class="replay-text" id="submitted-text"></div>
       </div>
+
+      <!-- Contribute prompts for other students, for this same film -->
+      <div class="panel" id="add-prompt-panel">
+        <h2>Add a discussion prompt</h2>
+        <p class="hint">Now that you've submitted, you can add prompt(s) for other students who write about this film. Add as many as you'd like, one at a time.</p>
+        <div class="field">
+          <label for="new-prompt-input">New prompt</label>
+          <input id="new-prompt-input" type="text" placeholder="Write a prompt…" />
+        </div>
+        <button id="add-prompt-btn" class="btn" type="button">Add prompt</button>
+        <p id="add-prompt-status" class="hint" hidden></p>
+      </div>
     </div>
 
     <!-- Writing view -->
@@ -86,6 +98,11 @@
       </div>
 
       <div class="panel">
+        <div class="prompt-block" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+          <button id="prompt-btn" class="btn secondary" type="button">Show a prompt</button>
+          <span class="hint" id="prompt-hint">Stuck? Get a random prompt about this film — it won't repeat until you've seen them all.</span>
+        </div>
+        <p id="prompt-display" class="replay-text" hidden style="margin-bottom:14px;"></p>
         <div class="editor-wrap">
           <textarea id="editor" class="reflection-editor" placeholder="Start writing your reflection here…" spellcheck="true"></textarea>
         </div>

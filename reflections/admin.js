@@ -368,8 +368,8 @@ function renderPromptsUpTo(cutoffT) {
       : `${upTo.length} of ${promptEventsAll.length} prompts shown so far`;
 
   replayPrompts.innerHTML = `
-    <div class="violation-alert" style="margin-top:10px;">
-      <div class="violation-alert-title">${countLabel}</div>
+    <div class="prompt-alert" style="margin-top:10px;">
+      <div class="prompt-alert-title">${countLabel}</div>
       ${lines.join("")}
     </div>
   `;

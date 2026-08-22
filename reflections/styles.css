@@ -22,6 +22,9 @@
   --danger: #c97575;
   --danger-soft: rgba(201, 117, 117, 0.14);
 
+  --prompt: #6bbf6b;
+  --prompt-soft: rgba(107, 191, 107, 0.14);
+
   --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
   --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
@@ -506,6 +509,21 @@ table.assign-table tr:last-child td { border-bottom: none; }
 }
 
 .violation-alert-title {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+
+.prompt {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+
+.prompt-title {
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.03em;

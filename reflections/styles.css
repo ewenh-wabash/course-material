@@ -114,6 +114,11 @@ body.mode-admin :focus-visible {
   color: var(--amber);
 }
 
+em {
+  font-style: italic;
+  color: var(--amber);
+}
+
 body.mode-admin .topbar .brand em {
   color: var(--teal);
 }

@@ -151,7 +151,9 @@ function setActiveButton(panelName, activeBtn) {
 // ---------------------------------------------------------------
 async function showReviewFor(assignmentId, activeBtn) {
   setActiveButton("review", activeBtn);
+  setActiveButton("prompts", null);
   hideReplay();
+  promptsPanel.hidden = true;
   reviewHeading.textContent = `Review submissions — ${assignmentsById[assignmentId]?.title || ""}`;
   reviewPanel.hidden = false;
   subList.innerHTML = "";
@@ -199,6 +201,9 @@ async function showReviewFor(assignmentId, activeBtn) {
 // ---------------------------------------------------------------
 async function showPromptsFor(assignmentId, activeBtn) {
   setActiveButton("prompts", activeBtn);
+  setActiveButton("review", null);
+  hideReplay();
+  reviewPanel.hidden = true;
   promptsHeading.textContent = `Community prompts — ${assignmentsById[assignmentId]?.title || ""}`;
   promptsPanel.hidden = false;
   communityPromptsList.innerHTML = "";

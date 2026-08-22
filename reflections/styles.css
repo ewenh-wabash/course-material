@@ -515,15 +515,15 @@ table.assign-table tr:last-child td { border-bottom: none; }
   margin-bottom: 8px;
 }
 
-.prompt {
+.prompt-alert {
   padding: 14px 16px;
   border-radius: 8px;
-  background: var(--danger-soft);
-  border: 1px solid var(--danger);
-  color: var(--danger);
+  background: var(--prompt-soft);
+  border: 1px solid var(--prompt);
+  color: var(--prompt);
 }
 
-.prompt-title {
+.prompt-alert-title {
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.03em;

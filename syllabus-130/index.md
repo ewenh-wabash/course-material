@@ -56,7 +56,7 @@ Timbre, Rhythm, Meter, Melody, Form, Harmonic
 
 ## Materials
 
-There is no textbook or other material required for the class, but a semester-length subscription to [Artusi](http://artusimusic.com/) is required for completing assignments and training. All other work will be in-person or via [Canvas](http://canvas.wabash.edu).
+There is no textbook or other material required for the class, but a semester-length subscription to [Artusi](http://artusimusic.com/) is required for completing assignments and training. Use the registration code "wabash-college\_music-6" to register for my class in Artusi. All other work will be in-person or via [Canvas](http://canvas.wabash.edu).
 
 - Homework is on [Artusi](http://artusimusic.com/)
 - Course content will be on [Canvas](http://canvas.wabash.edu)
@@ -282,7 +282,7 @@ the frequency and timing of sounds
 
 #### To-do before class
 
-- [Read & complete: pitch](https://www.artusimusic.com/assignments/22234/artusi_fundamentals_any_chapter004/)
+- [Read & complete: pitch in treble clef](https://www.artusimusic.com/assignments/297116/wabash-college_music-6_chapter004/)
 - Turn in: timbre analysis
 
 #### To-do in class
@@ -303,7 +303,7 @@ how sounds are arranged in time, duration, tempo, fermata
 - [Review: note duration](https://www.musictheory.net/lessons/11)
 - [Review: rest duration](https://www.musictheory.net/lessons/13)
 - [Review: dots and ties](https://www.musictheory.net/lessons/14)
-- [Read and complete: rhythm](https://www.artusimusic.com/assignments/18804/artusi_fundamentals_any_chapter002/)
+- [Read and complete: rhythm and note types](https://www.artusimusic.com/assignments/297114/wabash-college_music-6_chapter002/)
 
 #### To-do in class
 
@@ -334,8 +334,7 @@ timbre + pitch + rhythm + dynamics + articulation + shaping = notes
 
 - [Review: the staff](https://www.musictheory.net/lessons/10)
 - [Review: steps & accidentals](https://www.musictheory.net/lessons/20)
-- Read & complete: beams dots and ties
-- [Read & complete](https://www.artusimusic.com/assignments/24011/artusi_fundamentals_any_chapter003)
+- [Read & complete: beams dots and ties](https://www.artusimusic.com/assignments/297115/wabash-college_music-6_chapter003/)
 - Turn in: rhythm analysis
 
 #### To-do in class
@@ -355,7 +354,7 @@ the grids our brain makes up to organize rhythm
 - [Review: measures & time signatures](https://www.musictheory.net/lessons/12)
 - [Review: simple & compound meter](https://www.musictheory.net/lessons/15)
 - [Review: odd meters (advanced)](https://www.musictheory.net/lessons/16)
-- [Read and complete: beat and meter](https://www.artusimusic.com/assignments/18803/artusi_fundamentals_any_chapter001/)
+- [Read and complete: rhythm beat and meter](https://www.artusimusic.com/assignments/297113/wabash-college_music-6_chapter001/)
 
 #### To-do in class
 
@@ -383,7 +382,7 @@ how to write down what's in our heads
 #### To-do before class
 
 - [Review: key signatures](https://www.musictheory.net/lessons/24)
-- [Read & complete: sharps and flats](https://www.artusimusic.com/assignments/25441/artusi_fundamentals_any_chapter006/)
+- [Read & complete: enharmonics whole steps and half steps](https://www.artusimusic.com/assignments/297117/wabash-college_music-6_chapter006/)
 - Turn in: meter analysis project
 
 #### To-do in class
@@ -403,7 +402,7 @@ notes + rhythms = melodies
 - [Review: the major scale](https://www.musictheory.net/lessons/21)
 - [Review: the minor scale](https://www.musictheory.net/lessons/22)
 - [Review: scale degrees](https://www.musictheory.net/lessons/23)
-- [Read & complete: major scales](https://www.artusimusic.com/assignments/27748/artusi_fundamentals_any_chapter009/)
+- [Read & complete: major scales](https://www.artusimusic.com/assignments/297120/wabash-college_music-6_chapter009/)
 
 #### To-do in class
 
@@ -477,7 +476,7 @@ How two pitches relate to each other
 
 #### To-do before class
 
-- [Read & complete: scales and intervals](https://www.artusimusic.com/assignments/26370/artusi_fundamentals_any_chapter007/)
+- [Read & complete: scales and generic intervals](https://www.artusimusic.com/assignments/297118/wabash-college_music-6_chapter007/)
 
 #### To-do in class
 
@@ -494,7 +493,7 @@ How three pitches relate to each other
 
 #### To-do before class
 
-- [Read & complete: triads and intervals](https://www.artusimusic.com/assignments/29431/artusi_fundamentals_any_chapter011/)
+- [Read & complete: interval and triad types](https://www.artusimusic.com/assignments/297119/wabash-college_music-6_chapter011/)
 
 #### To-do in class
 
@@ -522,7 +521,7 @@ how triads relate to scales
 
 #### To-do before class
 
-- [Brain training: pitch detection](https://www.artusimusic.com/assignments/41321/artusi_artusi-aural-skills-i_any_ps004/)
+- [Brain training: pitch](https://www.artusimusic.com/assignments/297101/wabash-college_music-6_chapter002/)
 
 #### To-do in class
 
@@ -568,7 +567,7 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- [Brain training: interval inversions and rhythm dictation](https://www.artusimusic.com/assignments/41319/artusi_artusi-aural-skills-i_any_ps002/)
+- [Brain training: intervals pt.1 (generic intervals)](https://www.artusimusic.com/assignments/297102/wabash-college_music-6_chapter003/)
 
 #### To-do in class
 
@@ -609,7 +608,7 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- [Brain training: diatonic scales and rhythms](https://www.artusimusic.com/assignments/41321/artusi_artusi-aural-skills-i_any_ps004/)
+- [Brain training: intervals pt.2 (specific)](https://www.artusimusic.com/assignments/297103/wabash-college_music-6_chapter004/)
 
 #### To-do in class
 
@@ -678,7 +677,7 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- [Brain training: intervals and more dictation](https://www.artusimusic.com/assignments/41323/artusi_artusi-aural-skills-i_any_ps006/)
+- [Brain training: chords](https://www.artusimusic.com/assignments/297105/wabash-college_music-6_chapter006/)
 
 #### To-do in class
 
@@ -710,10 +709,6 @@ melodies intervals, chords, and scales can all be inverted
 # Nov 17
 
 ### Arranging
-
-#### To-do before class
-
-- [Brain training: more intervals and dictation](https://www.artusimusic.com/assignments/41325/artusi_artusi-aural-skills-i_any_ps008/)
 
 #### To-do in class
 
@@ -769,7 +764,7 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- [Brain training: harmony dictation and rhythm subdivision](https://www.artusimusic.com/assignments/42824/artusi_artusi-aural-skills-i_any_ps009/)
+- [Brain training: interval review and melodic dictation](https://www.artusimusic.com/assignments/297107/wabash-college_music-6_chapter008/)
 
 #### To-do in class
 
@@ -808,7 +803,7 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- [Brain training: hearing scale degrees and inversions](https://www.artusimusic.com/assignments/89154/artusi_artusi-aural-skills-i_any_chapter012/)
+- [Brain training: harmonic dictation](https://www.artusimusic.com/assignments/297108/wabash-college_music-6_chapter009/)
 
 #### To-do in class
 

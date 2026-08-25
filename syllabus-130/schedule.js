@@ -101,8 +101,8 @@ const SCHEDULE_DATA = [
     "description": "the frequency and timing of sounds",
     "todoBeforeClass": [
       {
-        "text": "Read & complete: pitch",
-        "url": "https://www.artusimusic.com/assignments/22234/artusi_fundamentals_any_chapter004/"
+        "text": "Read & complete: pitch in treble clef",
+        "url": "https://www.artusimusic.com/assignments/297116/wabash-college_music-6_chapter004/"
       },
       {
         "text": "Turn in: timbre analysis",
@@ -141,8 +141,8 @@ const SCHEDULE_DATA = [
         "url": "https://www.musictheory.net/lessons/14"
       },
       {
-        "text": "Read and complete: rhythm",
-        "url": "https://www.artusimusic.com/assignments/18804/artusi_fundamentals_any_chapter002/"
+        "text": "Read and complete: rhythm and note types",
+        "url": "https://www.artusimusic.com/assignments/297114/wabash-college_music-6_chapter002/"
       }
     ],
     "todoDuringClass": [
@@ -197,11 +197,7 @@ const SCHEDULE_DATA = [
       },
       {
         "text": "Read & complete: beams dots and ties",
-        "url": null
-      },
-      {
-        "text": "Read & complete",
-        "url": "https://www.artusimusic.com/assignments/24011/artusi_fundamentals_any_chapter003"
+        "url": "https://www.artusimusic.com/assignments/297115/wabash-college_music-6_chapter003/"
       },
       {
         "text": "Turn in: rhythm analysis",
@@ -236,8 +232,8 @@ const SCHEDULE_DATA = [
         "url": "https://www.musictheory.net/lessons/16"
       },
       {
-        "text": "Read and complete: beat and meter",
-        "url": "https://www.artusimusic.com/assignments/18803/artusi_fundamentals_any_chapter001/"
+        "text": "Read and complete: rhythm beat and meter",
+        "url": "https://www.artusimusic.com/assignments/297113/wabash-college_music-6_chapter001/"
       }
     ],
     "todoDuringClass": [
@@ -279,8 +275,8 @@ const SCHEDULE_DATA = [
         "url": "https://www.musictheory.net/lessons/24"
       },
       {
-        "text": "Read & complete: sharps and flats",
-        "url": "https://www.artusimusic.com/assignments/25441/artusi_fundamentals_any_chapter006/"
+        "text": "Read & complete: enharmonics whole steps and half steps",
+        "url": "https://www.artusimusic.com/assignments/297117/wabash-college_music-6_chapter006/"
       },
       {
         "text": "Turn in: meter analysis project",
@@ -316,7 +312,7 @@ const SCHEDULE_DATA = [
       },
       {
         "text": "Read & complete: major scales",
-        "url": "https://www.artusimusic.com/assignments/27748/artusi_fundamentals_any_chapter009/"
+        "url": "https://www.artusimusic.com/assignments/297120/wabash-college_music-6_chapter009/"
       }
     ],
     "todoDuringClass": [
@@ -421,8 +417,8 @@ const SCHEDULE_DATA = [
     "description": "How two pitches relate to each other",
     "todoBeforeClass": [
       {
-        "text": "Read & complete: scales and intervals",
-        "url": "https://www.artusimusic.com/assignments/26370/artusi_fundamentals_any_chapter007/"
+        "text": "Read & complete: scales and generic intervals",
+        "url": "https://www.artusimusic.com/assignments/297118/wabash-college_music-6_chapter007/"
       }
     ],
     "todoDuringClass": [
@@ -445,8 +441,8 @@ const SCHEDULE_DATA = [
     "description": "How three pitches relate to each other",
     "todoBeforeClass": [
       {
-        "text": "Read & complete: triads and intervals",
-        "url": "https://www.artusimusic.com/assignments/29431/artusi_fundamentals_any_chapter011/"
+        "text": "Read & complete: interval and triad types",
+        "url": "https://www.artusimusic.com/assignments/297119/wabash-college_music-6_chapter011/"
       }
     ],
     "todoDuringClass": [
@@ -469,8 +465,8 @@ const SCHEDULE_DATA = [
         "url": null
       },
       {
-        "text": "Brain training: pitch and rhythm",
-        "url": "https://www.artusimusic.com/assignments/41318/artusi_artusi-aural-skills-i_any_ps001/"
+        "text": "Brain training: rhythm and meter",
+        "url": "https://www.artusimusic.com/assignments/297100/wabash-college_music-6_chapter001/"
       }
     ],
     "todoDuringClass": [],
@@ -489,8 +485,8 @@ const SCHEDULE_DATA = [
     "description": "how triads relate to scales",
     "todoBeforeClass": [
       {
-        "text": "Brain training: pitch detection",
-        "url": "https://www.artusimusic.com/assignments/41321/artusi_artusi-aural-skills-i_any_ps004/"
+        "text": "Brain training: pitch",
+        "url": "https://www.artusimusic.com/assignments/297101/wabash-college_music-6_chapter002/"
       }
     ],
     "todoDuringClass": [
@@ -554,8 +550,8 @@ const SCHEDULE_DATA = [
     "description": "melodies intervals, chords, and scales can all be inverted",
     "todoBeforeClass": [
       {
-        "text": "Brain training: interval inversions and rhythm dictation",
-        "url": "https://www.artusimusic.com/assignments/41319/artusi_artusi-aural-skills-i_any_ps002/"
+        "text": "Brain training: intervals pt.1 (generic intervals)",
+        "url": "https://www.artusimusic.com/assignments/297102/wabash-college_music-6_chapter003/"
       }
     ],
     "todoDuringClass": [
@@ -621,8 +617,8 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "Brain training: diatonic scales and rhythms",
-        "url": "https://www.artusimusic.com/assignments/41321/artusi_artusi-aural-skills-i_any_ps004/"
+        "text": "Brain training: intervals pt.2 (specific)",
+        "url": "https://www.artusimusic.com/assignments/297103/wabash-college_music-6_chapter004/"
       }
     ],
     "todoDuringClass": [
@@ -725,8 +721,8 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "Brain training: intervals and more dictation",
-        "url": "https://www.artusimusic.com/assignments/41323/artusi_artusi-aural-skills-i_any_ps006/"
+        "text": "Brain training: chords",
+        "url": "https://www.artusimusic.com/assignments/297105/wabash-college_music-6_chapter006/"
       }
     ],
     "todoDuringClass": [
@@ -777,12 +773,7 @@ const SCHEDULE_DATA = [
     "date": "Nov 17",
     "title": "Arranging",
     "description": "",
-    "todoBeforeClass": [
-      {
-        "text": "Brain training: more intervals and dictation",
-        "url": "https://www.artusimusic.com/assignments/41325/artusi_artusi-aural-skills-i_any_ps008/"
-      }
-    ],
+    "todoBeforeClass": [],
     "todoDuringClass": [
       {
         "text": "Talk about the challenges of arranging music",
@@ -864,8 +855,8 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "Brain training: harmony dictation and rhythm subdivision",
-        "url": "https://www.artusimusic.com/assignments/42824/artusi_artusi-aural-skills-i_any_ps009/"
+        "text": "Brain training: interval review and melodic dictation",
+        "url": "https://www.artusimusic.com/assignments/297107/wabash-college_music-6_chapter008/"
       }
     ],
     "todoDuringClass": [
@@ -923,8 +914,8 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "Brain training: hearing scale degrees and inversions",
-        "url": "https://www.artusimusic.com/assignments/89154/artusi_artusi-aural-skills-i_any_chapter012/"
+        "text": "Brain training: harmonic dictation",
+        "url": "https://www.artusimusic.com/assignments/297108/wabash-college_music-6_chapter009/"
       }
     ],
     "todoDuringClass": [
@@ -941,7 +932,12 @@ const SCHEDULE_DATA = [
     "date": "Dec 9",
     "title": "Lab: Experimentalism",
     "description": "",
-    "todoBeforeClass": [],
+    "todoBeforeClass": [
+      {
+        "text": "Brain training: triad inversion",
+        "url": "https://www.artusimusic.com/assignments/297111/wabash-college_music-6_chapter012/"
+      }
+    ],
     "todoDuringClass": [],
     "todo": [
       {

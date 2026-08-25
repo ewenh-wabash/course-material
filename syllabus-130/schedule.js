@@ -7,7 +7,8 @@ const SCHEDULE_DATA = [
     "title": "Lab: Piano-to-Piano Dictation, The Blues",
     "description": "we'll dive right in before even touching the syllabus",
     "todoBeforeClass": [],
-    "todoDuringClass": [
+    "todoDuringClass": [],
+    "todo": [
       {
         "text": "Finding a pitch on piano",
         "url": null
@@ -25,7 +26,6 @@ const SCHEDULE_DATA = [
         "url": null
       }
     ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -81,13 +81,17 @@ const SCHEDULE_DATA = [
     "title": "Lab: Soundwalk",
     "description": "",
     "todoBeforeClass": [],
-    "todoDuringClass": [
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? Still working on it",
+        "text": "Wander around listening to sounds",
+        "url": null
+      },
+      {
+        "text": "Discuss the sounds around us",
         "url": null
       }
     ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -99,11 +103,19 @@ const SCHEDULE_DATA = [
       {
         "text": "Read & complete: pitch",
         "url": "https://www.artusimusic.com/assignments/22234/artusi_fundamentals_any_chapter004/"
+      },
+      {
+        "text": "Turn in: timbre analysis",
+        "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss pitch",
+        "url": null
+      },
+      {
+        "text": "Staff notation",
         "url": null
       }
     ],
@@ -114,7 +126,7 @@ const SCHEDULE_DATA = [
     "fourthHour": false,
     "date": "Sep 8",
     "title": "Rhythm",
-    "description": "how sounds are arranged in time",
+    "description": "how sounds are arranged in time, duration, tempo, fermata",
     "todoBeforeClass": [
       {
         "text": "Review: note duration",
@@ -135,7 +147,19 @@ const SCHEDULE_DATA = [
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss rhythm",
+        "url": null
+      },
+      {
+        "text": "Discuss duration",
+        "url": null
+      },
+      {
+        "text": "Introduce dots and ties",
+        "url": null
+      },
+      {
+        "text": "Talk about triplets and fermatas",
         "url": null
       }
     ],
@@ -148,13 +172,13 @@ const SCHEDULE_DATA = [
     "title": "Lab: Rhythm Dictation",
     "description": "",
     "todoBeforeClass": [],
-    "todoDuringClass": [
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? Still working on it",
+        "text": "Practice writing down and performing back rhythms",
         "url": null
       }
     ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -172,13 +196,21 @@ const SCHEDULE_DATA = [
         "url": "https://www.musictheory.net/lessons/20"
       },
       {
-        "text": "Read & complete: beams dots and ties Read & complete",
+        "text": "Read & complete: beams dots and ties",
+        "url": null
+      },
+      {
+        "text": "Read & complete",
         "url": "https://www.artusimusic.com/assignments/24011/artusi_fundamentals_any_chapter003"
+      },
+      {
+        "text": "Turn in: rhythm analysis",
+        "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss what makes a note",
         "url": null
       }
     ],
@@ -210,7 +242,11 @@ const SCHEDULE_DATA = [
     ],
     "todoDuringClass": [
       {
-        "text": "Look at scores and how they show meter",
+        "text": "Discuss meter and its relationship to human-made music",
+        "url": null
+      },
+      {
+        "text": "Examine at scores and how they show meter",
         "url": null
       }
     ],
@@ -223,13 +259,13 @@ const SCHEDULE_DATA = [
     "title": "Lab: Conducting",
     "description": "",
     "todoBeforeClass": [],
-    "todoDuringClass": [
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? Still working on it",
+        "text": "Practice conducting in various meters and various tempos",
         "url": null
       }
     ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -245,11 +281,15 @@ const SCHEDULE_DATA = [
       {
         "text": "Read & complete: sharps and flats",
         "url": "https://www.artusimusic.com/assignments/25441/artusi_fundamentals_any_chapter006/"
+      },
+      {
+        "text": "Turn in: meter analysis project",
+        "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Talk about all of the marks on a musical score",
         "url": null
       }
     ],
@@ -275,13 +315,17 @@ const SCHEDULE_DATA = [
         "url": "https://www.musictheory.net/lessons/23"
       },
       {
-        "text": "Read & Complete major scales",
+        "text": "Read & complete: major scales",
         "url": "https://www.artusimusic.com/assignments/27748/artusi_fundamentals_any_chapter009/"
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Talk through scales and melody writing",
+        "url": null
+      },
+      {
+        "text": "Discuss major vs minor scale",
         "url": null
       }
     ],
@@ -293,19 +337,14 @@ const SCHEDULE_DATA = [
     "date": "Sep 23",
     "title": "Lab: Eurythmics - in Salter Hall",
     "description": "",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Walking and clapping",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -315,13 +354,17 @@ const SCHEDULE_DATA = [
     "description": "how melodies are combined into phrases and sections",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
+        "text": "Turn in: melody analysis project",
         "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Looking at phrases and groups of phrases in music",
+        "url": null
+      },
+      {
+        "text": "Discuss melody analysis project",
         "url": null
       }
     ],
@@ -335,13 +378,21 @@ const SCHEDULE_DATA = [
     "description": "how phrases and sections are combined into songs",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
+        "text": "Turn in: melody composition project",
         "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Exploring how structure influences form",
+        "url": null
+      },
+      {
+        "text": "discussing specific forms",
+        "url": null
+      },
+      {
+        "text": "Discuss melody composition project",
         "url": null
       }
     ],
@@ -353,19 +404,14 @@ const SCHEDULE_DATA = [
     "date": "Sep 30",
     "title": "Lab: Melody Dictation",
     "description": "exploring structure and form by making music together",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Listening and writing down melodies",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -381,7 +427,11 @@ const SCHEDULE_DATA = [
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss how the interval is possibly more important than the pitch itself",
+        "url": null
+      },
+      {
+        "text": "Discuss general vs specific intervals",
         "url": null
       }
     ],
@@ -401,7 +451,7 @@ const SCHEDULE_DATA = [
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "The power of the triad",
         "url": null
       }
     ],
@@ -415,17 +465,21 @@ const SCHEDULE_DATA = [
     "description": "we may not have perfect pitch, but we can work on relative pitch",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
+        "text": "Turn in: form analysis project",
         "url": null
-      }
-    ],
-    "todoDuringClass": [
+      },
       {
-        "text": "??? Still working on it",
+        "text": "Brain training: pitch and rhythm",
+        "url": "https://www.artusimusic.com/assignments/41318/artusi_artusi-aural-skills-i_any_ps001/"
+      }
+    ],
+    "todoDuringClass": [],
+    "todo": [
+      {
+        "text": "Listening and internalizing intervals (ascending / descending / simultaneous)",
         "url": null
       }
     ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -435,13 +489,13 @@ const SCHEDULE_DATA = [
     "description": "how triads relate to scales",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
-        "url": null
+        "text": "Brain training: pitch detection",
+        "url": "https://www.artusimusic.com/assignments/41321/artusi_artusi-aural-skills-i_any_ps004/"
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss how scales function within a larger structure",
         "url": null
       }
     ],
@@ -455,13 +509,13 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
+        "text": "Turn in: score elements ID challenge",
         "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss major / minor / augmented / diminished / dominant / etc chords",
         "url": null
       }
     ],
@@ -473,19 +527,14 @@ const SCHEDULE_DATA = [
     "date": "Oct 14",
     "title": "Lab: Harmonic Dictation",
     "description": "",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Listening and writing down chord progressions",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -505,13 +554,21 @@ const SCHEDULE_DATA = [
     "description": "melodies intervals, chords, and scales can all be inverted",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
-        "url": null
+        "text": "Brain training: interval inversions and rhythm dictation",
+        "url": "https://www.artusimusic.com/assignments/41319/artusi_artusi-aural-skills-i_any_ps002/"
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Looking at chord inversions",
+        "url": null
+      },
+      {
+        "text": "Discussing melody inversions and scale inversions",
+        "url": null
+      },
+      {
+        "text": "Discussing interval inversions",
         "url": null
       }
     ],
@@ -523,19 +580,14 @@ const SCHEDULE_DATA = [
     "date": "Oct 21",
     "title": "Lab: Hearing Inversions",
     "description": "",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Listening for and identifying inversions",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -545,13 +597,17 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
+        "text": "Turn in: harmonic analysis project",
         "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss harmonic analysis project",
+        "url": null
+      },
+      {
+        "text": "Talk about melody and harmony writing",
         "url": null
       }
     ],
@@ -565,13 +621,13 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
-        "url": null
+        "text": "Brain training: diatonic scales and rhythms",
+        "url": "https://www.artusimusic.com/assignments/41321/artusi_artusi-aural-skills-i_any_ps004/"
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss how the circle of fifths captures some interesting music theory",
         "url": null
       }
     ],
@@ -583,19 +639,14 @@ const SCHEDULE_DATA = [
     "date": "Oct 28",
     "title": "Lab: Playing Harmony",
     "description": "",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Making music together with harmony in mind",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -603,15 +654,10 @@ const SCHEDULE_DATA = [
     "date": "Oct 29",
     "title": "Non-Chord Tones & Chromatic Melodies",
     "description": "",
-    "todoBeforeClass": [
-      {
-        "text": "??? (still working on it)",
-        "url": null
-      }
-    ],
+    "todoBeforeClass": [],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discussing the spicier chords you might encounter in a song",
         "url": null
       }
     ],
@@ -625,13 +671,17 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
+        "text": "Turn in: songwriting project",
         "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss songwriting project",
+        "url": null
+      },
+      {
+        "text": "Discuss different types of key changes and temporary tonicizations",
         "url": null
       }
     ],
@@ -641,21 +691,16 @@ const SCHEDULE_DATA = [
   {
     "fourthHour": true,
     "date": "Nov 4",
-    "title": "Lab: Hearing Spicy Harmony",
+    "title": "Lab: Sight Singing",
     "description": "",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Singing without practicing beforehand",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -663,15 +708,10 @@ const SCHEDULE_DATA = [
     "date": "Nov 5",
     "title": "Chromatic Harmony",
     "description": "",
-    "todoBeforeClass": [
-      {
-        "text": "??? (still working on it)",
-        "url": null
-      }
-    ],
+    "todoBeforeClass": [],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss even spicier harmonies",
         "url": null
       }
     ],
@@ -685,13 +725,13 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
-        "url": null
+        "text": "Brain training: intervals and more dictation",
+        "url": "https://www.artusimusic.com/assignments/41323/artusi_artusi-aural-skills-i_any_ps006/"
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss the Greek modes beyond major and minor",
         "url": null
       }
     ],
@@ -703,19 +743,14 @@ const SCHEDULE_DATA = [
     "date": "Nov 11",
     "title": "Lab: Mode Identification",
     "description": "",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Identify modes by listening",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -723,15 +758,14 @@ const SCHEDULE_DATA = [
     "date": "Nov 12",
     "title": "Orchestration & Transposition",
     "description": "",
-    "todoBeforeClass": [
-      {
-        "text": "??? (still working on it)",
-        "url": null
-      }
-    ],
+    "todoBeforeClass": [],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss instruments and families of the orchestra",
+        "url": null
+      },
+      {
+        "text": "Explore transposing instruments",
         "url": null
       }
     ],
@@ -745,13 +779,13 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
-        "url": null
+        "text": "Brain training: more intervals and dictation",
+        "url": "https://www.artusimusic.com/assignments/41325/artusi_artusi-aural-skills-i_any_ps008/"
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Talk about the challenges of arranging music",
         "url": null
       }
     ],
@@ -763,19 +797,14 @@ const SCHEDULE_DATA = [
     "date": "Nov 18",
     "title": "Lab: Instrument Recognition",
     "description": "",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Identify instruments by listening",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -785,13 +814,13 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
+        "text": "Turn in: arranging project",
         "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Talk about your arrangements",
         "url": null
       }
     ],
@@ -835,13 +864,17 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
-        "url": null
+        "text": "Brain training: harmony dictation and rhythm subdivision",
+        "url": "https://www.artusimusic.com/assignments/42824/artusi_artusi-aural-skills-i_any_ps009/"
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss how different aspects of the composition come together to tell the same story",
+        "url": null
+      },
+      {
+        "text": "Discuss vocabulary to prepare for the challenge",
         "url": null
       }
     ],
@@ -853,19 +886,14 @@ const SCHEDULE_DATA = [
     "date": "Dec 2",
     "title": "Lab: Dictation, Analysis",
     "description": "",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Somewhat open-topic—we'll do dictation of some sort",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -875,13 +903,13 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
+        "text": "Complete: vocab challenge",
         "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss weird stuff (this is open-topic)",
         "url": null
       }
     ],
@@ -895,13 +923,13 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
-        "url": null
+        "text": "Brain training: hearing scale degrees and inversions",
+        "url": "https://www.artusimusic.com/assignments/89154/artusi_artusi-aural-skills-i_any_chapter012/"
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Discuss weird stuff (this is open-topic)",
         "url": null
       }
     ],
@@ -913,19 +941,14 @@ const SCHEDULE_DATA = [
     "date": "Dec 9",
     "title": "Lab: Experimentalism",
     "description": "",
-    "todoBeforeClass": [
+    "todoBeforeClass": [],
+    "todoDuringClass": [],
+    "todo": [
       {
-        "text": "??? (still working on it)",
+        "text": "Open-topic but with a focus on experimentalism and avant-garde music",
         "url": null
       }
     ],
-    "todoDuringClass": [
-      {
-        "text": "??? Still working on it",
-        "url": null
-      }
-    ],
-    "todo": [],
     "cardClass": "week-card-accent"
   },
   {
@@ -935,13 +958,13 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "??? (still working on it)",
+        "text": "Turn in: final composition project",
         "url": null
       }
     ],
     "todoDuringClass": [
       {
-        "text": "??? Still working on it",
+        "text": "Open-topic",
         "url": null
       }
     ],
@@ -949,13 +972,38 @@ const SCHEDULE_DATA = [
     "cardClass": "week-card"
   },
   {
-    "fourthHour": false,
+    "fourthHour": true,
     "date": "Dec 18",
-    "title": "Full Song Analysis Challenge",
+    "title": "1:30–4:30pm Full Song Analysis Challenge",
     "description": "",
     "todoBeforeClass": [],
     "todoDuringClass": [],
-    "todo": [],
-    "cardClass": "week-card"
+    "todo": [
+      {
+        "text": "I'll play a recording and lyrics and ask you to identify form",
+        "url": null
+      },
+      {
+        "text": "Then I'll give you the form and ask you to identify the structure",
+        "url": null
+      },
+      {
+        "text": "Then I'll give you the structure and ask you to identify the chords",
+        "url": null
+      },
+      {
+        "text": "Then I'll give you the chords and ask you to identify the melody",
+        "url": null
+      },
+      {
+        "text": "Then I'll give you the melody and ask you to analyze the internal meaning of the song (using specific music vocabulary learned in this class)",
+        "url": null
+      },
+      {
+        "text": "Then I'll give you the sheet music and ask you to identify every part of the printed score",
+        "url": null
+      }
+    ],
+    "cardClass": "week-card-accent"
   }
 ];

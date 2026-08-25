@@ -10,9 +10,11 @@ Fall 2026
 - Fine Arts Center M-140
 
 ### Drop in Office Hours
+
 - MWF - usually before 3:00
 - TR - before class, after 4:00
 - or schedule an appointment
+
 - Fine Arts Center M-121
 
 ### Instructor
@@ -34,18 +36,15 @@ This is subject to change if needed and is only meant to give an estimate. Since
 
 ---
 
-### Creative Projects ~30%
+### Creative Projects ~15%
 
-- Songwriting
-- Melody Composition
-- Timbre Analysis
-- Melody Analysis
-- Harmonic Analysis
-- Rhythm Analysis
-- Meter Analysis
-- Counterpoint Analysis
-- Form Analysis
-- Final Composition
+Melody Composition, Songwriting, Arranging Project, Final Composition
+
+---
+
+### Analysis Projects ~15%
+
+Timbre, Rhythm, Meter, Melody, Form, Harmonic
 
 ---
 
@@ -53,7 +52,7 @@ This is subject to change if needed and is only meant to give an estimate. Since
 
 - In-Class Challenges - 15%
 - Full Song Analysis Challenge - 10%
-- Self Assessments - 5%
+- Self Assessments + At Home Challenges - 5%
 
 ## Materials
 
@@ -65,7 +64,7 @@ There is no textbook or other material required for the class, but a semester-le
 
 ## Grades
 
-Much of this class is creative. And I think it’s silly to put a grade on creative work. My goals this semester are that you:
+Much of this class is creative, and I want to foster an environment where you feel comfortable bringing that creativity without worrying too much about grades. To that end, my goals this semester are that you:
 
 - gain a minimum level of skill, understanding, and mastery of music reading/writing/making
 - work hard improve your existing skillset (some of you will come from very different backgrounds and have very different amounts of prior music training)
@@ -157,7 +156,7 @@ The only truly inflexible rule I have is that I am unable to accept work beyond 
 
 **I expect you to attend every class and event**. However, with enough notice, I am generous with excused absences. Let me know as soon as you know you'll need to miss class—for sports, illness, emergencies, etc.
 
-If you miss a class (excused or not), I still expect you to engage with the day's material to receive full attendance/participation points. It is not possible for me to re-teach a previous lecture following an absense, so asking "what did I miss in class yesterday" is not a viable way to engage with that day's material. [**Contact me**](mailto:ewenh@wabash.edu) so we can agree on the scope of make-up work required to receive full points.
+If you miss a class (excused or not), I still expect you to engage with the day's material to receive full attendance/participation points. It is not possible for me to re-teach a previous lecture following an absence, so asking "what did I miss in class yesterday" is not a viable way to engage with that day's material. [**Contact me**](mailto:ewenh@wabash.edu) so we can agree on the scope of make-up work required to receive full points.
 
 ### Late Work
 
@@ -179,15 +178,15 @@ I love extra credit! [**Reach out**](mailto:ewenh@wabash.edu) or **drop by my of
 
 Using AI for this class is like going to the gym, sitting on a bench, and watching a video of someone else working out.
 
-Your brain is a muscle. Your attention span is a muscle. Your analytic prowess is a muscle. You are here to exercise your brain. Generatie AI use can lead to [cognitive decline](ai-cognitive-decline.pdf), and it can [make you more dependent](ai-dependence-and-cognitive-intertia.pdf) on it in the future (cognitive intertia). Using it in class is lazy and rude—and it's an academic integrity violation. Last year, we had a record breaking amount of academic dishonestly, and that was overwhelmingly from unauthorized use of AI. It’s too easy to circumvent the friction that you’re here to experience.
+Your brain is a muscle. Your attention span is a muscle. Your analytic prowess is a muscle. You are here to exercise your brain. Generative AI use can lead to [cognitive decline](ai-cognitive-decline.pdf), and it can [make you more dependent](ai-dependence-and-cognitive-intertia.pdf) on it in the future (cognitive intertia). Using it in class is lazy and rude—and it's an academic integrity violation. Last year, we had a record breaking amount of academic dishonestly, and that was overwhelmingly from unauthorized use of AI. It’s too easy to circumvent the friction that you’re here to experience.
 
 I don’t want polished, lazy, ChatGPT-fueled responses from you. I want weird, buzzy, human writing that crackles with the uncertainty of original thought. Do not use generative AI, including but not limited to:
 
-- generate part of an assignment
-- get summaries of music or media
-- wordsmith your written work
-- summarize ideas or arguments
-- help format an email or other written document
+- generating part of an assignment
+- getting summaries of movies
+- wordsmithing your written work
+- summarizing ideas or arguments
+- helping format an email or other written document
 
 **Use of generative AI in any similar context is a strike on your academic record**—and possible expulsion if you already have a strike.
 
@@ -225,6 +224,11 @@ A rough schedule is included below—though this syllabus is fluid and subject t
 we'll dive right in before even touching the syllabus
 
 #### To-do
+
+- Finding a pitch on piano
+- Piano-to-piano dictation
+- The blues style
+- Black key improvisation
 
 ---
 
@@ -265,6 +269,9 @@ how does music work?
 
 #### To-do
 
+- Wander around listening to sounds
+- Discuss the sounds around us
+
 ---
 
 # Sep 3
@@ -276,10 +283,12 @@ the frequency and timing of sounds
 #### To-do before class
 
 - [Read & complete: pitch](https://www.artusimusic.com/assignments/22234/artusi_fundamentals_any_chapter004/)
+- Turn in: timbre analysis
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss pitch
+- Staff notation
 
 ---
 
@@ -287,7 +296,7 @@ the frequency and timing of sounds
 
 ### Rhythm
 
-how sounds are arranged in time
+how sounds are arranged in time, duration, tempo, fermata
 
 #### To-do before class
 
@@ -298,7 +307,10 @@ how sounds are arranged in time
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss rhythm
+- Discuss duration
+- Introduce dots and ties
+- Talk about triplets and fermatas
 
 ---
 
@@ -307,6 +319,8 @@ how sounds are arranged in time
 ### Lab: Rhythm Dictation
 
 #### To-do
+
+- Practice writing down and performing back rhythms
 
 ---
 
@@ -320,11 +334,13 @@ timbre + pitch + rhythm + dynamics + articulation + shaping = notes
 
 - [Review: the staff](https://www.musictheory.net/lessons/10)
 - [Review: steps & accidentals](https://www.musictheory.net/lessons/20)
-- [Read & complete: beams dots and ties Read & complete](https://www.artusimusic.com/assignments/24011/artusi_fundamentals_any_chapter003)
+- Read & complete: beams dots and ties
+- [Read & complete](https://www.artusimusic.com/assignments/24011/artusi_fundamentals_any_chapter003)
+- Turn in: rhythm analysis
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss what makes a note
 
 ---
 
@@ -343,7 +359,8 @@ the grids our brain makes up to organize rhythm
 
 #### To-do in class
 
-- Look at scores and how they show meter
+- Discuss meter and its relationship to human-made music
+- Examine at scores and how they show meter
 
 ---
 
@@ -352,6 +369,8 @@ the grids our brain makes up to organize rhythm
 ### Lab: Conducting
 
 #### To-do
+
+- Practice conducting in various meters and various tempos
 
 ---
 
@@ -365,10 +384,11 @@ how to write down what's in our heads
 
 - [Review: key signatures](https://www.musictheory.net/lessons/24)
 - [Read & complete: sharps and flats](https://www.artusimusic.com/assignments/25441/artusi_fundamentals_any_chapter006/)
+- Turn in: meter analysis project
 
 #### To-do in class
 
-- ??? Still working on it
+- Talk about all of the marks on a musical score
 
 ---
 
@@ -383,11 +403,12 @@ notes + rhythms = melodies
 - [Review: the major scale](https://www.musictheory.net/lessons/21)
 - [Review: the minor scale](https://www.musictheory.net/lessons/22)
 - [Review: scale degrees](https://www.musictheory.net/lessons/23)
-- [Read & Complete major scales](https://www.artusimusic.com/assignments/27748/artusi_fundamentals_any_chapter009/)
+- [Read & complete: major scales](https://www.artusimusic.com/assignments/27748/artusi_fundamentals_any_chapter009/)
 
 #### To-do in class
 
-- ??? Still working on it
+- Talk through scales and melody writing
+- Discuss major vs minor scale
 
 ---
 
@@ -396,6 +417,8 @@ notes + rhythms = melodies
 ### Lab: Eurythmics - in Salter Hall
 
 #### To-do
+
+- Walking and clapping
 
 ---
 
@@ -407,11 +430,12 @@ how melodies are combined into phrases and sections
 
 #### To-do before class
 
-- ??? (still working on it)
+- Turn in: melody analysis project
 
 #### To-do in class
 
-- ??? Still working on it
+- Looking at phrases and groups of phrases in music
+- Discuss melody analysis project
 
 ---
 
@@ -423,11 +447,13 @@ how phrases and sections are combined into songs
 
 #### To-do before class
 
-- ??? (still working on it)
+- Turn in: melody composition project
 
 #### To-do in class
 
-- ??? Still working on it
+- Exploring how structure influences form
+- discussing specific forms
+- Discuss melody composition project
 
 ---
 
@@ -438,6 +464,8 @@ how phrases and sections are combined into songs
 exploring structure and form by making music together
 
 #### To-do
+
+- Listening and writing down melodies
 
 ---
 
@@ -453,7 +481,8 @@ How two pitches relate to each other
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss how the interval is possibly more important than the pitch itself
+- Discuss general vs specific intervals
 
 ---
 
@@ -469,7 +498,7 @@ How three pitches relate to each other
 
 #### To-do in class
 
-- ??? Still working on it
+- The power of the triad
 
 ---
 
@@ -481,6 +510,8 @@ we may not have perfect pitch, but we can work on relative pitch
 
 #### To-do
 
+- Listening and internalizing intervals (ascending / descending / simultaneous)
+
 ---
 
 # Oct 8
@@ -491,11 +522,11 @@ how triads relate to scales
 
 #### To-do before class
 
-- ??? (still working on it)
+- [Brain training: pitch detection](https://www.artusimusic.com/assignments/41321/artusi_artusi-aural-skills-i_any_ps004/)
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss how scales function within a larger structure
 
 ---
 
@@ -505,11 +536,11 @@ how triads relate to scales
 
 #### To-do before class
 
-- ??? (still working on it)
+- Turn in: score elements ID challenge
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss major / minor / augmented / diminished / dominant / etc chords
 
 ---
 
@@ -518,6 +549,8 @@ how triads relate to scales
 ### Lab: Harmonic Dictation
 
 #### To-do
+
+- Listening and writing down chord progressions
 
 ---
 
@@ -535,11 +568,13 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- [Brain training: interval inversions and rhythm dictation](https://www.artusimusic.com/assignments/41319/artusi_artusi-aural-skills-i_any_ps002/)
 
 #### To-do in class
 
-- ??? Still working on it
+- Looking at chord inversions
+- Discussing melody inversions and scale inversions
+- Discussing interval inversions
 
 ---
 
@@ -549,6 +584,8 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do
 
+- Listening for and identifying inversions
+
 ---
 
 # Oct 22
@@ -557,11 +594,12 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- Turn in: harmonic analysis project
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss harmonic analysis project
+- Talk about melody and harmony writing
 
 ---
 
@@ -571,11 +609,11 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- [Brain training: diatonic scales and rhythms](https://www.artusimusic.com/assignments/41321/artusi_artusi-aural-skills-i_any_ps004/)
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss how the circle of fifths captures some interesting music theory
 
 ---
 
@@ -585,19 +623,17 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do
 
+- Making music together with harmony in mind
+
 ---
 
 # Oct 29
 
 ### Non-Chord Tones & Chromatic Melodies
 
-#### To-do before class
-
-- ??? (still working on it)
-
 #### To-do in class
 
-- ??? Still working on it
+- Discussing the spicier chords you might encounter in a song
 
 ---
 
@@ -607,19 +643,22 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- Turn in: songwriting project
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss songwriting project
+- Discuss different types of key changes and temporary tonicizations
 
 ---
 
 # Nov 4
 
-### Lab: Hearing Spicy Harmony
+### Lab: Sight Singing
 
 #### To-do
+
+- Singing without practicing beforehand
 
 ---
 
@@ -627,13 +666,9 @@ melodies intervals, chords, and scales can all be inverted
 
 ### Chromatic Harmony
 
-#### To-do before class
-
-- ??? (still working on it)
-
 #### To-do in class
 
-- ??? Still working on it
+- Discuss even spicier harmonies
 
 ---
 
@@ -643,11 +678,11 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- [Brain training: intervals and more dictation](https://www.artusimusic.com/assignments/41323/artusi_artusi-aural-skills-i_any_ps006/)
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss the Greek modes beyond major and minor
 
 ---
 
@@ -657,19 +692,18 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do
 
+- Identify modes by listening
+
 ---
 
 # Nov 12
 
 ### Orchestration & Transposition
 
-#### To-do before class
-
-- ??? (still working on it)
-
 #### To-do in class
 
-- ??? Still working on it
+- Discuss instruments and families of the orchestra
+- Explore transposing instruments
 
 ---
 
@@ -679,11 +713,11 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- [Brain training: more intervals and dictation](https://www.artusimusic.com/assignments/41325/artusi_artusi-aural-skills-i_any_ps008/)
 
 #### To-do in class
 
-- ??? Still working on it
+- Talk about the challenges of arranging music
 
 ---
 
@@ -693,6 +727,8 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do
 
+- Identify instruments by listening
+
 ---
 
 # Nov 19
@@ -701,11 +737,11 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- Turn in: arranging project
 
 #### To-do in class
 
-- ??? Still working on it
+- Talk about your arrangements
 
 ---
 
@@ -733,11 +769,12 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- [Brain training: harmony dictation and rhythm subdivision](https://www.artusimusic.com/assignments/42824/artusi_artusi-aural-skills-i_any_ps009/)
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss how different aspects of the composition come together to tell the same story
+- Discuss vocabulary to prepare for the challenge
 
 ---
 
@@ -747,6 +784,8 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do
 
+- Somewhat open-topic—we'll do dictation of some sort
+
 ---
 
 # Dec 3
@@ -755,11 +794,11 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- Complete: vocab challenge
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss weird stuff (this is open-topic)
 
 ---
 
@@ -769,11 +808,11 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- [Brain training: hearing scale degrees and inversions](https://www.artusimusic.com/assignments/89154/artusi_artusi-aural-skills-i_any_chapter012/)
 
 #### To-do in class
 
-- ??? Still working on it
+- Discuss weird stuff (this is open-topic)
 
 ---
 
@@ -783,6 +822,8 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do
 
+- Open-topic but with a focus on experimentalism and avant-garde music
+
 ---
 
 # Dec 10
@@ -791,17 +832,26 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- ??? (still working on it)
+- Turn in: final composition project
 
 #### To-do in class
 
-- ??? Still working on it
+- Open-topic
 
 ---
 
 # Dec 18
 
-### Full Song Analysis Challenge
+### 1:30–4:30pm Full Song Analysis Challenge
+
+#### To-do
+
+- I'll play a recording and lyrics and ask you to identify form
+- Then I'll give you the form and ask you to identify the structure
+- Then I'll give you the structure and ask you to identify the chords
+- Then I'll give you the chords and ask you to identify the melody
+- Then I'll give you the melody and ask you to analyze the internal meaning of the song (using specific music vocabulary learned in this class)
+- Then I'll give you the sheet music and ask you to identify every part of the printed score
 
 ## Resources & outside help
 

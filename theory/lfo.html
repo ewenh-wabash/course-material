@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LFO Sandbox</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: #eee;
+        text-align: center;
+      }
+      h2 {
+        margin: 10px;
+      }
+      .container {
+        display: flex;
+      }
+      select {
+        font-size: 18px;   /* make dropdown text bigger */
+        padding: 4px 6px;  /* optional: more padding for larger items */
+      }
+      .column {
+        flex: 1;
+        padding: 10px;
+        border-right: 1px solid #444;
+        margin-top: 0;
+        padding-top: 0;
+      }
+      .column h2 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        margin-top: 8px;
+        margin-bottom: 12px;
+      }
+
+      .column h2 .add-button {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        min-width: 32px;
+        min-height: 32px;
+        font-size: 23px;
+      }
+      .column:last-child {
+        border-right: none;
+        margin-right: 0;
+        padding-right: 0;
+      }
+      .column:first-child {
+        border-left: none;
+        margin-left: 0;
+        padding-left: 0;
+      }
+
+      .left-button {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        margin: 0;
+        min-width: 32px;
+        min-height: 32px;
+        font-size: 18px;
+        z-index: 10;
+      }
+
+      .signal {
+        border: 1px solid #555;
+        padding: 10px;
+        margin-bottom: 10px;
+        position: relative;
+      }
+
+      .signal button {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        width: 32px;
+        height: 32px;
+        font-size: 24px;
+        padding: 0;
+        margin: 0;
+      }
+      canvas {
+        width: 100%;
+        height: 90px;
+        background: #000;
+      }
+      #resultCanvas {
+        width: 100%;
+        height: 320px;
+        border: 1px solid #555;
+
+      }
+      button {
+        margin: 0px;
+        min-height: 32px;
+        min-width: 32px;
+        font-size: 28px;
+        cursor: pointer;
+      }
+      select,
+      input {
+        width: 100%;
+      }
+      .slider-row {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      .slider-row label {
+        width: 60px;
+      }
+      .dropdown-row {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+      .dropdown-row select {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Modulation Sandbox
+      <button class="left-button" onclick="initAudio()">Start / Stop</button>
+    </h2>
+    LFOs are too low-pitch to hear, but they can be used as control signals<br/>
+    to change (aka modulate) some parameter of an audible audio signal (called the carrier)<br/><br/>
+
+    <canvas id="resultCanvas"></canvas>
+    <div class="container">
+      <div class="column" id="carriers"></div>
+      <div class="column" id="modulators"></div>
+    </div>
+
+    <script>
+      let state = { carriers: [], modulators: [] };
+      const sampleRate = 44100;
+      let carrierPhases = [],
+        lfoPhases = [];
+      let gainTarget = 0; // 1 = full volume, 0 = silent
+      let gainCurrent = 0; // smooth value applied per sample
+      let audioStarted = false;
+
+      function initAudio() {
+        if (!audioStarted) {
+          startAudio(); // user gesture starts AudioContext
+          audioStarted = true;
+        }
+        toggleAudio();
+      }
+
+      function resetPhases() {
+        carrierPhases = state.carriers.map(() => 0);
+        lfoPhases = state.modulators.map(() => 0);
+      }
+
+      function wave(type, phase) {
+        switch (type) {
+          case "square":
+            return phase < 0.5 ? 1 : -1;
+          case "sawtooth-up":
+            return 2 * (phase - Math.floor(phase + 0.5));
+          case "sawtooth-down":
+            return -2 * (phase - Math.floor(phase + 0.5));
+          case "triangle":
+            return 1 - 4 * Math.abs(Math.round(phase - 0.25) - (phase - 0.25));
+          case "pulse25":
+            return phase < 0.25 ? 1 : -1;
+          case "pulse75":
+            return phase < 0.75 ? 1 : -1;
+          case "pulse01":
+            return phase < 0.02 ? 1 : -1;
+          case "pulse99":
+            return phase < 0.98 ? 1 : -1;
+          default:
+            return Math.sin(phase * 2 * Math.PI);
+        }
+      }
+
+      // AUDIO ENGINE
+      function computeLFO() {
+        let ampMod = 0,
+          freqMod = 0;
+        state.modulators.forEach((m, i) => {
+          let val = wave(m.wave, lfoPhases[i]) * m.amp;
+          if (m.mode === "amplitude" || m.mode === "both") ampMod += val;
+          if (m.mode === "frequency" || m.mode === "both") freqMod += val;
+          lfoPhases[i] += m.freq / sampleRate;
+          if (lfoPhases[i] > 1) lfoPhases[i] -= 1;
+        });
+        return { ampMod, freqMod };
+      }
+
+      function stepEngine() {
+        let { ampMod, freqMod } = computeLFO();
+        let sample = 0;
+        state.carriers.forEach((c, i) => {
+          let f = c.freq * (1 + freqMod * 0.2);
+          let a = c.amp * (1 + ampMod * 0.8);
+          f = Math.max(20, f);
+          a = Math.max(0, Math.min(1, a));
+          sample += wave(c.wave, carrierPhases[i]) * a;
+          carrierPhases[i] += f / sampleRate;
+          if (carrierPhases[i] > 1) carrierPhases[i] -= 1;
+        });
+        return (sample / (state.carriers.length || 1)) * gainCurrent;
+      }
+
+      let audioCtx,
+        processor,
+        playing = false;
+      function startAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        processor = audioCtx.createScriptProcessor(512, 0, 1);
+        resetPhases();
+        processor.onaudioprocess = (e) => {
+          let out = e.outputBuffer.getChannelData(0);
+          for (let i = 0; i < out.length; i++) {
+            // Smooth gain to target (fade ~100ms)
+            let delta = 0.001; // adjust for speed: smaller = slower fade
+            gainCurrent += delta * (gainTarget - gainCurrent);
+
+            out[i] = stepEngine();
+          }
+        };
+        processor.connect(audioCtx.destination);
+      }
+      function stopAudio() {
+        if (processor) processor.disconnect();
+        if (audioCtx) audioCtx.close();
+      }
+
+      function toggleAudio() {
+        // Flip between 0 and 1
+        gainTarget = gainTarget > 0 ? 0 : 1;
+      }
+
+      // VISUAL SYSTEM (SYNCHRONIZED TO LFO WAVES)
+      function computeVisualModifiers() {
+        let ampMod = 0,
+          freqMod = 0;
+        state.modulators.forEach((m, i) => {
+          let val = wave(m.wave, lfoPhases[i]) * m.amp;
+          if (m.mode === "amplitude" || m.mode === "both") ampMod += val;
+          if (m.mode === "frequency" || m.mode === "both") freqMod += val;
+        });
+        return { ampMod, freqMod };
+      }
+
+      function drawWave(canvas, carriers, ampMod, freqMod, zoomFactor = 1) {
+        let ctx = canvas.getContext("2d");
+        let w = (canvas.width = canvas.offsetWidth);
+        let h = (canvas.height = canvas.offsetHeight);
+        ctx.clearRect(0, 0, w, h);
+        ctx.beginPath();
+
+        for (let x = 0; x < w; x++) {
+          let t = x / w;
+          let y = 0;
+
+          carriers.forEach((c) => {
+            let cycles =
+              (c.freq / 1000) * 20 * (1 + freqMod * 0.2) * zoomFactor;
+            let amp = c.amp * (1 + ampMod * 0.8);
+            amp = Math.max(0, Math.min(1, amp));
+            y += wave(c.wave, (t * cycles) % 1) * amp;
+          });
+
+          y /= carriers.length || 1;
+          ctx.lineTo(x, h / 2 - y * h * 0.4);
+        }
+
+        ctx.strokeStyle = "#0f0";
+        ctx.stroke();
+      }
+
+      function draw() {
+        let { ampMod, freqMod } = computeVisualModifiers();
+        drawWave(
+          document.getElementById("resultCanvas"),
+          state.carriers,
+          ampMod,
+          freqMod,
+        );
+
+        state.carriers.forEach((c, i) => {
+          drawWave(document.getElementById("c" + i), [c], 0, 0);
+        });
+
+        state.modulators.forEach((m, i) => {
+          // draw multiple cycles horizontally, reflect current slider settings
+          let zoom = 100;
+          drawWave(
+            document.getElementById("m" + i),
+            [{ freq: zoom * m.freq, amp: m.amp, wave: m.wave }],
+            0,
+            0,
+          );
+        });
+
+        requestAnimationFrame(draw);
+      }
+
+      // UI
+      function render() {
+        let cc = document.getElementById("carriers");
+        let mc = document.getElementById("modulators");
+
+        cc.innerHTML =
+          '<h2>&darr; Carrier Signals &darr; <button class="add-button" onclick="state.carriers.push(newCarrier());resetPhases();render();">+</button></h2>';
+        mc.innerHTML =
+          '<h2>&darr; Modulator Signals &darr; <button class="add-button" onclick="state.modulators.push(newMod());resetPhases();render();">+</button></h2>';
+
+        state.carriers.forEach((c, i) => {
+          let d = document.createElement("div");
+          d.className = "signal";
+          d.innerHTML = `
+<button onclick="state.carriers.splice(${i},1);resetPhases();render();">-</button>
+<canvas id="c${i}"></canvas>
+<div class="dropdown-row">
+<select onchange="state.carriers[${i}].wave=this.value">
+<option value='sine'>Sine</option>
+<option value='triangle'>Triangle</option>
+<option value='pulse99'>Impulse (Positive)</option>
+<option value='pulse75'>Pulse (75% Duty Cycle)</option>
+<option value='square'>Square</option>
+<option value='pulse25'>Pulse (25% Duty Cycle)</option>
+<option value='pulse01'>Impulse (Negative)</option>
+<option value='sawtooth-up'>Sawtooth (Up)</option>
+<option value='sawtooth-down'>Sawtooth (Down)</option>
+</select>
+</div>
+<div class="slider-row">
+  <label>Freq</label><input type="range" min="100" max="1000" value="${c.freq}" oninput="state.carriers[${i}].freq=this.value">
+  <label>Amp</label><input type="range" min="0" max="1" step="0.01" value="${c.amp}" oninput="state.carriers[${i}].amp=this.value">
+</div>
+`;
+          cc.appendChild(d);
+        });
+
+        state.modulators.forEach((m, i) => {
+          let d = document.createElement("div");
+          d.className = "signal";
+          d.innerHTML = `
+<button onclick="state.modulators.splice(${i},1);resetPhases();render();">-</button>
+<canvas id="m${i}"></canvas>
+<div class="dropdown-row">
+<select onchange="state.modulators[${i}].wave=this.value">
+<option value='sine'>Sine</option>
+<option value='triangle'>Triangle</option>
+<option value='pulse99'>Impulse (Positive)</option>
+<option value='pulse75'>Pulse (75% Duty Cycle)</option>
+<option value='square'>Square</option>
+<option value='pulse25'>Pulse (25% Duty Cycle)</option>
+<option value='pulse01'>Impulse (Negative)</option>
+<option value='sawtooth-up'>Sawtooth (Up)</option>
+<option value='sawtooth-down'>Sawtooth (Down)</option>
+</select>
+<select onchange="state.modulators[${i}].mode=this.value">
+<option value='amplitude'>Amplitude Modulation</option>
+<option value='frequency'>Frequency Modulation</option>
+<option value='both'>Both</option>
+<option value='none'>None</option>
+</select>
+</div>
+<div class="slider-row">
+  <label>Freq</label><input type="range" min="0.1" max="20" step="0.1" value="${m.freq}" oninput="state.modulators[${i}].freq=this.value">
+  <label>Amp</label><input type="range" min="0" max="1" step="0.01" value="${m.amp}" oninput="state.modulators[${i}].amp=this.value">
+</div>
+`;
+          mc.appendChild(d);
+        });
+      }
+
+      function newCarrier() {
+        return { freq: 300, amp: 0.5, wave: "sine" };
+      }
+      function newMod() {
+        return { freq: 2, amp: 0.5, wave: "sine", mode: "amplitude" };
+      }
+
+      state.carriers.push(newCarrier());
+      state.modulators.push(newMod());
+      resetPhases();
+      render();
+      draw();
+      startAudio();
+    </script>
+  </body>
+</html>

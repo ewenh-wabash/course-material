@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dynamic Microphone Demo</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #eee;
+    text-align: center;
+  }
+  canvas {
+    background: #000;
+    border: 1px solid #444;
+    margin-top: 20px;
+    width: 100%;
+    height: 600px;
+  }
+  #controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+  }
+
+  #legend {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 14px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .legend-color {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    border-radius: 3px;
+    border: 1px solid #555;
+  }
+</style>
+</head>
+<body>
+
+<h1>How a Speaker Works</h1>
+Like a dynamic microphone, but in reverse. The incoming electric signal loops around the voice coil, creating a magnetic field → which interacts with a fixed magnet, causing physical motion of the coil  → <br/>which drives a speaker cone back and forth → which produces pressure waves in the air
+
+<div id="controls">
+  <button onclick="startMic()">Use Microphone</button>
+  <button onclick="startTone()">Play Test Tone</button>
+  <button id="micToggleBtn">Open/Close</button>
+</div>
+
+<canvas id="c"></canvas>
+
+<div id="legend">
+  <div class="legend-item">
+    <span class="legend-color" style="background:#f00;"></span> Electrical
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:rgb(180,100,255);"></span> Magnetic
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:#0f0;"></span> Air Pressure
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = 600;
+}
+window.onresize = resize;
+resize();
+
+// images
+// const micCover = new Image();
+// micCover.src = "mic_cover.png";
+
+// const micBody = new Image();
+// micBody.src = "mic_body.png";
+
+const backPlate = new Image();
+backPlate.src = "speaker_back_plate.png";
+
+const magnet = new Image();
+magnet.src = "speaker_magnet.png";
+
+const topPlate = new Image();
+topPlate.src = "speaker_top_plate.png";
+
+const coilFormer = new Image();
+coilFormer.src = "speaker_coil_former.png";
+
+const spider = new Image();
+spider.src = "speaker_spider.png";
+
+const basket = new Image();
+basket.src = "speaker_basket.png";
+
+const cone = new Image();
+cone.src = "speaker_cone.png";
+
+const dustCover = new Image();
+dustCover.src = "speaker_dust_cover.png";
+
+
+let targetInputX = canvas.width * 0.5;
+let currentInputX = canvas.width * 0.5;
+
+let targetOutputX = canvas.width * 0.7;
+let currentOutputX = canvas.width * 0.7;
+
+
+// audio
+let audioCtx, analyser, dataArray, timeDomainData;
+
+function initAudio(stream){
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+
+  const source = stream
+    ? audioCtx.createMediaStreamSource(stream)
+    : createOscillator();
+
+  source.connect(analyser);
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+}
+
+function startMic(){
+  navigator.mediaDevices.getUserMedia({audio:true}).then(initAudio);
+}
+
+function startTone(){
+  initAudio(null);
+}
+
+function createOscillator(){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.value = 110;
+  osc.connect(gain);
+  gain.connect(analyser);
+  gain.connect(audioCtx.destination);
+  gain.gain.value = 0.25;
+  osc.start();
+  return gain;
+}
+
+function updateTimeDomain() {
+  if (!analyser) return;
+  timeDomainData = new Uint8Array(analyser.fftSize);
+  analyser.getByteTimeDomainData(timeDomainData);
+}
+
+// ---------- MIC TOGGLE ----------
+
+let speakerClose = true;          // starts closed
+let targetBackPlateSpacingFrac = 0.5;
+let targetMagnetSpacingFrac = 0.5;
+let targetTopPlateSpacingFrac = 0.5;
+let targetCoilFormerSpacingFrac = 0.5;
+let targetSpiderSpacingFrac = 0.5;
+let targetBasketSpacingFrac = 0.5;
+let targetConeSpacingFrac = 0.5;
+let targetDustCoverSpacingFrac = 0.5;
+
+let currentBackPlateSpacingFrac = 0.5;
+let currentMagnetSpacingFrac = 0.5;
+let currentTopPlateSpacingFrac = 0.5;
+let currentCoilFormerSpacingFrac = 0.5;
+let currentSpiderSpacingFrac = 0.5;
+let currentBasketSpacingFrac = 0.5;
+let currentConeSpacingFrac = 0.5;
+let currentDustCoverSpacingFrac = 0.5;
+const animationDuration = 500; // ms
+
+document.getElementById("micToggleBtn").onclick = () => {
+  speakerClose = !speakerClose;
+  targetBackPlateSpacingFrac = speakerClose ? 0.5 : 0.1;
+  targetMagnetSpacingFrac = speakerClose ? 0.5: 0.2;
+  targetTopPlateSpacingFrac = speakerClose ? 0.5: 0.3;
+  targetCoilFormerSpacingFrac = speakerClose ? 0.5: 0.4;
+  targetBasketSpacingFrac = speakerClose ? 0.5: 0.5;
+  targetSpiderSpacingFrac = speakerClose ? 0.5: 0.6;
+  targetConeSpacingFrac = speakerClose ? 0.5: 0.7;
+  targetDustCoverSpacingFrac = speakerClose ? 0.5: 0.85;
+}
+
+// helper to smoothly interpolate
+function animateOffsets(deltaTime) {
+  // for the waveforms
+  // recompute targets dynamically based on current canvas width
+  targetInputX  = speakerClose ? canvas.width * 0.5 : canvas.width * 0.4;
+  targetOutputX = speakerClose ? 130 + canvas.width * 0.5 : 150 + canvas.width * 0.7;
+
+  // smooth interpolation
+  const inputSpeed  = (targetInputX - currentInputX) / animationDuration * deltaTime;
+  const outputSpeed = (targetOutputX - currentOutputX) / animationDuration * deltaTime;
+  currentInputX  += inputSpeed;
+  currentOutputX += outputSpeed;
+
+  // for the images
+  const backPlate = (targetBackPlateSpacingFrac - currentBackPlateSpacingFrac) / animationDuration * deltaTime;
+  const magnet = (targetMagnetSpacingFrac - currentMagnetSpacingFrac) / animationDuration * deltaTime;
+  const topPlate = (targetTopPlateSpacingFrac - currentTopPlateSpacingFrac) / animationDuration * deltaTime;
+  const coilFormer = (targetCoilFormerSpacingFrac - currentCoilFormerSpacingFrac) / animationDuration * deltaTime;
+  const spider = (targetSpiderSpacingFrac - currentSpiderSpacingFrac) / animationDuration * deltaTime;
+  const basket = (targetBasketSpacingFrac - currentBasketSpacingFrac) / animationDuration * deltaTime;
+  const cone = (targetConeSpacingFrac - currentConeSpacingFrac) / animationDuration * deltaTime;
+  const dustCover = (targetDustCoverSpacingFrac - currentDustCoverSpacingFrac) / animationDuration * deltaTime;
+
+  currentBackPlateSpacingFrac += backPlate;
+  currentMagnetSpacingFrac += magnet;
+  currentTopPlateSpacingFrac += topPlate;
+  currentCoilFormerSpacingFrac += coilFormer;
+  currentSpiderSpacingFrac += spider;
+  currentBasketSpacingFrac += basket;
+  currentConeSpacingFrac += cone;
+  currentDustCoverSpacingFrac += dustCover;
+}
+
+// ---------- DRAW ----------
+
+let lastTime = performance.now();
+function draw(){
+  const now = performance.now();
+  const deltaTime = now - lastTime;
+  lastTime = now;
+
+  animateOffsets(deltaTime); // smooth mic movement
+
+  requestAnimationFrame(draw);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!analyser) return;
+  updateTimeDomain();
+  drawOutputSignals();
+  drawMic();
+  drawLabels();
+}
+
+function getSample(){
+  const mid = Math.floor(timeDomainData.length/2);
+  return (timeDomainData[mid] - 128) / 128;
+}
+
+// ---------- MICROPHONE ----------
+
+function drawMic(){
+  const cy = canvas.height / 2;
+
+  const baseX = (canvas.width / 2) - 230;
+  const sample = getSample();
+  const offset = sample * 40;
+
+  const diaphragmX = baseX + offset;
+
+
+  // --- wires to body ---
+  const coilX = baseX + 50;
+  // const wireStartX = speakerClose ? coilX + 166 : coilX + 15;
+  // const wireEndX   = coilX + 320;
+
+
+  // // animate time
+  // const t = performance.now() * 0.0005;
+
+  // drawWireWithDots(wireStartX, cy - 20, wireEndX, cy - 20, t);
+  // drawWireWithDots(wireStartX, cy + 20, wireEndX, cy + 20, t + 0.5);
+
+  // --- coilFormer ---
+  if(coilFormer.complete){
+      ctx.drawImage(
+          coilFormer,
+          -40 + offset + canvas.width * currentCoilFormerSpacingFrac,
+          (canvas.height / 2) - (coilFormer.height / 2)
+      );
+  }
+
+  // --- backPlate ---
+  if(backPlate.complete){
+      ctx.drawImage(
+          backPlate,
+          -100 + canvas.width * currentBackPlateSpacingFrac,
+          (canvas.height / 2) - (backPlate.height / 2)
+      );
+  }
+
+  // --- coil (fixed) ---
+  const coilRadius = 10;
+  const coilHeight = 65;
+
+  ctx.strokeStyle = "#f00";
+  ctx.lineWidth = 3;
+
+  const startAngle = Math.PI * 0.25 ;   // ~5:00
+  const endAngle   = Math.PI * 1.75;   // ~1:00
+  for(let i=0;i<15;i++){
+    ctx.beginPath();
+    ctx.ellipse(
+      -30 + canvas.width * currentCoilFormerSpacingFrac + i*6 + offset,
+      cy,
+      coilRadius,
+      coilHeight,
+      0,
+      startAngle,
+      endAngle
+    );
+    ctx.stroke();
+  }
+
+  // --- magnet ---
+  if(magnet.complete){
+      ctx.drawImage(
+          magnet,
+          -80 + canvas.width * currentMagnetSpacingFrac,
+          -1.5 + (canvas.height / 2) - (magnet.height / 2)
+      );
+  }
+
+  // --- topPlate ---
+  if(topPlate.complete){
+      ctx.drawImage(
+          topPlate,
+          -10 + canvas.width * currentTopPlateSpacingFrac,
+          (canvas.height / 2) - (topPlate.height / 2)
+      );
+  }
+
+
+  // --- cone ---
+  if(cone.complete){
+      ctx.drawImage(
+          cone,
+          80 + offset + canvas.width * currentConeSpacingFrac,
+          -2 + (canvas.height / 2) - (cone.height / 2)
+      );
+  }
+
+  // --- dustCover ---
+  if(dustCover.complete){
+      ctx.drawImage(
+          dustCover,
+          85 + offset + canvas.width * currentDustCoverSpacingFrac,
+          (canvas.height / 2) - (dustCover.height / 2)
+      );
+  }
+
+  // --- spider ---
+  if(spider.complete){
+      ctx.drawImage(
+          spider,
+          125 + offset + canvas.width * currentSpiderSpacingFrac,
+          (canvas.height / 2) - (spider.height / 2)
+      );
+  }
+
+  // --- basket ---
+  if(basket.complete){
+      ctx.drawImage(
+          basket,
+          0 + canvas.width * currentBasketSpacingFrac,
+          -4 + (canvas.height / 2) - (basket.height / 2)
+      );
+  }
+
+  drawMagneticFlux(-20 + canvas.width * currentCoilFormerSpacingFrac, cy, 80, 35, offset);
+
+  // drawMagneticFlux(coilX + 15, cy, 80, 35, offset);
+
+}
+
+function drawWireWithDots(x0, y0, x1, y1, tOffset){
+  const segments = 40;
+
+  // base wire
+  ctx.strokeStyle = "#f00";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+
+  // audio-driven intensity
+  const sample = getSample();
+  const intensity = Math.abs(sample);
+
+  for(let i = 0; i < segments; i++){
+    const t = (i / segments + tOffset) % 1;
+
+    const x = x0 + (x1 - x0) * t;
+    const y = y0 + (y1 - y0) * t;
+
+    // random flashing like your nerve
+    if(Math.random() < intensity * 0.2){
+      const size = 3 + Math.random() * 3;
+
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 0, ${0.5 + intensity})`;
+      ctx.fill();
+    }
+  }
+}
+
+// ---------- OUTPUT SIGNAL ----------
+
+function drawOutputSignals(){
+  const cy = canvas.height/2;
+  const startX = (canvas.width/2) + 305;
+  const offset = 20;
+  drawInput(currentInputX, cy);
+  drawOutput(currentOutputX, cy);
+}
+
+function drawInput(startX, yOffset){
+  ctx.beginPath();
+  ctx.moveTo(startX, yOffset);
+
+  const points = [];
+
+  for (let i = 0; i < timeDomainData.length; i++) {
+    const x = startX - i;
+    if (x < 0) break;
+
+    let s = (timeDomainData[i] - 128) / 128;
+    s *= 0.3;
+
+    const y = yOffset + s * 160;
+
+    ctx.lineTo(x, y);
+
+    // store points for pulse animation
+    points.push({x, y});
+  }
+  points.reverse();
+
+  // --- base waveform ---
+  ctx.strokeStyle = "#f00";
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  // --- animated pulses ---
+  drawSignalDots(points);
+}
+
+
+function drawOutput(startX, yOffset){
+  ctx.beginPath();
+  ctx.moveTo(startX, yOffset);
+
+  const points = [];
+
+  for (let i = 0; i < timeDomainData.length; i++) {
+    const x = startX + i;
+    if (x > canvas.width) break;
+
+    let s = (timeDomainData[i] - 128) / 128;
+    s *= 1.3;
+
+    const y = yOffset + s * 160;
+
+    ctx.lineTo(x, y);
+
+    // store points for pulse animation
+    points.push({x, y});
+  }
+
+  // --- base waveform ---
+  ctx.strokeStyle = "#0f0";
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  // --- animated pulses ---
+  // drawSignalDots(points, flip);
+}
+
+function drawSignalDots(points){
+  const t = performance.now() * 0.002;
+
+  const sample = getSample();
+  const intensity = Math.abs(sample);
+
+  ctx.shadowColor = "yellow";
+  ctx.shadowBlur = 10;
+
+  for(let i = 0; i < points.length; i += 8){ // spacing between dots
+    const p = points[i];
+
+    // moving wave of pulses
+    const wave = Math.sin(i * 0.1 - t * 6);
+
+    if(wave > 0.6 * (1 - intensity)){
+      const size = 3 + intensity;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,0,${0.6 + intensity})`;
+      ctx.fill();
+    }
+  }
+
+  ctx.shadowBlur = 0;
+}
+
+function drawMagneticFlux(coilX, coilY, coilRadius, coilHeight, diaphragmOffset) {
+    const numLoops = parseInt(0 + (5 * Math.abs(diaphragmOffset) / 20));
+    // const numLoops = 7;           // number of flux lines
+    const baseLineWidth = 1;      // base thickness of flux lines
+    const maxExtraWidth = 3;      // extra width when diaphragm moves
+    const maxShift = 12;          // horizontal movement of flux lines based on diaphragm
+
+    // scale diaphragm movement
+    const fluxShift = diaphragmOffset * maxShift / 40; // normalize to smaller value
+
+    for (let j = 0; j < numLoops; j++) {
+        const loopRadiusX = coilRadius + j * 6;   // horizontal radius of ellipse
+        const loopRadiusY = coilHeight + j * 4;  // vertical radius
+
+        // intensity based on diaphragm motion
+        const intensity = Math.min(Math.abs(diaphragmOffset) / 40, 1);
+        const color = `rgba(160,32,240,${0.5 + 0.4*intensity})`; // purple
+
+        let angleIncrease = (Math.abs(diaphragmOffset) / 60);
+        if (j == 0) {
+          angleIncrease = 2;
+        } else {
+          angleIncrease = (Math.abs(diaphragmOffset) / (1 * (7 + 2 * j * j)));
+        }
+        // --- inside-the-coil flux ---
+        ctx.beginPath();
+        ctx.ellipse(
+            35 + coilX,       // horizontal shift from diaphragm movement
+            coilY + 85,                   // center vertical
+            loopRadiusX + 10 * j,
+            loopRadiusY,
+            0,
+            Math.PI * 1.1 - angleIncrease,           // start angle inside coil
+            Math.PI * 1.9 + angleIncrease             // end angle inside coil
+        );
+        ctx.strokeStyle = color;
+        ctx.lineWidth = baseLineWidth + intensity * maxExtraWidth;
+        ctx.stroke();
+
+        // --- outside-the-coil flux (completing the loop) ---
+        ctx.beginPath();
+        ctx.ellipse(
+            35 + coilX,
+            coilY - 85,
+            loopRadiusX + 10 * j,         // slightly bigger to look outside
+            loopRadiusY,
+            0,
+            Math.PI * 2.1 - angleIncrease,           // start outside
+            Math.PI * 2.9 + angleIncrease             // end outside
+        );
+        ctx.strokeStyle = color;
+        ctx.lineWidth = baseLineWidth + intensity * maxExtraWidth;
+        ctx.stroke();
+    }
+}
+
+function drawLabels() {
+  ctx.fillStyle = "#fff";
+  ctx.font = "16px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+
+  const height = canvas.height - 40;
+
+  // Draw the labels
+  ctx.fillText("Incoming Signal", 80, height);
+
+  if(speakerClose){
+    ctx.fillText("Speaker Cone", canvas.width/2 + 200, height);
+    ctx.fillText("Basket", canvas.width/2 + 80, height);
+    ctx.fillText("Magnetic Ring", canvas.width/2 - 45, height);
+  } else {
+    ctx.fillText("Back Plate", -49 + canvas.width * 0.1, canvas.height/2 + 88);
+    ctx.fillText("Magnetic Ring", -45 + canvas.width * 0.2, canvas.height/2 + 88);
+    ctx.fillText("Front Plate", canvas.width * 0.3, canvas.height/2 + 88);
+    ctx.fillText("Voice Coil", 10 + canvas.width * 0.4, canvas.height/2 + 88);
+    ctx.fillText("Coil Former", 105 + canvas.width * 0.4, -5 + canvas.height/2);
+    ctx.fillText("Basket", 80 + canvas.width * 0.5, height);
+    ctx.fillText("Spider", 133 + canvas.width * 0.6, canvas.height/2 + 88);
+    ctx.fillText("Speaker Cone", 145 + canvas.width * 0.7, height);
+    ctx.fillText("Dust Cover", 102 + canvas.width * 0.85, canvas.height/2 + 88);
+  }
+
+
+  ctx.fillText("Sound Output", canvas.width - 70, height);
+  // ctx.fillText("Regular Signal", canvas.width - 70, canvas.height/2 - 50);
+  // ctx.fillText("Inverted Signal", canvas.width - 70, canvas.height/2 + 40);
+  // ctx.fillText("(Unused)", canvas.width - 70, canvas.height/2 + 60);
+}
+
+draw();
+</script>
+<br/><br/><br/>
+<h2>Speaker Anatomy in 3D (Cutaway)</h2>
+<img width="400px" src="speaker_3d.png"/>
+</body>
+</html>

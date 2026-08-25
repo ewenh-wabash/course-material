@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sound Wave Visualizer</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #eee;
+    text-align: center;
+  }
+  canvas {
+    background: #000;
+    border: 1px solid #444;
+    margin-top: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .controls {
+    margin-top: 20px;
+  }
+  input[type=range] {
+    width: 300px;
+  }
+  .label {
+    margin-top: 10px;
+  }
+  button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Sound Wave Visualizer</h1>
+click start to simulate air molecules colliding to propagate sound waves<br/>
+For this demo, the "speed" of the wave has been slowed from 1125 feet per second to 1 inch per second
+<canvas id="waveCanvas" width="1000" height="700"></canvas>
+
+<div class="controls">
+  <div class="label">Frequency: <span id="freqVal">440Hz (A4)</span></div>
+  <input type="range" id="frequency" min="100" max="1000" step="0.1" value="440">
+
+  <div class="label">Amplitude: <span id="ampVal">0.5</span></div>
+  <input type="range" id="amplitude" min="0" max="1" step="0.01" value="0.5">
+
+  <br>
+  <button id="start">Start</button>
+  <button id="stop">Stop</button>
+  <button id="impulse">Impulse</button>
+
+  <div class="label">Waveform:</div>
+  <select id="waveformSelect">
+    <option value="sine">Sine</option>
+    <option value="triangle">Triangle</option>
+    <option value="square">Square</option>
+    <option value="sawUp">Saw Up</option>
+    <option value="sawDown">Saw Down</option>
+  </select>
+</div>
+
+
+
+<script>
+let impulseActive = false;
+
+const canvas = document.getElementById('waveCanvas');
+const ctx = canvas.getContext('2d');
+const width = canvas.width;
+const height = canvas.height;
+const center = { x: width/2, y: height/2 };
+
+const frequencySlider = document.getElementById('frequency');
+const ampSlider = document.getElementById('amplitude');
+const freqVal = document.getElementById('freqVal');
+const ampVal = document.getElementById('ampVal');
+const waveformSelect = document.getElementById('waveformSelect');
+
+
+let circleRunning = false;
+let particles = [];
+let waves = [];
+let phase = 0;
+
+// Historical trace data for green line, initialized full of 0's
+const traceMaxLength = 75 + width/2; // center to right edge
+let traceData = Array(traceMaxLength).fill(0);
+
+const particleCount = 1000;
+for (let i=0; i<particleCount; i++) {
+  const x = Math.random() * width;
+  const y = Math.random() * height;
+  const dx = x - center.x;
+  const dy = y - center.y;
+  const radius = Math.sqrt(dx*dx + dy*dy);
+  const angle = Math.atan2(dy, dx);
+  particles.push({ x, y, radius, angle, displacement: 0 });
+}
+
+function startCircle() { circleRunning = true; startSound(); }
+function stopCircle() { circleRunning = false; stopSound(); }
+// function addImpulse() { waves.push({ type: 'impulse', time: performance.now()/1000, amplitude: parseFloat(ampSlider.value) }); }
+
+function updateFrequencyDisplay() {
+  const freq = parseFloat(frequencySlider.value);
+  const pitch = frequencyToPitch(freq);
+
+  freqVal.textContent = pitch
+    ? `${freq.toFixed(1)}Hz (${pitch})`
+    : `${freq.toFixed(1)}Hz`;
+}
+
+frequencySlider.oninput = updateFrequencyDisplay;
+
+// frequencySlider.oninput = () => { freqVal.textContent = frequencySlider.value; };
+ampSlider.oninput = () => { ampVal.textContent = ampSlider.value; };
+
+document.getElementById('start').onclick = startCircle;
+document.getElementById('stop').onclick = stopCircle;
+// document.getElementById('impulse').onclick = addImpulse;
+document.getElementById('impulse').onmousedown = () => { impulseActive = true; };
+document.getElementById('impulse').onmouseup = () => { impulseActive = false; };
+
+
+let lastTime = performance.now();
+function animate() {
+  const now = performance.now();
+  const dt = (now - lastTime)/500;
+  lastTime = now;
+
+  const freq = parseFloat(frequencySlider.value) / 500;
+  const amp = parseFloat(ampSlider.value);
+
+  let currentValue = 0;
+  const maxTraceData = 30;
+
+  if (impulseActive) {
+    currentValue = -maxTraceData;
+} else if(circleRunning) {
+    phase += 2 * Math.PI * freq * dt;
+    const waveType = waveformSelect.value;
+    switch(waveType) {
+        case 'sine':
+            currentValue = Math.sin(phase) * amp * maxTraceData;
+            break;
+        case 'triangle':
+            currentValue = (2 / Math.PI) * Math.asin(Math.sin(phase)) * amp * maxTraceData;
+            break;
+        case 'square':
+            currentValue = Math.sign(Math.sin(phase)) * amp * maxTraceData;
+            break;
+        case 'sawUp':
+            currentValue = (-2 * (phase / (2 * Math.PI) - Math.floor(phase / (2 * Math.PI) + 0.5))) * amp * maxTraceData;
+            break;
+        case 'sawDown':
+            currentValue = (2 * (phase / (2 * Math.PI) - Math.floor(phase / (2 * Math.PI) + 0.5))) * amp * maxTraceData;
+            break;
+    }
+}
+  updateSound(currentValue);
+
+  // Shift traceData and append new value
+  traceData.push(currentValue);
+  if(traceData.length > traceMaxLength) traceData.shift();
+
+  draw();
+  requestAnimationFrame(animate);
+}
+
+function draw() {
+  ctx.clearRect(0,0,width,height);
+
+  // Draw particle field affected by the trace
+  // ctx.fillStyle = 'blue';
+  // const particleColors = ["blue"];
+  // const particleColors = ["blue", "cyan", "red"];
+  // const particleColors = ["red", "orange", "yellow", "green", "blue", "purple", "cyan", "magenta"];
+
+  // const particleColors = ["rgba(200, 200, 255, 0.05)"];
+  // const particleSize = 13.3;
+
+    const particleColors = [
+    "hsla(180, 100%, 60%, 0.5)",
+    "hsla(200, 100%, 60%, 0.5)",
+    "hsla(220, 100%, 60%, 0.5)",
+    "hsla(240, 100%, 60%, 0.5)"];
+    const particleSize = 9;
+
+
+  // const particleColors = [
+  //   "hsla(0, 100%, 60%, 0.1)",
+  //   "hsla(10, 100%, 60%, 0.1)",
+  //   "hsla(20, 100%, 60%, 0.1)",
+  //   "hsla(30, 100%, 60%, 0.1)",
+  //   "hsla(40, 100%, 60%, 0.1)",
+  //   "hsla(50, 100%, 60%, 0.1)",
+  //   "hsla(60, 100%, 60%, 0.1)",
+  //   "hsla(70, 100%, 60%, 0.1)",
+  //   "hsla(80, 100%, 60%, 0.1)",
+  //   "hsla(90, 100%, 60%, 0.1)",
+  //   "hsla(100, 100%, 60%, 0.1)",
+  //   "hsla(110, 100%, 60%, 0.1)",
+  //   "hsla(120, 100%, 60%, 0.1)",
+  //   "hsla(130, 100%, 60%, 0.1)",
+  //   "hsla(140, 100%, 60%, 0.1)",
+  //   "hsla(150, 100%, 60%, 0.1)",
+  //   "hsla(160, 100%, 60%, 0.1)",
+  //   "hsla(170, 100%, 60%, 0.1)",
+  //   "hsla(180, 100%, 60%, 0.1)",
+  //   "hsla(190, 100%, 60%, 0.1)",
+  //   "hsla(200, 100%, 60%, 0.1)",
+  //   "hsla(210, 100%, 60%, 0.1)",
+  //   "hsla(220, 100%, 60%, 0.1)",
+  //   "hsla(230, 100%, 60%, 0.1)",
+  //   "hsla(240, 100%, 60%, 0.1)",
+  //   "hsla(250, 100%, 60%, 0.1)",
+  //   "hsla(260, 100%, 60%, 0.1)",
+  //   "hsla(270, 100%, 60%, 0.1)",
+  //   "hsla(280, 100%, 60%, 0.1)",
+  //   "hsla(290, 100%, 60%, 0.1)",
+  //   "hsla(300, 100%, 60%, 0.1)",
+  //   "hsla(310, 100%, 60%, 0.1)",
+  //   "hsla(320, 100%, 60%, 0.1)",
+  //   "hsla(330, 100%, 60%, 0.1)",
+  //   "hsla(340, 100%, 60%, 0.1)",
+  //   "hsla(350, 100%, 60%, 0.1)"
+  // ];
+
+  // const particleSize = 3.3;
+  // const particleSize = 8.3;
+
+  particles.forEach((p, i) => {
+    ctx.fillStyle = particleColors[i % particleColors.length];
+    // console.log(Math.floor(Math.random() * particleColors.length));
+    const radialDistance = Math.round(p.radius); // distance from center
+    const traceIndex = Math.min(Math.max(traceMaxLength - radialDistance,0), traceMaxLength-1);
+    const displacement = -0.5 * traceData[traceIndex] || 0;
+    p.x = center.x + (p.radius + displacement) * Math.cos(p.angle);
+    p.y = center.y + (p.radius + displacement) * Math.sin(p.angle);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, particleSize, 0, 2*Math.PI);
+    ctx.fill();
+  });
+
+  // Draw green line trace (center to right, right-to-left)
+  ctx.strokeStyle = 'lime';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  traceData.forEach((v,i) => {
+    const x = center.x + traceMaxLength - i;
+    const y = center.y + v;
+    if(i===0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Draw central circle
+  ctx.strokeStyle = 'white';
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 20, 0, 2*Math.PI);
+  ctx.stroke();
+}
+
+// Audio setup
+let audioCtx;
+let oscillator;
+let gainNode;
+
+function updateOscillatorType() {
+    if(!oscillator) return;
+    const type = waveformSelect.value;
+    if(type === 'sawUp' || type === 'sawDown') {
+        oscillator.type = 'sawtooth';
+    } else {
+        oscillator.type = type;
+    }
+}
+
+waveformSelect.onchange = updateOscillatorType;
+
+
+function startSound() {
+  if(audioCtx) return; // already running
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  oscillator = audioCtx.createOscillator();
+  gainNode = audioCtx.createGain();
+
+  oscillator.type = 'sine';
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.start();
+}
+
+function stopSound() {
+  if(!audioCtx) return;
+  oscillator.stop();
+  audioCtx.close();
+  audioCtx = null;
+  oscillator = null;
+  gainNode = null;
+}
+
+// Update frequency and amplitude each frame
+function updateSound(currentValue) {
+  if(!oscillator) return;
+  // Map your trace amplitude to gain
+  // gainNode.gain.setTargetAtTime(Math.abs(currentValue)/30, audioCtx.currentTime, 0.01);
+  if (gainNode) {
+    const amp = parseFloat(ampSlider.value);
+    gainNode.gain.setTargetAtTime(amp, audioCtx.currentTime, 0.01);
+  }
+  // Map frequency slider to oscillator frequency
+  oscillator.frequency.setTargetAtTime(parseFloat(frequencySlider.value), audioCtx.currentTime, 0.01);
+}
+
+function playClick() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  const bufferSize = 0.01 * audioCtx.sampleRate; // 50 ms click
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  // Fill with random noise
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * 0.5; // scale amplitude
+  }
+
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  noise.connect(audioCtx.destination);
+  noise.start();
+}
+
+function frequencyToPitch(freq) {
+  if (!freq || freq <= 0) return "";
+
+  const A4 = 440;
+  const semitone = 12 * Math.log2(freq / A4);
+  const nearest = Math.round(semitone);
+
+  // Distance from nearest semitone (in semitones)
+  const diff = Math.abs(semitone - nearest);
+
+  // Thresholds
+  const veryClose = 1 / 16; // 0.0625
+  const close = 1 / 8;      // 0.125
+
+  if (diff > close) return "";
+
+  const noteIndex = (nearest + 9) % 12; // shift so C = 0
+  const octave = 4 + Math.floor((nearest + 9) / 12);
+
+  const noteNames = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B"];
+  const note = noteNames[(noteIndex + 12) % 12];
+
+  const pitch = note + octave;
+
+  if (diff <= veryClose) {
+    return pitch;
+  } else {
+    return "~" + pitch;
+  }
+}
+
+// Assign to mousedown and mouseup
+const impulseButton = document.getElementById('impulse');
+impulseButton.onmousedown = () => { impulseActive = true; playClick(); };
+impulseButton.onmouseup = () => { impulseActive = false; playClick(); };
+
+animate();
+</script>
+
+<br/><br/><br/><br/><br/><br/>
+
+<h2>See a Wave</h2>
+With very high sound pressures (much louder than music) and a far-away camera, the difference in air pressure becomes visible to the naked eye.
+<video width="1280" height="720" controls>
+    <source src="waves.mp4" type="video/mp4">
+</video>
+<br/><br/>
+<h2>See an Impulse</h2>
+With a single impulse (like from an explosion), notice a single sphere radiating outwards at the speed of sound.
+<video width="1280" height="720" controls>
+    <source src="impulse.mp4" type="video/mp4">
+</video>
+
+
+</body>
+</html>

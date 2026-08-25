@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MP3 Compression Classroom Analyzer</title>
+<style>
+  body { font-family: Arial; background:#0b0b0b; color:#eee; text-align:center; }
+  canvas { border:1px solid #333; margin:8px; }
+  .row { display:flex; justify-content:center; flex-wrap:wrap; }
+  .panel { margin:10px; }
+</style>
+</head>
+<body>
+<h2>MP3 Compression Classroom Analyzer</h2>
+<input type="file" id="fileInput" accept="audio/mpeg">
+
+<div class="row">
+  <div class="panel">
+    <canvas id="wave" width="400" height="120"></canvas>
+    <div>Waveform</div>
+  </div>
+  <div class="panel">
+    <canvas id="spectrum" width="400" height="120"></canvas>
+    <div>FFT Spectrum</div>
+  </div>
+</div>
+
+<div class="row">
+  <canvas id="spectrogram" width="820" height="250"></canvas>
+</div>
+
+<div class="row">
+  <div class="panel">
+    <canvas id="vbr" width="400" height="120"></canvas>
+    <div>VBR Timeline</div>
+  </div>
+  <div class="panel">
+    <canvas id="reservoir" width="400" height="120"></canvas>
+    <div>Bit Reservoir</div>
+  </div>
+</div>
+
+<div id="info"></div>
+
+<script>
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 2048;
+
+let source, currentBuffer;
+let freqData = new Uint8Array(analyser.frequencyBinCount);
+let timeData = new Uint8Array(analyser.fftSize);
+
+// ===== MP3 PARSER =====
+function parseMP3Frames(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let frames = [];
+
+  const bitrates = [0,32,40,48,56,64,80,96,112,128,160,192,224,256,320];
+  const sampleRates = [44100,48000,32000];
+
+  for (let i = 0; i < bytes.length - 4; i++) {
+    if (bytes[i] === 0xFF && (bytes[i+1] & 0xE0) === 0xE0) {
+      let bitrateIndex = (bytes[i+2] >> 4) & 0x0F;
+      let sampleRateIndex = (bytes[i+2] >> 2) & 0x03;
+      let padding = (bytes[i+2] >> 1) & 0x01;
+
+      let bitrate = bitrates[bitrateIndex];
+      let sampleRate = sampleRates[sampleRateIndex];
+      if (!bitrate || !sampleRate) continue;
+
+      let frameLength = Math.floor((144000 * bitrate) / sampleRate) + padding;
+      let reservoir = bytes[i+4] || 0;
+
+      frames.push({ bitrate, sampleRate, reservoir });
+      i += frameLength - 1;
+    }
+  }
+  return frames;
+}
+
+// ===== DRAW FUNCTIONS =====
+const waveCtx = document.getElementById('wave').getContext('2d');
+const specCtx = document.getElementById('spectrum').getContext('2d');
+const spectroCtx = document.getElementById('spectrogram').getContext('2d');
+const vbrCtx = document.getElementById('vbr').getContext('2d');
+const resCtx = document.getElementById('reservoir').getContext('2d');
+
+function drawWave() {
+  analyser.getByteTimeDomainData(timeData);
+  waveCtx.fillRect(0,0,400,120);
+  waveCtx.beginPath();
+  for (let i=0;i<timeData.length;i++) {
+    let x = i/ timeData.length * 400;
+    let y = timeData[i]/255 * 120;
+    i===0 ? waveCtx.moveTo(x,y) : waveCtx.lineTo(x,y);
+  }
+  waveCtx.strokeStyle = '#0f0';
+  waveCtx.stroke();
+}
+
+function drawSpectrum() {
+  analyser.getByteFrequencyData(freqData);
+  specCtx.fillRect(0,0,400,120);
+  let w = 400/freqData.length;
+  for (let i=0;i<freqData.length;i++) {
+    let v = freqData[i];
+    specCtx.fillStyle = 'rgb('+(v+100)+',50,50)';
+    specCtx.fillRect(i*w,120-v,w,v);
+  }
+}
+
+let spectroX=0;
+function drawSpectrogram() {
+  analyser.getByteFrequencyData(freqData);
+  let img = spectroCtx.createImageData(1,250);
+  for (let i=0;i<250;i++) {
+    let val = freqData[Math.floor(i*freqData.length/250)];
+    let idx=i*4;
+    img.data[idx]=val;
+    img.data[idx+1]=val;
+    img.data[idx+2]=val*2;
+    img.data[idx+3]=255;
+  }
+  spectroCtx.putImageData(img,spectroX,0);
+  spectroX=(spectroX+1)%820;
+}
+
+function drawVBR(frames){
+  vbrCtx.clearRect(0,0,400,120);
+  let step=400/frames.length;
+  frames.forEach((f,i)=>{
+    let h=(f.bitrate/320)*120;
+    vbrCtx.fillStyle='#00ff88';
+    vbrCtx.fillRect(i*step,120-h,step,h);
+  });
+}
+
+function drawReservoir(frames){
+  resCtx.clearRect(0,0,400,120);
+  let step=400/frames.length;
+  frames.forEach((f,i)=>{
+    let h=f.reservoir;
+    resCtx.fillStyle='#ffaa00';
+    resCtx.fillRect(i*step,120-h,step,h);
+  });
+}
+
+// ===== METRICS =====
+function noiseFloor(){
+  let sum=0;
+  for(let v of freqData) sum+=v;
+  return sum/freqData.length;
+}
+
+function transientSharpness(){
+  let s=0;
+  for(let i=1;i<timeData.length;i++){
+    s+=Math.abs(timeData[i]-timeData[i-1]);
+  }
+  return s/timeData.length;
+}
+
+function preEcho(){
+  let high=0;
+  for(let i=freqData.length*0.7;i<freqData.length;i++) high+=freqData[i];
+  return high/(freqData.length*0.3);
+}
+
+function stereoSimilarity(){
+  if(!currentBuffer||currentBuffer.numberOfChannels<2) return 1;
+  let a=currentBuffer.getChannelData(0);
+  let b=currentBuffer.getChannelData(1);
+  let diff=0;
+  for(let i=0;i<a.length;i+=1000) diff+=Math.abs(a[i]-b[i]);
+  return 1-(diff/(a.length/1000));
+}
+
+// ===== LOOP =====
+function loop(){
+  requestAnimationFrame(loop);
+  drawWave();
+  drawSpectrum();
+  drawSpectrogram();
+
+  document.getElementById('info').innerHTML=`
+    Noise Floor: ${noiseFloor().toFixed(1)}<br>
+    Transient Sharpness: ${transientSharpness().toFixed(2)}<br>
+    Pre-Echo Indicator: ${preEcho().toFixed(2)}<br>
+    Stereo Similarity: ${stereoSimilarity().toFixed(2)}
+  `;
+}
+
+// ===== LOAD =====
+document.getElementById('fileInput').addEventListener('change',e=>{
+  let file=e.target.files[0];
+  if(!file) return;
+
+  let reader=new FileReader();
+  reader.onload=ev=>{
+    let buffer=ev.target.result;
+
+    let frames=parseMP3Frames(buffer);
+    drawVBR(frames);
+    drawReservoir(frames);
+
+    audioCtx.decodeAudioData(buffer,decoded=>{
+      currentBuffer=decoded;
+      if(source) source.disconnect();
+      source=audioCtx.createBufferSource();
+      source.buffer=decoded;
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      source.start();
+      loop();
+    });
+  };
+  reader.readAsArrayBuffer(file);
+});
+</script>
+</body>
+</html>

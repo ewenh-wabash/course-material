@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>How Cochlear Implants Work</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #eee;
+    text-align: center;
+  }
+  canvas {
+    background: #000;
+    border: 1px solid #444;
+    margin-top: 20px;
+    width: 100%;
+    height: 600px;
+  }
+  #controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+  }
+
+  #legend {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 14px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .legend-color {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    border-radius: 3px;
+    border: 1px solid #555;
+  }
+</style>
+</head>
+<body>
+<h1>How Cochlear Implants Works</h1>
+A microphone listens for sounds, converting them into an electrical signal<br/>
+which is sent to a transmitter, converted to a radio signal, and beamed through the skull<br/>
+to a reciever, which converts it to an electrical signal, stimulating<br/>
+the cochlea nerve from a small wire embedded in the cochlea itself
+
+
+<div id="controls">
+  <button onclick="startMic()">Use Microphone</button>
+  <button onclick="startTone()">Play Test Tone</button>
+</div>
+
+<canvas id="c"></canvas>
+
+<div id="legend">
+  <div class="legend-item">
+    <span class="legend-color" style="background:#0f0;"></span> Air Pressure
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:#f00;"></span> Wired
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:rgb(180,100,255);"></span> Wireless (Radio Signal)
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:#0ff;"></span> Biological
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:#ff0;"></span> Electrical
+  </div>
+</div>
+
+<script>
+
+// let canvasOffsetX = 200; // move everything 50px to the right
+// let canvasOffsetY = -20; // move everything 20px up
+
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+resize();
+window.onresize = resize;
+
+const malleusImg = new Image();
+malleusImg.src = 'malleus.png';
+const incusImg = new Image();
+incusImg.src = 'incus.png';
+const stapesImg = new Image();
+stapesImg.src = 'stapes.png';
+const brainImg = new Image();
+brainImg.src = 'brain.png';
+const earImg = new Image();
+earImg.src = 'cochlear_implant.png';
+const recieverImg = new Image();
+recieverImg.src = 'cochlear_implant_reciever.png';
+
+
+
+
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = 600;
+}
+
+let audioCtx, analyser, dataArray;
+
+function initAudio(stream){
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  // analyser.fftSize = 16384;
+  analyser.fftSize = 8192;
+  // analyser.fftSize = 4096;
+
+  const source = stream
+    ? audioCtx.createMediaStreamSource(stream)
+    : createOscillator();
+
+  source.connect(analyser);
+
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+}
+
+function startMic(){
+  navigator.mediaDevices.getUserMedia({audio:true})
+    .then(initAudio);
+}
+
+function startTone(){
+  initAudio(null);
+}
+
+function createOscillator(){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "sine";
+  // osc.type = "triangle";
+  // osc.type = "square";
+  osc.frequency.value = 440;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  gain.connect(analyser);
+  gain.gain.value = 0.05;
+  osc.start();
+
+  setInterval(()=>{
+    osc.frequency.value = 100 + Math.random()*1000;
+  },1500);
+
+  return gain;
+}
+
+// --- Draw loop
+let time = 0;
+updateTimeDomain();
+// ctx.translate(canvasOffsetX, canvasOffsetY); // shift everything
+
+function draw(){
+  requestAnimationFrame(draw);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(!analyser) return;
+
+  analyser.getByteFrequencyData(dataArray);
+  updateTimeDomain();
+
+  drawReciever();
+  drawEar(time);
+  drawEarImage();
+
+  drawRadioWaves(time);
+
+
+  drawCochlea();
+  // drawSpectrogramLog();
+  drawHearingAidWire();
+  drawTransmitterSpiralWire();
+  drawEardrumAudioWave();
+  // drawSecondEardrumAudioWave();
+
+  drawLabels();
+  time += 0.03;
+}
+
+let timeDomainData = new Uint8Array(0); // global
+
+function updateTimeDomain() {
+    if (!analyser) return;
+    timeDomainData = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(timeDomainData);
+}
+
+function drawLabels() {
+    ctx.fillStyle = "#fff";
+    ctx.font = "16px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    const height = canvas.height - 40;
+    // Ear image position
+    const processorX = 212;
+    const processorY = 438;
+
+    // Eardrum position
+    const earX = 240; // your eardrum center X
+    const earY = height;
+
+    // Ossicles (middle point)
+    const electrodeX = Math.max(canvas.width * .37, 360)
+    const electrodeY = height;
+
+    // Cochlea
+    const cochleaX = canvas.width / 2;
+    const cochleaY = height;
+
+    // Recieve
+    const recieverX = -260 + canvas.width / 2;
+    const recieverY = 80;
+
+    // Cochlear nerve (you can choose a point near the cochlea's output)
+    const nerveX = canvas.width * .75;
+    const nerveY = height;
+
+    // Brain
+    const brainX = canvas.width - 35;
+    const brainY = height;
+
+    // Draw the labels
+    ctx.fillText("Processor", processorX, processorY);
+    ctx.fillText("Ear", earX, earY);
+    ctx.fillText("Electrode Array", electrodeX, electrodeY);
+    ctx.fillText("Cochlea", cochleaX, cochleaY);
+    ctx.fillText("Cochlear Nerve", nerveX, nerveY);
+    ctx.fillText("Brain", brainX, brainY);
+    ctx.fillText("Reciever", recieverX, recieverY);
+
+    ctx.fillText("Transmitter", 343, 22);
+    ctx.fillText("Microphone", 170, 160);
+}
+
+function drawEardrumAudioWave() {
+    if (!timeDomainData.length) return;
+
+    const cx0 = 154; // hearing aid microphone center
+    const cy0 = -110 + canvas.height/2;
+
+    const waveLength = 1;       // pixel per sample (compress or expand horizontally)
+    const scaleY = 50;          // vertical amplitude scaling
+
+    ctx.beginPath();
+    ctx.moveTo(cx0, cy0);
+
+    // Draw wave leftward from hearing aid microphone
+    for (let i = 0; i < timeDomainData.length; i++) {
+        const x = cx0 - i * waveLength; // moving left
+        if (x < 0) break;               // stop at canvas edge
+
+        const sample = (timeDomainData[i] - 128) / 128; // normalize [-1,1]
+        const y = cy0 + sample * scaleY;
+        ctx.lineTo(x, y);
+    }
+
+    ctx.strokeStyle = "#0f0";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}
+
+function drawRadioWaves(t) {
+    if (!earImg.complete || !recieverImg.complete) return;
+
+    // --- Anchor points (relative to images, not fixed pixels) ---
+    const earX = 343;
+    const earY = 131;
+
+    const recieverX = -264 + canvas.width / 2;
+    const recieverY = -139 + canvas.height / 2;
+
+    // Direction vector from ear → receiver
+    const dx = recieverX - earX;
+    const dy = recieverY - earY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    const angle = Math.atan2(dy, dx);
+
+    ctx.save();
+    ctx.translate(earX, earY);
+    ctx.rotate(angle);
+
+    // --- Wave settings ---
+    const waveSpacing = 25;     // distance between rings
+    const waveSpeed = 20;       // pixels per second
+    const maxRadius = dist;
+
+    ctx.strokeStyle = "rgba(180, 100, 255, 0.9)";
+    ctx.lineWidth = 4;
+
+    // Animate concentric arcs moving outward
+    for (let r = 0; r < maxRadius; r += waveSpacing) {
+        let animatedR = (r + (t * waveSpeed)) % maxRadius;
+
+    const tNorm = animatedR / maxRadius;
+
+    // symmetric "bulge" (0 at ends, 1 at center)
+    const shape = Math.sin(tNorm * Math.PI);
+
+    // control max width here
+    const maxBeamWidth = 50;
+
+    // actual width at this point
+    const beamWidth = 5 + shape * maxBeamWidth;
+
+    // convert width → angle
+    const halfAngle = beamWidth / (2 * animatedR);
+
+    // clamp for stability
+    const clamped = Math.min(halfAngle, 0.6);
+
+    ctx.beginPath();
+    ctx.arc(0, 0, animatedR, -clamped, clamped);
+
+    ctx.stroke();
+    }
+
+    ctx.restore();
+}
+
+function drawSecondEardrumAudioWave() {
+    if (!timeDomainData.length) return;
+
+    const cx0 = 280; // hearing aid microphone center
+    const cy0 = 52 + canvas.height/2;
+
+    const waveLength = 1;       // pixel per sample (compress or expand horizontally)
+    const scaleY = 75;          // vertical amplitude scaling
+
+    ctx.beginPath();
+    ctx.moveTo(cx0, cy0);
+
+    // Draw wave leftward from hearing aid microphone
+    for (let i = 0; i < timeDomainData.length; i++) {
+        const x = cx0 - i * waveLength; // moving left
+        if (x < 110) break;               // stop at canvas edge
+
+        const sample = (timeDomainData[i] - 128) / 128; // normalize [-1,1]
+        const y = cy0 + sample * scaleY;
+        ctx.lineTo(x, y);
+    }
+
+    ctx.strokeStyle = "#f00";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+}
+
+function drawHearingAidWire() {
+    if (!analyser) return;
+
+    // 1️⃣ Define absolute points for the curve
+    const points = [
+        {x: 223, y: 231}, // start
+        {x: 236, y: 224},
+        {x: 294, y: 292},
+        {x: 296, y: 307},
+        {x: 298, y: 330},
+        {x: 284, y: 399},
+        {x: 333, y: 433},
+        {x: 384, y: 405},
+        {x: 382, y: 347},
+        {x: 358, y: 249} // end
+    ];
+
+    // 2️⃣ Audio volume factor
+    let volume = 0;
+    for (let i = 0; i < timeDomainData.length; i++) {
+        volume += Math.abs(timeDomainData[i] - 128) / 128;
+    }
+    volume /= timeDomainData.length;
+
+    // 3️⃣ Draw main red wire as a smooth curve through points
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#f00";
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+
+    // Draw segments using quadratic Bézier between each point for smoothness
+    for (let i = 1; i < points.length; i++) {
+        const prev = points[i-1];
+        const curr = points[i];
+        // control point = midpoint between previous and current
+        const cx = (prev.x + curr.x) / 2;
+        const cy = (prev.y + curr.y) / 2;
+        ctx.quadraticCurveTo(prev.x, prev.y, cx, cy);
+    }
+
+    // Final segment to last point
+    const last = points[points.length - 1];
+    ctx.lineTo(last.x, last.y);
+    ctx.stroke();
+
+    // 4️⃣ Draw yellow sparks along the wire
+    // Sample many points along the curve
+    const sparkSegments = 400;
+    for (let i = 0; i <= sparkSegments; i++) {
+        const t = i / sparkSegments;
+
+        // Interpolate along the points using simple linear interpolation
+        let index = Math.floor(t * (points.length - 1));
+        let nextIndex = Math.min(index + 1, points.length - 1);
+        const pt1 = points[index];
+        const pt2 = points[nextIndex];
+        const subT = (t * (points.length - 1)) - index;
+        const x = pt1.x + (pt2.x - pt1.x) * subT;
+        const y = pt1.y + (pt2.y - pt1.y) * subT;
+
+        // Spark probability based on volume
+        if (Math.random() < volume * 0.1) {
+            const sparkSize = 1 + Math.random() * 3;
+            ctx.fillStyle = "#ff0";
+            ctx.beginPath();
+            ctx.arc(x, y, sparkSize, 0, Math.PI*2);
+            ctx.fill();
+        }
+    }
+}
+
+function drawTransmitterSpiralWire() {
+    if (!analyser) return;
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    // --- Spiral start (relative to center) ---
+    const startX = cx + 0;
+    const startY = cy + 193;
+
+    // --- Spiral end (cochlea center) ---
+    const endX = cx;
+    const endY = cy;
+
+    // --- Transmitter base (connector start) ---
+    const tx = cx - 254;
+    const ty = cy + 115;
+
+    // --- Audio volume ---
+    let volume = 0;
+    for (let i = 0; i < timeDomainData.length; i++) {
+        volume += Math.abs(timeDomainData[i] - 128) / 128;
+    }
+    volume /= timeDomainData.length;
+
+    // =========================
+    // 🔴 CONNECTOR CURVE
+    // =========================
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#f00";
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(tx, ty);
+
+    const cpx = (tx + startX) / 2 - 40;
+    const cpy = (ty + startY) / 2 + 40;
+
+    ctx.quadraticCurveTo(cpx, cpy, startX, startY);
+    ctx.stroke();
+
+    // --- Sparks on connector ---
+    const sparkSegments2 = 100;
+    for (let i = 0; i <= sparkSegments2; i++) {
+        const t = i / sparkSegments2;
+
+        const x =
+            (1 - t)*(1 - t)*tx +
+            2*(1 - t)*t*cpx +
+            t*t*startX;
+
+        const y =
+            (1 - t)*(1 - t)*ty +
+            2*(1 - t)*t*cpy +
+            t*t*startY;
+
+        if (Math.random() < volume * 0.1) {
+            const sparkSize = 1 + Math.random() * 3;
+            ctx.fillStyle = "#ff0";
+            ctx.beginPath();
+            ctx.arc(x, y, sparkSize, 0, Math.PI*2);
+            ctx.fill();
+        }
+    }
+
+    const arcRadius = 192.5;
+    const arcStartAngle = 0;          // 3:00
+    const arcEndAngle = Math.PI / 2;  // 6:00
+
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#f00"; // optional: green wire color for visibility
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(cx + arcRadius, cy); // start at 3:00
+    ctx.arc(cx, cy, arcRadius, arcStartAngle, arcEndAngle, false);
+    ctx.stroke();
+
+    // --- Sparks on quarter circle ---
+    const sparkSegmentsArc = 150;
+    for (let i = 0; i <= sparkSegmentsArc; i++) {
+        const t = i / sparkSegmentsArc;
+        const angle = arcStartAngle + t * (arcEndAngle - arcStartAngle);
+        const x = cx + Math.cos(angle) * arcRadius;
+        const y = cy + Math.sin(angle) * arcRadius;
+
+        if (Math.random() < volume * 0.1) {
+            const sparkSize = 1 + Math.random() * 3;
+            ctx.fillStyle = "#ff0";
+            ctx.beginPath();
+            ctx.arc(x, y, sparkSize, 0, Math.PI*2);
+            ctx.fill();
+        }
+    }
+
+    // =========================
+    // 🌀 SPIRAL
+    // =========================
+
+    const dx = startX - endX;
+    const dy = startY - endY;
+    const startRadius = Math.sqrt(dx*dx + dy*dy);
+    const startAngle = 0;
+
+    const turns = 3.85;
+    const segments = 200;
+
+    const points = [];
+
+    for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+
+        // radius shrinks toward center
+        const r = startRadius * (1 - t);
+
+        // CCW spiral inward
+        const theta = startAngle - t * Math.PI * 2 * turns;
+
+        const x = endX + Math.cos(theta) * r;
+        const y = endY + Math.sin(theta) * r;
+
+        points.push({x, y});
+    }
+
+    // --- Draw spiral wire ---
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+
+    for (let i = 1; i < points.length; i++) {
+        const prev = points[i-1];
+        const curr = points[i];
+
+        const mx = (prev.x + curr.x) / 2;
+        const my = (prev.y + curr.y) / 2;
+
+        ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
+    }
+
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    ctx.stroke();
+}
+
+// --- Draw eardrum & ossicles
+function drawEar(t){
+    // Base eardrum position
+    const cx0 = 290;
+    const cy = 52 + canvas.height/2;
+
+    // --- Get instantaneous audio sample for motion ---
+    const timeDomain = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(timeDomain);
+    let sample = (timeDomain[Math.floor(timeDomain.length/2)] - 128) / 128;
+
+    // Eardrum horizontal swing based on audio [-24, 24] px
+    const shiftX = sample * 48;
+    const cx = cx0 + shiftX;
+
+    // // --- Draw fixed eardrum oval ---
+    // ctx.beginPath();
+    // const earDrumWidth = 80;
+    // const earDrumHeight = 100;
+    // ctx.ellipse(cx, cy, earDrumWidth, earDrumHeight, 0, 0, Math.PI*2);
+    // ctx.strokeStyle = "#88f";
+    // ctx.lineWidth = 3;
+    // ctx.stroke();
+
+    // --- Draw eardrum with gradient ---
+    // const earDrumWidth = 60;
+    // const earDrumHeight = 70;
+
+    // // Create radial gradient centered on eardrum
+    // const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, earDrumWidth);
+    // grad.addColorStop(0, '#B89784');        // center color
+    // grad.addColorStop(0.5, '#B28D76');   // middle
+    // grad.addColorStop(1, '#90604F');     // edge
+
+    // ctx.fillStyle = grad;
+    // ctx.beginPath();
+    // ctx.ellipse(cx, cy, earDrumWidth, earDrumHeight, 0, 0, Math.PI*2);
+    // ctx.fill();
+
+    // // Optional stroke on top
+    // ctx.strokeStyle = "#0ff";
+    // ctx.lineWidth = 4;
+    // ctx.stroke();
+
+
+
+    // --- Ossicle lengths (fixed) ---
+    // const L1 = 210; // malleus
+    // const L2 = 200; // incus
+    // // const L3 = 25; // stapes
+
+    // // Cochlea (stapes footplate) fixed position
+    // const cochleaX = canvas.width/2 - 180;
+    // const cochleaY = canvas.height/2;
+
+    // // Stapes endpoint = cochlea (fixed)
+    // const x3 = cochleaX;
+    // const y3 = cochleaY;
+    // const x2 = x3 - 65;
+    // const y2 = y3 + 8;
+    // // I already have cx and cy
+
+    // const dx = x2 - cx;
+    // const dy = y2 - cy;
+    // const D = Math.sqrt(dx*dx + dy*dy); // distance between eardrum and incus tip
+    // const a = (L1*L1 - L2*L2 + D*D) / (2*D);
+    // const h = Math.sqrt(Math.max(0, L1*L1 - a*a)); // height of intersection
+
+    // // two possible solutions (above or below the line)
+    // const cx2 = cx + (a / D) * dx;
+    // const cy2 = cy + (a / D) * dy;
+
+    // // perpendicular offset to get malleus tip above the line
+    // const x1 = cx2 - (h / D) * (-dy);
+    // const y1 = cy2 - (h / D) * dx;
+
+
+    // --- Draw the ossicles as images---
+    // const malleusRefStart = [185, 166]; // start of malleus in image
+    // const malleusRefEnd   = [62, 34]; // end tip of malleus in image
+
+    // const incusRefStart = [00, 51];
+    // const incusRefEnd   = [165, 178];
+
+    // const stapesRefStart = [34, 110];
+    // const stapesRefEnd   = [99, 47];
+
+    // Call this after drawing the bones
+    // drawBoneImage(stapesImg, x2, y2, x3, y3, stapesRefStart, stapesRefEnd);
+    // drawBoneImage(incusImg, x1, y1, x2, y2, incusRefStart, incusRefEnd);
+    // drawBoneImage(malleusImg, cx + (earDrumWidth), cy, x1, y1, malleusRefStart, malleusRefEnd);
+
+
+    // --- Draw the ossicles as lines ---
+    // drawBoneLine(cx, cy, x1, y1, 1); // malleus
+    // drawBoneLine(x1, y1, x2, y2, 1); // incus
+    // drawBoneLine(x2, y2, x3, y3, 1);  // stapes
+
+    drawBrain();
+
+    const earShift = shiftX; // or Math.abs(shiftX) if you prefer
+    const startX = canvas.width/2 + 200;
+    const startY = canvas.height/2;
+    const brainX = canvas.width - brainImg.width + 230;
+    const brainY = canvas.height/2 + 160;
+    drawCochleaToBrainCurve(startX, startY, brainX, brainY, earShift);
+
+
+    // --- Optional: draw joint circles ---
+    // ctx.fillStyle = "#fff";
+    // ctx.beginPath(); ctx.arc(cx, cy, 3, 0, 2*Math.PI); ctx.fill(); // eardrum
+    // ctx.beginPath(); ctx.arc(x1, y1, 3, 0, 2*Math.PI); ctx.fill(); // malleus–incus
+    // ctx.beginPath(); ctx.arc(x2, y2, 3, 0, 2*Math.PI); ctx.fill(); // incus–stapes
+    // ctx.beginPath(); ctx.arc(x3, y3, 3, 0, 2*Math.PI); ctx.fill(); // stapes–cochlea
+}
+
+function drawEarImage() {
+    if (!earImg.complete) return; // wait until the image loads
+
+    const scale = 1; // 50% size
+
+    const width = earImg.width * scale;
+    const height = earImg.height * scale;
+
+    const x = -5; // left-justified
+    const y = canvas.height / 2 - earImg.height / 2; // vertically centered
+
+    // ctx.globalAlpha = 0.4;
+    // ctx.drawImage(earImg, x, y, width, height);
+
+    const off = document.createElement('canvas');
+    off.width = earImg.width;
+    off.height = earImg.height;
+
+    const offCtx = off.getContext('2d');
+
+    // Draw the ear on the offscreen canvas
+    offCtx.globalAlpha = 0.9;
+    offCtx.drawImage(earImg, 0, 0);
+
+    // Then draw onto the main canvas
+    ctx.drawImage(off, x, y, width, height);
+}
+
+
+// let sineTime = 0; // global time for animation
+// function drawEardrumSineWave() {
+//     if (!canvas) return;
+
+//     const cx0 = 150;             // eardrum center x
+//     const cy0 = canvas.height/2; // eardrum center y
+//     const waveLength = 80;       // pixels per wave
+//     const amplitude = 20;        // vertical amplitude in pixels
+//     const speed = 2;             // radians per second
+
+//     ctx.beginPath();
+//     ctx.moveTo(cx0, cy0);
+
+//     // Draw wave from eardrum center to left edge
+//     for (let x = cx0; x >= 0; x -= 1) {
+//         const phase = ((cx0 - x) / waveLength) * 2 * Math.PI + sineTime;
+//         const y = cy0 + Math.sin(phase) * amplitude;
+//         ctx.lineTo(x, y);
+//     }
+
+//     ctx.strokeStyle = "#0ff";
+//     ctx.lineWidth = 2;
+//     ctx.stroke();
+
+//     sineTime += 0.05; // advance phase each frame for animation
+// }
+
+function drawCochleaToBrainCurve(x0, y0, x1, y1, earShift) {
+    // x0,y0 = cochlea center
+    // x1,y1 = brain image connection point
+    // earShift = absolute eardrum offset (0..48 px)
+
+    const segments = 50; // number of segments along the curve
+    const maxWidth = 50;  // starting width at cochlea
+    const minWidth = 4;   // ending width at brain
+
+    // cubic Bézier control points for smooth bend
+    const cp1x = x0 + 200;
+    const cp1y = y0 - 150;
+    const cp2x = x1 - 200;
+    const cp2y = y1 + 150;
+
+    // Calculate absolute color modulation based on ear movement
+    const loudness = Math.min(Math.abs(earShift)/48, 1); // 0..1
+    const baseColor = [0, 255, 255]; // cyan
+    const loudColor = [255, 255, 100]; // yellow
+    // const color = baseColor.map((v,i)=> Math.round(v*(1-loudness) + loudColor[i]*loudness));
+    // console.log(color)
+    // Draw curve as multiple narrow quads
+    ctx.lineCap = "round";
+
+    let prevX = x0;
+    let prevY = y0;
+
+    for (let i = 1; i <= segments; i++) {
+        let color = baseColor;
+        let extra = 0;
+        if (Math.random() < loudness * 0.5) {
+          color = loudColor;
+          extra = 7;
+        }
+
+        const t = i / segments;
+
+        // cubic Bézier formula
+        const xt = (1-t)**3*x0 + 3*(1-t)**2*t*cp1x + 3*(1-t)*t**2*cp2x + t**3*x1;
+        const yt = (1-t)**3*y0 + 3*(1-t)**2*t*cp1y + 3*(1-t)*t**2*cp2y + t**3*y1;
+
+        // line width taper
+        const width = (maxWidth*(1-t) + minWidth*t ) + extra;
+
+        // draw a segment from prev to current
+        ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(xt, yt);
+        ctx.stroke();
+
+        prevX = xt;
+        prevY = yt;
+    }
+}
+
+function drawBoneLine(x0, y0, x1, y1, width) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const nx = -dy / len; // perpendicular unit vector
+    const ny = dx / len;
+
+    ctx.beginPath();
+    ctx.moveTo(x0 + nx * width, y0 + ny * width);
+    ctx.lineTo(x1 + nx * width, y1 + ny * width);
+    ctx.lineTo(x1 - nx * width, y1 - ny * width);
+    ctx.lineTo(x0 - nx * width, y0 - ny * width);
+    ctx.closePath();
+    ctx.fillStyle = "#0ff";
+    ctx.fill();
+}
+
+function drawBoneImage(img, x0, y0, x1, y1, refStart, refEnd) {
+    const imgVx = refEnd[0] - refStart[0];
+    const imgVy = refEnd[1] - refStart[1];
+
+    const canvasVx = x1 - x0;
+    const canvasVy = y1 - y0;
+
+    const imgLength = Math.sqrt(imgVx*imgVx + imgVy*imgVy);
+    const canvasLength = Math.sqrt(canvasVx*canvasVx + canvasVy*canvasVy);
+
+    const scale = canvasLength / imgLength;
+
+    // Angle between image vector and canvas vector
+    const imgAngle = Math.atan2(imgVy, imgVx);
+    const canvasAngle = Math.atan2(canvasVy, canvasVx);
+    const rotateAngle = canvasAngle - imgAngle;
+
+    ctx.save();
+    ctx.translate(x0, y0);
+    ctx.rotate(rotateAngle);
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, -refStart[0], -refStart[1]);
+    ctx.restore();
+}
+
+// --- Draw cochlea spiral & hair cells
+function drawCochlea() {
+    const cx = canvas.width/2;
+    const cy = canvas.height/2;
+
+    const turns = 4;
+    const segments = 8192; // number of points along spiral
+
+    const startRadius = 200; // radius of outer spiral
+    const endX = cx;
+    const endY = cy;
+
+    const startAngle = 0;
+
+    // --- generate spiral points ---
+    const points = [];
+    for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        const r = startRadius * (1 - t);
+        const theta = startAngle - t * Math.PI * 2 * turns;
+        const x = endX + Math.cos(theta) * r;
+        const y = endY + Math.sin(theta) * r;
+        points.push({x, y});
+    }
+
+    // --- Draw spiral wire (cyan) ---
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        const prev = points[i-1];
+        const curr = points[i];
+        const mx = (prev.x + curr.x) / 2;
+        const my = (prev.y + curr.y) / 2;
+        ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    ctx.strokeStyle = "cyan";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // --- Yellow circles for electrical signals ---
+    const bucketFreqs = [];
+    const minF = 40;
+    const maxF = 20000;
+    const pointsPerOctave = 1150;
+    const numOctaves = Math.log2(maxF / minF);
+    const totalPoints = Math.floor(numOctaves * pointsPerOctave);
+
+    for (let i = 0; i <= segments; i++) {
+        const f = minF * Math.pow(2, i / pointsPerOctave);
+        bucketFreqs.push(f);
+    }
+
+    for (let i = 0; i < bucketFreqs.length; i++) {
+        const t = i / bucketFreqs.length;
+        const angle = t * Math.PI * 2 * turns;
+        const radius = startRadius * t; // map to spiral radius
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+
+        const freq = bucketFreqs[i];
+        const bin = Math.floor(freq / (audioCtx.sampleRate / 2) * dataArray.length);
+        let mag = dataArray[bin] || 0;
+
+        for (let r = -2; r <= 2; r++) {
+            const rBin = dataArray[bin + r] || 0;
+            if (rBin > mag) mag *= 0.4;
+        }
+
+        if (freq > 5000) { // upper limit (in Hz) of cochlear capabilities
+          mag = 0;
+        }
+
+        const circleSize = mag * 0.07; // size based on loudness
+        const alpha = (mag * mag) / (255 * 255);
+
+        ctx.beginPath();
+        ctx.arc(x, y, circleSize, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+        ctx.fill();
+    }
+}
+
+function drawBrain() {
+    if (!brainImg.complete) return; // wait until image loads
+
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+
+    // Cochlea center
+    const cochleaX = canvas.width/2;
+    const cochleaY = canvas.height/2;
+
+    // Position brain: right edge aligned, vertical centered on cochlea
+    const x = canvasWidth - brainImg.width;        // right justified
+    const y = cochleaY - brainImg.height / 2;     // center vertically on cochlea
+
+    ctx.drawImage(brainImg, x, y);
+}
+
+
+function drawReciever() {
+    if (!recieverImg.complete) return; // wait until image loads
+
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+
+    // Cochlea center
+    const centerX = canvas.width/2;
+    const centerY = canvas.height/2;
+
+    // Position brain: right edge aligned, vertical centered on cochlea
+    const x = -150 + centerX - recieverImg.width;
+    const y = centerY - recieverImg.height / 2;
+
+    const scale = .8;
+
+    const width = recieverImg.width * scale;
+    const height = recieverImg.height * scale;
+    ctx.drawImage(recieverImg, x, y, width, height);
+}
+
+function drawSpectrogramLog() {
+  const w = canvas.width;
+  const h = 250;
+  const offsetY = canvas.height - h - 20;
+
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(0, offsetY, w, h);
+
+  const binCount = dataArray.length;
+  const minF = 100;
+  const maxF = 10000;
+
+  const pointsPerOctave = 100; // adjustable
+  const numOctaves = Math.log2(maxF / minF);
+  const totalPoints = Math.floor(numOctaves * pointsPerOctave);
+
+  let prevMag = 0;
+  for (let i = 0; i <= totalPoints; i++) {
+    const f = minF * Math.pow(2, i / pointsPerOctave);
+    const bin = Math.floor(f / (audioCtx.sampleRate / 2) * binCount);
+    let mag = dataArray[bin] || 0;
+
+    for (let r=-2;r<=2;r++) {
+      let rBin = dataArray[bin + r] || 0;
+      if (dataArray[bin] < rBin) {
+        mag = mag * 0.7
+      }
+    }
+
+    // X position scaled evenly across total points
+    const x = (i / totalPoints) * w;
+    const y = offsetY + h - (mag / 255) * h;
+
+    ctx.fillStyle = "#0f8";
+    ctx.fillRect(x, y, Math.ceil(w / totalPoints), (mag / 255) * h);
+  }
+
+  // Draw frequency labels for octaves
+  ctx.fillStyle = "#fff";
+  ctx.font = "12px sans-serif";
+  let octaveFreq = minF;
+  while (octaveFreq <= maxF) {
+    const x = Math.log2(octaveFreq / minF) / numOctaves * w;
+    ctx.fillText(octaveFreq + " Hz", x - 10, offsetY + h + 15);
+    octaveFreq *= 2;
+  }
+}
+
+draw();
+</script>
+</body>
+</html>

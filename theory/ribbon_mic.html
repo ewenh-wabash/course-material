@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Ribbon Microphone Demo</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #eee;
+    text-align: center;
+  }
+  canvas {
+    background: #000;
+    border: 1px solid #444;
+    margin-top: 20px;
+    width: 100%;
+    height: 600px;
+  }
+  #controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+  }
+
+  #legend {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 14px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .legend-color {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    border-radius: 3px;
+    border: 1px solid #555;
+  }
+</style>
+</head>
+<body>
+
+<h1>How a Ribbon Microphone Works</h1>
+Sound waves vibrate a corrugated, aluminum diaphragm from either direction → the diaphragm is surrouned by magnets → <br/>
+creating a small voltage when it moves → the voltage is scaled up by a transformer and sent out a balanced audio cable
+<div id="controls">
+  <button onclick="startMic()">Use Microphone</button>
+  <button onclick="startTone()">Play Test Tone</button>
+  <button id="micToggleBtn">Open/Close</button>
+</div>
+
+<canvas id="c"></canvas>
+
+<div id="legend">
+  <div class="legend-item">
+    <span class="legend-color" style="background:#0f0;"></span> Air Pressure
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:rgb(180,100,255);"></span> Magnetic Flux
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:#f00;"></span> Electrical
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:#00f;"></span> Electrical
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = 600;
+}
+window.onresize = resize;
+resize();
+
+// images
+const micCover = new Image();
+micCover.src = "ribbon_grille.png";
+
+const micBody = new Image();
+micBody.src = "ribbon_body.png";
+
+const resistorImg = new Image();
+resistorImg.src = "resistor.png";
+
+// audio
+let audioCtx, analyser, dataArray, timeDomainData;
+
+function initAudio(stream){
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+
+  const source = stream
+    ? audioCtx.createMediaStreamSource(stream)
+    : createOscillator();
+
+  source.connect(analyser);
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+}
+
+function startMic(){
+  navigator.mediaDevices.getUserMedia({audio:true}).then(initAudio);
+}
+
+function startTone(){
+  initAudio(null);
+}
+
+function createOscillator(){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.value = 110;
+  osc.connect(gain);
+  gain.connect(analyser);
+  gain.connect(audioCtx.destination);
+  gain.gain.value = 0.25;
+  osc.start();
+  return gain;
+}
+
+function updateTimeDomain() {
+  if (!analyser) return;
+  timeDomainData = new Uint8Array(analyser.fftSize);
+  analyser.getByteTimeDomainData(timeDomainData);
+}
+
+// ---------- MIC TOGGLE ----------
+
+let micOpen = true;          // starts open
+let targetGrilleXOffset = 0; // 0 when open, +180 when closed
+let targetBodyXOffset = 0;   // 0 when open, -145 when closed
+
+let currentGrilleXOffset = 0;
+let currentBodyXOffset = 0;
+const animationDuration = 500; // ms
+
+document.getElementById("micToggleBtn").onclick = () => {
+  micOpen = !micOpen;
+  targetGrilleXOffset = micOpen ? 0 : 306;
+  targetBodyXOffset   = micOpen ? 0 : -143;
+}
+
+// helper to smoothly interpolate
+function animateOffsets(deltaTime) {
+  const speedGrille = (targetGrilleXOffset - currentGrilleXOffset) / animationDuration * deltaTime;
+  const speedBody   = (targetBodyXOffset - currentBodyXOffset) / animationDuration * deltaTime;
+
+  currentGrilleXOffset += speedGrille;
+  currentBodyXOffset   += speedBody;
+}
+
+// ---------- DRAW ----------
+
+let lastTime = performance.now();
+function draw(){
+  const now = performance.now();
+  const deltaTime = now - lastTime;
+  lastTime = now;
+
+  animateOffsets(deltaTime); // smooth mic movement
+
+  requestAnimationFrame(draw);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!analyser) return;
+  updateTimeDomain();
+  drawIncomingWave();
+  drawOutputSignals();
+  drawMic();
+  drawLabels();
+}
+
+function getSample(){
+  const mid = Math.floor(timeDomainData.length/2);
+  return (timeDomainData[mid] - 128) / 128;
+}
+
+// ---------- INCOMING AUDIO ----------
+
+function drawIncomingWave(){
+  const cy = canvas.height/2;
+  const startX = (canvas.width/2) - 160;
+
+  ctx.beginPath();
+  ctx.moveTo(startX, cy);
+
+  for (let i = 0; i < timeDomainData.length; i++) {
+    const x = startX - i;
+    if (x < 0) break;
+
+    const s = (timeDomainData[i] - 128) / 128;
+    ctx.lineTo(x, cy + s * 80);
+  }
+
+  ctx.strokeStyle = "#0f0";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+}
+
+// ---------- MICROPHONE ----------
+
+function drawMic(){
+  // --- ribbon capsule ---
+
+  const baseX = (canvas.width / 2) - 380;
+  const cy = canvas.height / 2;
+
+  const sample = getSample();
+  const ribbonOffset = sample * 12;
+
+  // --- MAGNETS (left + right, U shape simplified) ---
+  function drawMagnet(x){
+    ctx.fillStyle = "#aaa";
+
+    const w = 70;
+    const h = 220;
+
+    ctx.beginPath();
+    ctx.moveTo(x, cy - h/2);
+    ctx.lineTo(x + w, cy - h/2);
+    ctx.lineTo(x + w, cy - 60);
+    ctx.lineTo(x + 20, cy - 60);
+    ctx.lineTo(x + 20, cy + 60);
+    ctx.lineTo(x + w, cy + 60);
+    ctx.lineTo(x + w, cy + h/2);
+    ctx.lineTo(x, cy + h/2);
+    ctx.closePath();
+    ctx.fill();
+
+    // N / S labels
+    ctx.fillStyle = "#000";
+    ctx.fillStyle = "purple";
+    ctx.font = "bold 24px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("N", x + w/2, cy + 1 - 85);
+    ctx.fillText("S", x + w/2, cy + 1 + 85);
+  }
+
+function drawFlippedMagnet(x) {
+    const w = 70;
+    const h = 220;
+
+    ctx.save(); // save current transform
+    // Flip horizontally around the magnet's center
+    ctx.translate(x + w/2, cy); // move origin to center of magnet
+    ctx.scale(-1, 1);           // flip horizontally
+    ctx.translate(-(x + w/2), -cy); // move origin back
+
+    // Draw the same magnet shape as before
+    ctx.fillStyle = "#aaa";
+    ctx.beginPath();
+    ctx.moveTo(x, cy - h/2);
+    ctx.lineTo(x + w, cy - h/2);
+    ctx.lineTo(x + w, cy - 60);
+    ctx.lineTo(x + 20, cy - 60);
+    ctx.lineTo(x + 20, cy + 60);
+    ctx.lineTo(x + w, cy + 60);
+    ctx.lineTo(x + w, cy + h/2);
+    ctx.lineTo(x, cy + h/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore(); // restore original transform
+
+    // Labels (adjust text so it’s readable after flip)
+    ctx.fillStyle = "#000";
+    ctx.fillStyle = "purple";
+    ctx.font = "bold 24px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("N", x + w/2, cy + 1 - 85);
+    ctx.fillText("S", x + w/2, cy + 1 + 85);
+
+}
+
+  // left magnet
+  drawMagnet(baseX + 80, false);
+
+  // right magnet
+  drawFlippedMagnet(baseX + 290, true);
+
+  // --- POLE PIECES (top & bottom) ---
+  ctx.fillStyle = "#a0a";
+
+  // top
+  ctx.fillRect(baseX + 153, cy - 106, 134, 40);
+
+  // bottom
+  ctx.fillRect(baseX + 153, cy + 65, 134, 40);
+
+  ctx.fillStyle = "#000";
+  ctx.fillStyle = "#ddd";
+  ctx.font = "bold 24px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("N", baseX + 220, cy + 1 - 85);
+  ctx.fillText("S", baseX + 220, cy + 1 + 85);
+
+  // --- CORRUGATED RIBBON (SKEWED RECTANGLES / PARALLELOGRAMS) ---
+  const ribbonX = baseX + 120 + ribbonOffset;
+  const ribbonTop = cy - 45;
+  const ribbonHeight = 90;
+  const ribbonWidth = 200;
+
+  const folds = 18;
+  const foldWidth = ribbonWidth / folds;
+  const skewAmount = 6; // how much the right side is offset up/down
+
+  const maxOffset = 10; // ±15px up/down
+  const ribbonOffsetY = sample * maxOffset;
+
+
+  for (let i = 0; i < folds; i++) {
+    const x = ribbonX + i * foldWidth;
+
+    const skew = (i % 2 === 0 ? -skewAmount : skewAmount);
+
+    // Alternate light/dark shading
+    const brightness = (i % 2 === 0 ? 0.85 : 0.65);
+    ctx.fillStyle = `rgba(200,200,200,${brightness})`;
+
+    ctx.beginPath();
+    ctx.moveTo(x, ribbonTop - skew + ribbonOffsetY);                    // top-left
+    ctx.lineTo(x + foldWidth, ribbonTop + skew + ribbonOffsetY); // top-right
+    ctx.lineTo(x + foldWidth, ribbonTop + ribbonHeight + skew + ribbonOffsetY); // bottom-right
+    ctx.lineTo(x, ribbonTop + ribbonHeight - skew + ribbonOffsetY);     // bottom-left
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // --- WIRES ---
+
+  const wireStartYTop = cy - 37;
+  const wireStartYBottom = cy + 40;
+
+  // RIGHT wire - part 1 (straight out)
+  const rightWire1StartX = ribbonX + 200;
+  const wireEndX = rightWire1StartX + 70;
+  drawWireWithDots(rightWire1StartX, wireStartYTop, wireEndX + 10, wireStartYTop + 20, performance.now()*0.0005);
+
+
+  // RIGHT wire - part 2(straight out)
+  const rightWire2StartX = ribbonX + 355;
+  const wire2EndX = rightWire2StartX + 30;
+  drawWireWithDots(rightWire2StartX, wireStartYTop + 15, wire2EndX, wireStartYTop + 15, performance.now()*0.0005);
+
+  // RIGHT bottom wire - part 2(straight out)
+  drawWireWithDots(rightWire2StartX, wireStartYTop + 50, wire2EndX, wireStartYTop + 50, performance.now()*0.0005);
+
+
+  // LEFT wire (curves under and exits right)
+  ctx.strokeStyle = "#f00";
+  ctx.lineWidth = 3;
+
+  const leftStartX = ribbonX - 0;
+  const underY = cy + 80;
+
+  ctx.beginPath();
+  ctx.moveTo(leftStartX, wireStartYBottom);
+  ctx.quadraticCurveTo(leftStartX - 40, underY, wireEndX + 10, wireStartYBottom - 12);
+  ctx.stroke();
+
+  drawStepUpTransformer(baseX + 252);
+  drawTransformerMagnetism(baseX + 252);
+
+  // animated dots on curved wire
+  const segmentsDots = 50;
+  const t = performance.now() * 0.0005;
+  const intensity = Math.abs(sample);
+
+  for(let i = 0; i < segmentsDots; i++){
+    const tt = (i / segmentsDots + t) % 1;
+
+    const x = (1-tt)*(1-tt)*leftStartX +
+              2*(1-tt)*tt*(leftStartX - 40) +
+              tt*tt*(wireEndX - 30);
+
+    const y = (1-tt)*(1-tt)*wireStartYBottom +
+              2*(1-tt)*tt*underY +
+              tt*tt*wireStartYBottom;
+
+    if(Math.random() < intensity * 0.2){
+      ctx.beginPath();
+      ctx.arc(x, y, 3 + Math.random()*3, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,255,0,${0.5 + intensity})`;
+      ctx.fill();
+    }
+  }
+
+  // --- mic body ---
+  if(micBody.complete){
+      const w = micBody.width * .65;
+      const h = micBody.height * .65;
+
+      ctx.drawImage(
+          micBody,
+          canvas.width/2 + 100 + currentBodyXOffset,
+          canvas.height/2 - (h / 2),
+          w,
+          h
+      );
+  }
+
+  // --- mic cover ---
+  if(micCover.complete){
+      const grilleCanvas = document.createElement("canvas");
+      const grilleCtx = grilleCanvas.getContext("2d");
+
+      grilleCanvas.width = micCover.width;
+      grilleCanvas.height = micCover.height;
+
+      grilleCtx.clearRect(0, 0, grilleCanvas.width, grilleCanvas.height);
+      grilleCtx.globalAlpha = micOpen ? 0.8 : 1.0;
+      grilleCtx.drawImage(micCover, 0, 0);
+
+      const w = micCover.width * .65;
+      const h = micCover.height * .65;
+
+      ctx.drawImage(
+          grilleCanvas,
+          canvas.width/2 - 750 + currentGrilleXOffset,
+          canvas.height/2 - (h / 2),
+          w,
+          h
+      );
+  }
+}
+
+function drawStepUpTransformer(baseX) {
+  const cy = canvas.height/2;
+  const ribbonX = baseX + 120;
+  const size = 80;        // outer square
+  const coilCize = 40;
+  const inner = 40;       // inner cut-out
+  const coilAngle = 15 * Math.PI / 180; // 15° in radians
+  const leftCoils = 6;
+  const rightCoils = 12;
+
+  // Outer square position
+  const tx = baseX + 140;
+  const ty = cy - size / 2;
+
+  // Draw hollow square
+  ctx.fillStyle = "#aaa";
+  ctx.fillRect(tx, ty, size, size);
+  ctx.clearRect(tx + (size - inner)/2, ty + (size - inner)/2, inner, inner);
+
+  // --- LEFT COILS (behind left side) ---
+  const leftX = tx; // left side of square
+  const leftYTop = ty;
+  const leftYBottom = ty + size;
+
+  const leftSpacing = coilCize / leftCoils;
+
+  ctx.strokeStyle = "#f00";
+  ctx.lineWidth = 2;
+
+  for (let i = 0; i < leftCoils; i++) {
+    const y = leftYTop + i * leftSpacing + 30;
+    const xStart = leftX - 3; // extend slightly beyond outer wall
+    const xEnd = leftX + 20 + 3;   // extend slightly inside
+
+    ctx.beginPath();
+    ctx.moveTo(xStart, y);
+    ctx.lineTo(xEnd, y - Math.tan(coilAngle) * (xEnd - xStart));
+    ctx.stroke();
+  }
+
+  // --- RIGHT COILS (behind right side) ---
+  const rightX = tx + size; // right side of square
+  const rightSpacing = coilCize / rightCoils;
+
+  for (let i = 0; i < rightCoils; i++) {
+    const y = leftYTop + i * rightSpacing + 22;
+    const xStart = rightX - 20 - 3; // slightly inside
+    const xEnd = rightX + 3;   // slightly outside
+
+    ctx.beginPath();
+    ctx.moveTo(xStart, y);
+    ctx.lineTo(xEnd, y - Math.tan(coilAngle) * (xEnd - xStart));
+    ctx.stroke();
+  }
+}
+
+function drawTransformerMagnetism(baseX) {
+  const cy = canvas.height/2;
+  const sizeOuter = 80;
+  const tx = baseX + 140; // same as transformer X
+  const ty = cy - sizeOuter / 2;
+
+  // Get audio intensity (0–1)
+  const sample = getSample();
+  const intensity = Math.abs(sample);
+
+  // Define 3 overlayed squares
+  const squares = [
+      { w: 70 },
+      { w: 50 },
+      { w: 60 }
+  ];
+
+  ctx.strokeStyle = "purple";
+  for (let i = 0; i < squares.length; i++) {
+      const sq = squares[i];
+      const offset = (sizeOuter - sq.w) / 2;
+
+      ctx.lineWidth = intensity * 4;
+      ctx.globalAlpha = i / 10 + intensity * 2.0;
+
+      ctx.strokeRect(tx + offset, ty + offset, sq.w, sq.w);
+  }
+
+  ctx.globalAlpha = 1; // reset alpha
+}
+
+function drawWireWithDots(x0, y0, x1, y1, tOffset){
+  const segments = 40;
+
+  // base wire
+  ctx.strokeStyle = "#f00";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+
+  // audio-driven intensity
+  const sample = getSample();
+  const intensity = Math.abs(sample);
+
+  for(let i = 0; i < segments; i++){
+    const t = (i / segments + tOffset) % 1;
+
+    const x = x0 + (x1 - x0) * t;
+    const y = y0 + (y1 - y0) * t;
+
+    // random flashing like your nerve
+    if(Math.random() < intensity * 0.2){
+      const size = 3 + Math.random() * 3;
+
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 0, ${0.5 + intensity})`;
+      ctx.fill();
+    }
+  }
+}
+
+// ---------- OUTPUT SIGNAL ----------
+
+function drawOutputSignals(){
+  const cy = canvas.height/2;
+  let startX = (canvas.width/2) + 500;
+  if(micOpen) {
+    startX = (canvas.width/2) + 630;
+  }
+  const offset = 20;
+  drawSignal(startX, cy - offset, false);
+  drawSignal(startX, cy + offset, true);
+}
+
+function drawSignal(startX, yOffset, flip){
+  ctx.beginPath();
+  ctx.moveTo(startX, yOffset);
+
+  const points = [];
+
+  for (let i = 0; i < timeDomainData.length; i++) {
+    const x = startX + i;
+    if (x > canvas.width) break;
+
+    let s = (timeDomainData[i] - 128) / 128;
+    s *= 0.3;
+    if(flip) s *= -1;
+
+    const y = yOffset + s * 160;
+
+    ctx.lineTo(x, y);
+
+    // store points for pulse animation
+    points.push({x, y});
+  }
+
+  // --- base waveform ---
+  ctx.strokeStyle = !flip ? "#f00" : "#00f";
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  // --- animated pulses ---
+  drawSignalDots(points, flip);
+}
+
+function drawSignalDots(points, flip){
+  const t = performance.now() * 0.002;
+
+  const sample = getSample();
+  const intensity = Math.abs(sample);
+
+  ctx.shadowColor = "yellow";
+  ctx.shadowBlur = 10;
+
+  for(let i = 0; i < points.length; i += 8){ // spacing between dots
+    const p = points[i];
+
+    // moving wave of pulses
+    const wave = Math.sin(i * 0.1 - t * 6);
+
+    if(wave > 0.6 * (1 - intensity)){
+      const size = 3 + intensity;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,0,${0.6 + intensity})`;
+      ctx.fill();
+    }
+  }
+
+  ctx.shadowBlur = 0;
+}
+
+
+function drawLabels() {
+  ctx.fillStyle = "#fff";
+  ctx.font = "16px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+
+  const height = canvas.height - 40;
+
+  // Draw the labels
+  ctx.fillText("Incoming Sound", 80, height);
+  const cy = canvas.height / 2;
+
+  if(micOpen){
+    ctx.fillText("Diaphragm Ribbon", canvas.width/2 - 160, cy - 30);
+    // ctx.fillText("Ribbon", canvas.width/2 - 300, cy - 70);
+    ctx.fillText("Magnet", canvas.width/2 - 266, cy + 115);
+    ctx.fillText("Magnet", canvas.width/2 - 56, cy + 115);
+    ctx.fillText("Pole Piece", canvas.width/2 - 160, cy + 115);
+    ctx.fillText("Pole Piece", canvas.width/2 - 160, cy - 128);
+    ctx.fillText("Transformer", canvas.width/2 + 51, cy - 60);
+    // ctx.fillText("Back", canvas.width/2 - 246, cy - 13 - 20);
+    // ctx.fillText("Plate", canvas.width/2 - 246, cy - 13);
+    // ctx.fillText("Phantom", canvas.width/2 - 220, cy + 60);
+    // ctx.fillText("Power", canvas.width/2 - 220, cy + 80);
+    // ctx.fillText("Resistor", canvas.width/2 - 158, cy - 70);
+    // ctx.fillText("Magnet", canvas.width/2 - 10, canvas.height/2 + 50);
+    // ctx.fillText("Voice Coil", canvas.width/2 - 125, canvas.height/2 - 60);
+    ctx.fillText("Capsule", canvas.width/2 - 163, height);
+    ctx.fillText("Grille", canvas.width/2 - 450, height);
+    ctx.fillText("Body", canvas.width/2 + 320, height);
+  } else {
+    ctx.fillText("Grille", canvas.width/2 - 200, height);
+    ctx.fillText("Body", canvas.width/2 + 180, height);
+  }
+
+
+  ctx.fillText("Signal Output", canvas.width - 70, height);
+  ctx.fillText("Regular Signal", canvas.width - 70, canvas.height/2 - 55);
+  ctx.fillText("Inverted Signal", canvas.width - 70, canvas.height/2 + 40);
+  ctx.fillText("(Unused)", canvas.width - 70, canvas.height/2 + 60);
+}
+
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Hearing Demo with Logarithmic Spectrogram</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #eee;
+    text-align: center;
+  }
+  canvas {
+    background: #000;
+    border: 1px solid #444;
+    margin-top: 20px;
+    width: 100%;
+    height: 600px;
+  }
+  #controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+  }
+
+  #legend {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 14px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .legend-color {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    border-radius: 3px;
+    border: 1px solid #555;
+  }
+</style>
+</head>
+<body>
+<h1>How the Cochlea Works</h1>
+small hairs (cilia) inside the cochlea vibrate sympathetically with the pressure of a soundwave, sending an electrical signal to the brain.<br/>
+The longest hairs are in the middle of the coil and are more responsive to low sounds.<br/>
+The shortest hairs are towards the outside of the coil and are more responsive to high sounds.<br/>
+The shorter hairs are the usually first to stop working due to age or overuse.
+
+
+<div id="controls">
+  <button onclick="startMic()">Use Microphone</button>
+  <button onclick="startTone()">Play Test Tone</button>
+</div>
+
+<canvas id="c"></canvas>
+
+<div id="legend">
+  <div class="legend-item">
+    <span class="legend-color" style="background:#0f0;"></span> Air Pressure
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:#0ff;"></span> Biological
+  </div>
+  <div class="legend-item">
+    <span class="legend-color" style="background:#ff0;"></span> Electrical
+  </div>
+</div>
+
+<script>
+
+// let canvasOffsetX = 200; // move everything 50px to the right
+// let canvasOffsetY = -20; // move everything 20px up
+
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+resize();
+window.onresize = resize;
+
+const malleusImg = new Image();
+malleusImg.src = 'malleus.png';
+const incusImg = new Image();
+incusImg.src = 'incus.png';
+const stapesImg = new Image();
+stapesImg.src = 'stapes.png';
+const brainImg = new Image();
+brainImg.src = 'brain.png';
+const earImg = new Image();
+earImg.src = 'ear.png';
+
+
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = 600;
+}
+
+let audioCtx, analyser, dataArray;
+
+function initAudio(stream){
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  // analyser.fftSize = 16384;
+  analyser.fftSize = 8192;
+  // analyser.fftSize = 4096;
+
+  const source = stream
+    ? audioCtx.createMediaStreamSource(stream)
+    : createOscillator();
+
+  source.connect(analyser);
+
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+}
+
+function startMic(){
+  navigator.mediaDevices.getUserMedia({audio:true})
+    .then(initAudio);
+}
+
+function startTone(){
+  initAudio(null);
+}
+
+function createOscillator(){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "sine";
+  // osc.type = "triangle";
+  // osc.type = "square";
+  osc.frequency.value = 440;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  gain.connect(analyser);
+  gain.gain.value = 0.05;
+  osc.start();
+
+  setInterval(()=>{
+    osc.frequency.value = 100 + Math.random()*1000;
+  },1500);
+
+  return gain;
+}
+
+// --- Draw loop
+let time = 0;
+updateTimeDomain();
+// ctx.translate(canvasOffsetX, canvasOffsetY); // shift everything
+
+function draw(){
+  requestAnimationFrame(draw);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(!analyser) return;
+
+  analyser.getByteFrequencyData(dataArray);
+  updateTimeDomain();
+
+
+  drawEar(time);
+  drawEarImage();
+
+  drawCochlea();
+  // drawSpectrogramLog();
+  drawEardrumAudioWave();
+  drawLabels();
+  time += 0.03;
+}
+
+let timeDomainData = new Uint8Array(0); // global
+
+function updateTimeDomain() {
+    if (!analyser) return;
+    timeDomainData = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(timeDomainData);
+}
+
+function drawLabels() {
+    ctx.fillStyle = "#fff";
+    ctx.font = "16px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    const height = canvas.height - 40;
+    // Ear image position
+    const earX = 35;
+    const earY = height;
+
+    // Eardrum position
+    const eardrumX = 225; // your eardrum center X
+    const eardrumY = height;
+
+    // Ossicles (middle point)
+    const ossiclesX = Math.max(canvas.width * .25, 350)
+    const ossiclesY = height;
+
+    // Cochlea
+    const cochleaX = canvas.width / 2;
+    const cochleaY = height;
+
+    // Cochlear nerve (you can choose a point near the cochlea's output)
+    const nerveX = canvas.width * .75;
+    const nerveY = height;
+
+    // Brain
+    const brainX = canvas.width - 35;
+    const brainY = height;
+
+    // Draw the labels
+    ctx.fillText("Ear", earX, earY);
+    ctx.fillText("Eardrum", eardrumX, eardrumY);
+    ctx.fillText("Ossicles", ossiclesX, ossiclesY);
+    ctx.fillText("Cochlea", cochleaX, cochleaY);
+    ctx.fillText("Cochlear Nerve", nerveX, nerveY);
+    ctx.fillText("Brain", brainX, brainY);
+}
+
+function drawEardrumAudioWave() {
+    if (!timeDomainData.length) return;
+
+    const cx0 = 235; // eardrum center
+    const cy0 = canvas.height/2;
+
+    const waveLength = 1;       // pixel per sample (compress or expand horizontally)
+    const scaleY = 100;          // vertical amplitude scaling
+
+    ctx.beginPath();
+    ctx.moveTo(cx0, cy0);
+
+    // Draw wave leftward from eardrum
+    for (let i = 0; i < timeDomainData.length; i++) {
+        const x = cx0 - i * waveLength; // moving left
+        if (x < 0) break;               // stop at canvas edge
+
+        const sample = (timeDomainData[i] - 128) / 128; // normalize [-1,1]
+        const y = cy0 + sample * scaleY;
+        ctx.lineTo(x, y);
+    }
+
+    ctx.strokeStyle = "#0f0";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}
+
+// --- Draw eardrum & ossicles
+function drawEar(t){
+    // Base eardrum position
+    const cx0 = 235;
+    const cy = canvas.height/2;
+
+    // --- Get instantaneous audio sample for motion ---
+    const timeDomain = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(timeDomain);
+    let sample = (timeDomain[Math.floor(timeDomain.length/2)] - 128) / 128;
+
+    // Eardrum horizontal swing based on audio [-24, 24] px
+    const shiftX = sample * 48;
+    const cx = cx0 + shiftX;
+
+    // --- Draw eardrum with gradient ---
+    const earDrumWidth = 60;
+    const earDrumHeight = 70;
+
+    // Create radial gradient centered on eardrum
+    const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, earDrumWidth);
+    grad.addColorStop(0, '#B89784');        // center color
+    grad.addColorStop(0.5, '#B28D76');   // middle
+    grad.addColorStop(1, '#90604F');     // edge
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, earDrumWidth, earDrumHeight, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Optional stroke on top
+    ctx.strokeStyle = "#0ff";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+
+
+    // --- Ossicle lengths (fixed) ---
+    const L1 = 210; // malleus
+    const L2 = 200; // incus
+    // const L3 = 25; // stapes
+
+    // Cochlea (stapes footplate) fixed position
+    const cochleaX = canvas.width/2 - 180;
+    const cochleaY = canvas.height/2;
+
+    // Stapes endpoint = cochlea (fixed)
+    const x3 = cochleaX;
+    const y3 = cochleaY;
+    const x2 = x3 - 65;
+    const y2 = y3 + 8;
+
+    const dx = x2 - cx;
+    const dy = y2 - cy;
+    const D = Math.sqrt(dx*dx + dy*dy); // distance between eardrum and incus tip
+    const a = (L1*L1 - L2*L2 + D*D) / (2*D);
+    const h = Math.sqrt(Math.max(0, L1*L1 - a*a)); // height of intersection
+
+    // two possible solutions (above or below the line)
+    const cx2 = cx + (a / D) * dx;
+    const cy2 = cy + (a / D) * dy;
+
+    // perpendicular offset to get malleus tip above the line
+    const x1 = cx2 - (h / D) * (-dy);
+    const y1 = cy2 - (h / D) * dx;
+
+
+    // --- Draw the ossicles as images---
+    const malleusRefStart = [185, 166]; // start of malleus in image
+    const malleusRefEnd   = [62, 34]; // end tip of malleus in image
+
+    const incusRefStart = [00, 51];
+    const incusRefEnd   = [165, 178];
+
+    const stapesRefStart = [34, 110];
+    const stapesRefEnd   = [99, 47];
+
+    // Call this after drawing the bones
+    drawBoneImage(stapesImg, x2, y2, x3, y3, stapesRefStart, stapesRefEnd);
+    drawBoneImage(incusImg, x1, y1, x2, y2, incusRefStart, incusRefEnd);
+    drawBoneImage(malleusImg, cx + (earDrumWidth), cy, x1, y1, malleusRefStart, malleusRefEnd);
+
+
+    // --- Draw the ossicles as lines ---
+    drawBoneLine(cx, cy, x1, y1, 1); // malleus
+    drawBoneLine(x1, y1, x2, y2, 1); // incus
+    drawBoneLine(x2, y2, x3, y3, 1);  // stapes
+
+    drawBrain();
+
+    const earShift = shiftX; // or Math.abs(shiftX) if you prefer
+    const startX = canvas.width/2 + 200;
+    const startY = canvas.height/2;
+    const brainX = canvas.width - brainImg.width + 230;
+    const brainY = canvas.height/2 + 160;
+    drawCochleaToBrainCurve(startX, startY, brainX, brainY, earShift);
+
+
+    // --- Optional: draw joint circles ---
+    ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.arc(cx, cy, 3, 0, 2*Math.PI); ctx.fill(); // eardrum
+    ctx.beginPath(); ctx.arc(x1, y1, 3, 0, 2*Math.PI); ctx.fill(); // malleus–incus
+    ctx.beginPath(); ctx.arc(x2, y2, 3, 0, 2*Math.PI); ctx.fill(); // incus–stapes
+    ctx.beginPath(); ctx.arc(x3, y3, 3, 0, 2*Math.PI); ctx.fill(); // stapes–cochlea
+}
+
+function drawEarImage() {
+    if (!earImg.complete) return; // wait until the image loads
+
+    const x = 0; // left-justified
+    const y = -15 + canvas.height / 2 - earImg.height / 2; // vertically centered
+
+    // ctx.drawImage(earImg, x, y);
+
+    const off = document.createElement('canvas');
+    off.width = earImg.width;
+    off.height = earImg.height;
+
+    const offCtx = off.getContext('2d');
+
+    // Draw the ear on the offscreen canvas
+    offCtx.globalAlpha = 0.9;
+    offCtx.drawImage(earImg, 0, 0);
+
+    // Then draw onto the main canvas
+    ctx.drawImage(off, x, y, earImg.width, earImg.height);
+
+
+}
+
+
+// let sineTime = 0; // global time for animation
+// function drawEardrumSineWave() {
+//     if (!canvas) return;
+
+//     const cx0 = 150;             // eardrum center x
+//     const cy0 = canvas.height/2; // eardrum center y
+//     const waveLength = 80;       // pixels per wave
+//     const amplitude = 20;        // vertical amplitude in pixels
+//     const speed = 2;             // radians per second
+
+//     ctx.beginPath();
+//     ctx.moveTo(cx0, cy0);
+
+//     // Draw wave from eardrum center to left edge
+//     for (let x = cx0; x >= 0; x -= 1) {
+//         const phase = ((cx0 - x) / waveLength) * 2 * Math.PI + sineTime;
+//         const y = cy0 + Math.sin(phase) * amplitude;
+//         ctx.lineTo(x, y);
+//     }
+
+//     ctx.strokeStyle = "#0ff";
+//     ctx.lineWidth = 2;
+//     ctx.stroke();
+
+//     sineTime += 0.05; // advance phase each frame for animation
+// }
+
+function drawCochleaToBrainCurve(x0, y0, x1, y1, earShift) {
+    // x0,y0 = cochlea center
+    // x1,y1 = brain image connection point
+    // earShift = absolute eardrum offset (0..48 px)
+
+    const segments = 50; // number of segments along the curve
+    const maxWidth = 50;  // starting width at cochlea
+    const minWidth = 4;   // ending width at brain
+
+    // cubic Bézier control points for smooth bend
+    const cp1x = x0 + 200;
+    const cp1y = y0 - 150;
+    const cp2x = x1 - 200;
+    const cp2y = y1 + 150;
+
+    // Calculate absolute color modulation based on ear movement
+    const loudness = Math.min(Math.abs(earShift)/48, 1); // 0..1
+    const baseColor = [0, 255, 255]; // cyan
+    const loudColor = [255, 255, 100]; // yellow
+    // const color = baseColor.map((v,i)=> Math.round(v*(1-loudness) + loudColor[i]*loudness));
+    // console.log(color)
+    // Draw curve as multiple narrow quads
+    ctx.lineCap = "round";
+
+    let prevX = x0;
+    let prevY = y0;
+
+    for (let i = 1; i <= segments; i++) {
+        let color = baseColor;
+        let extra = 0;
+        if (Math.random() < loudness * 0.5) {
+          color = loudColor;
+          extra = 7;
+        }
+
+        const t = i / segments;
+
+        // cubic Bézier formula
+        const xt = (1-t)**3*x0 + 3*(1-t)**2*t*cp1x + 3*(1-t)*t**2*cp2x + t**3*x1;
+        const yt = (1-t)**3*y0 + 3*(1-t)**2*t*cp1y + 3*(1-t)*t**2*cp2y + t**3*y1;
+
+        // line width taper
+        const width = (maxWidth*(1-t) + minWidth*t ) + extra;
+
+        // draw a segment from prev to current
+        ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(xt, yt);
+        ctx.stroke();
+
+        prevX = xt;
+        prevY = yt;
+    }
+}
+
+function drawBoneLine(x0, y0, x1, y1, width) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const nx = -dy / len; // perpendicular unit vector
+    const ny = dx / len;
+
+    ctx.beginPath();
+    ctx.moveTo(x0 + nx * width, y0 + ny * width);
+    ctx.lineTo(x1 + nx * width, y1 + ny * width);
+    ctx.lineTo(x1 - nx * width, y1 - ny * width);
+    ctx.lineTo(x0 - nx * width, y0 - ny * width);
+    ctx.closePath();
+    ctx.fillStyle = "#0ff";
+    ctx.fill();
+}
+
+function drawBoneImage(img, x0, y0, x1, y1, refStart, refEnd) {
+    const imgVx = refEnd[0] - refStart[0];
+    const imgVy = refEnd[1] - refStart[1];
+
+    const canvasVx = x1 - x0;
+    const canvasVy = y1 - y0;
+
+    const imgLength = Math.sqrt(imgVx*imgVx + imgVy*imgVy);
+    const canvasLength = Math.sqrt(canvasVx*canvasVx + canvasVy*canvasVy);
+
+    const scale = canvasLength / imgLength;
+
+    // Angle between image vector and canvas vector
+    const imgAngle = Math.atan2(imgVy, imgVx);
+    const canvasAngle = Math.atan2(canvasVy, canvasVx);
+    const rotateAngle = canvasAngle - imgAngle;
+
+    ctx.save();
+    ctx.translate(x0, y0);
+    ctx.rotate(rotateAngle);
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, -refStart[0], -refStart[1]);
+    ctx.restore();
+}
+
+// --- Draw cochlea spiral & hair cells
+function drawCochlea(){
+  const cx = canvas.width/2;
+  const cy = canvas.height/2;
+
+  const turns = 4;
+  // const points = 600;
+  const points = 8192;
+  // const points = analyser.fftSize;
+
+  const minF = 40;
+  const maxF = 20000;
+
+  const pointsPerOctave = 1150; // adjustable
+  const numOctaves = Math.log2(maxF / minF);
+  const totalPoints = Math.floor(numOctaves * pointsPerOctave);
+
+
+  const bucketFreqs = [];
+  for (let i = 0; i <= points; i++) {
+      const f = minF * Math.pow(2, i / pointsPerOctave); // log-spaced frequencies
+      bucketFreqs.push(f);
+  }
+
+  for (let i = 0; i < bucketFreqs.length; i++) {
+    const t = i / bucketFreqs.length; // 0=center, 1=outer
+    const angle = t * Math.PI * 2 * turns;
+
+    const radius = 200 * t; // keep your existing spiral radius
+
+    const x = cx + Math.cos(angle) * radius;
+    const y = cy + Math.sin(angle) * radius;
+
+    const freq = bucketFreqs[i];
+    const bin = Math.floor(freq / (audioCtx.sampleRate / 2) * dataArray.length);
+    let mag = dataArray[bin] || 0;
+
+    for (let r=-2;r<=2;r++) {
+      let rBin = dataArray[bin + r] || 0;
+      if (dataArray[bin] < rBin) {
+        // mag = 0
+        // mag = mag * 0.2;
+        mag = mag * 0.4;
+        // mag = mag;
+      }
+    }
+
+    const hairLen = 5 + mag * 0.125;
+    // const hairLen = mag * 0.25;
+    // draw the hair
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.fillStyle = "#0ff";
+    ctx.fillRect(x, y, 2, 2);
+    // ctx.lineWidth = 1; // ensures uniform width
+    const nx = Math.cos(angle);
+    const ny = Math.sin(angle);
+
+    let jitter = mag / 200; // adjust for more or less bending
+    jitter = Math.max(jitter, 0.9)
+    const midX = x + nx * hairLen * 0.5 + (Math.random() - 0.5) * jitter * hairLen;
+    const midY = y + ny * hairLen * 0.5 + (Math.random() - 0.5) * jitter * hairLen;
+    const endX = x + nx * hairLen + (Math.random() - 0.5) * jitter * hairLen;
+    const endY = y + ny * hairLen + (Math.random() - 0.5) * jitter * hairLen;
+
+    const red = 60 + (Math.random() * 60);
+    const green = 255 - (Math.random() * 105);
+    const blue = 255 - (Math.random() * 105);
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(midX, midY, endX, endY); // curved line
+    ctx.strokeStyle = `rgba(${red}, ${green}, ${blue}, ${0.1 + (mag * mag)/(255 * 255)})`;
+    ctx.lineWidth = 2; // control width
+    ctx.stroke();
+  }
+}
+
+function drawBrain() {
+    if (!brainImg.complete) return; // wait until image loads
+
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+
+    // Cochlea center
+    const cochleaX = canvas.width/2;
+    const cochleaY = canvas.height/2;
+
+    // Position brain: right edge aligned, vertical centered on cochlea
+    const x = canvasWidth - brainImg.width;        // right justified
+    const y = cochleaY - brainImg.height / 2;     // center vertically on cochlea
+
+    ctx.drawImage(brainImg, x, y);
+}
+
+function drawSpectrogramLog() {
+  const w = canvas.width;
+  const h = 250;
+  const offsetY = canvas.height - h - 20;
+
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(0, offsetY, w, h);
+
+  const binCount = dataArray.length;
+  const minF = 100;
+  const maxF = 10000;
+
+  const pointsPerOctave = 100; // adjustable
+  const numOctaves = Math.log2(maxF / minF);
+  const totalPoints = Math.floor(numOctaves * pointsPerOctave);
+
+  let prevMag = 0;
+  for (let i = 0; i <= totalPoints; i++) {
+    const f = minF * Math.pow(2, i / pointsPerOctave);
+    const bin = Math.floor(f / (audioCtx.sampleRate / 2) * binCount);
+    let mag = dataArray[bin] || 0;
+
+    for (let r=-2;r<=2;r++) {
+      let rBin = dataArray[bin + r] || 0;
+      if (dataArray[bin] < rBin) {
+        mag = mag * 0.7
+      }
+    }
+
+    // X position scaled evenly across total points
+    const x = (i / totalPoints) * w;
+    const y = offsetY + h - (mag / 255) * h;
+
+    ctx.fillStyle = "#0f8";
+    ctx.fillRect(x, y, Math.ceil(w / totalPoints), (mag / 255) * h);
+  }
+
+  // Draw frequency labels for octaves
+  ctx.fillStyle = "#fff";
+  ctx.font = "12px sans-serif";
+  let octaveFreq = minF;
+  while (octaveFreq <= maxF) {
+    const x = Math.log2(octaveFreq / minF) / numOctaves * w;
+    ctx.fillText(octaveFreq + " Hz", x - 10, offsetY + h + 15);
+    octaveFreq *= 2;
+  }
+}
+
+draw();
+</script>
+</body>
+</html>

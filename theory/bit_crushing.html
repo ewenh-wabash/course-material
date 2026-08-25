@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Compression Visualization Tool</title>
+<style>
+body { font-family: Arial; margin: 20px; background:#111; color:#eee; }
+.controls { margin-bottom: 15px; }
+label { display:block; margin-top:10px; }
+canvas { border:1px solid #444; margin-top:10px; }
+.dropzone {
+  border:2px dashed #666;
+  padding:20px;
+  margin-bottom:10px;
+  text-align:center;
+  color:#aaa;
+}
+.dropzone.dragover { border-color:#0ff; color:#0ff; }
+</style>
+</head>
+<body>
+
+<h2>Compression Visualization with Real-Time Audio Processing</h2>
+
+<div id="audioDrop" class="dropzone">Drop Audio File Here or Click</div>
+<input type="file" id="fileInput" accept="audio/*" style="display:none;">
+<audio id="audio" controls></audio>
+
+<br>
+
+<div id="imgDrop" class="dropzone">Drop Image Here or Click</div>
+<input type="file" id="imgInput" accept="image/*" style="display:none;">
+
+<div class="controls">
+<label>Sample Rate Reduction
+<input type="range" id="sampleRate" min="1" max="50" value="50"></label>
+
+<label>Bit Depth
+<input type="range" id="bitDepth" min="1" max="8" value="8"></label>
+
+<label>Clipping / Overdrive
+<input type="range" id="clip" min="0.1" max="1" step="0.01" value="1"></label>
+</div>
+
+<canvas id="waveCanvas" width="800" height="200"></canvas>
+<canvas id="imgCanvas" width="800" height="500"></canvas>
+
+<script>
+const audio = document.getElementById('audio');
+const fileInput = document.getElementById('fileInput');
+const imgInput = document.getElementById('imgInput');
+
+const audioDrop = document.getElementById('audioDrop');
+const imgDrop = document.getElementById('imgDrop');
+
+const waveCanvas = document.getElementById('waveCanvas');
+const imgCanvas = document.getElementById('imgCanvas');
+const wctx = waveCanvas.getContext('2d');
+const ictx = imgCanvas.getContext('2d');
+
+let sourceImg = new Image();
+let audioBuffer = null;
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let sourceNode = null;
+
+// ---------- Drag & Drop Helpers ----------
+function setupDropzone(zone, input, callback) {
+  zone.onclick = () => input.click();
+
+  zone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+
+  zone.addEventListener('dragleave', () => {
+    zone.classList.remove('dragover');
+  });
+
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) callback(file);
+  });
+
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) callback(file);
+  };
+}
+
+// ---------- Audio ----------
+setupDropzone(audioDrop, fileInput, (file) => {
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const arrayBuffer = e.target.result;
+    audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    playProcessedAudio();
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function playProcessedAudio() {
+  if (sourceNode) sourceNode.stop();
+  if (!audioBuffer) return;
+
+  sourceNode = audioCtx.createBufferSource();
+  const processedBuffer = audioCtx.createBuffer(
+    audioBuffer.numberOfChannels,
+    audioBuffer.length,
+    audioBuffer.sampleRate
+  );
+
+  const srFactor = document.getElementById('sampleRate').value;
+  const bitDepth = document.getElementById('bitDepth').value;
+  const clip = document.getElementById('clip').value;
+
+  for (let ch = 0; ch < audioBuffer.numberOfChannels; ch++) {
+    const input = audioBuffer.getChannelData(ch);
+    const output = processedBuffer.getChannelData(ch);
+
+    // Apply simple processing
+    const step = Math.floor(50 / srFactor) || 1;
+    const levels = Math.pow(2, bitDepth);
+
+    for (let i = 0; i < input.length; i++) {
+      let sample = input[i];
+
+      // Sample rate reduction (hold previous sample)
+      if (i % step !== 0) sample = output[i-1] || 0;
+
+      // Overdrive
+      sample = sample / clip;
+
+      // Hard clip
+      sample = Math.max(-1, Math.min(1, sample));
+
+      // Bit depth quantize
+      sample = Math.round(sample * (levels/2)) / (levels/2);
+
+      output[i] = sample;
+    }
+  }
+
+  sourceNode.buffer = processedBuffer;
+  sourceNode.connect(audioCtx.destination);
+  sourceNode.start();
+}
+
+// ---------- Image ----------
+setupDropzone(imgDrop, imgInput, (file) => {
+  const url = URL.createObjectURL(file);
+  sourceImg.onload = redraw;
+  sourceImg.src = url;
+});
+
+// ---------- Waveform ----------
+function generateWave(samples = 2000) {
+  let data = [];
+  for (let i = 0; i < samples; i++) {
+    const t = i / samples;
+    const val = Math.sin(t * Math.PI * 2 * 3) * 0.6 + Math.sin(t * Math.PI * 2 * 15) * 0.3;
+    data.push(val);
+  }
+  return data;
+}
+
+const baseWave = generateWave();
+
+function processWave(data) {
+  const srFactor = document.getElementById('sampleRate').value;
+  const bitDepth = document.getElementById('bitDepth').value;
+  const clip = document.getElementById('clip').value;
+
+  const step = Math.floor(50 / srFactor) || 1;
+  const levels = Math.pow(2, bitDepth);
+
+  let out = [];
+  for (let i = 0; i < data.length; i += step) {
+    let sample = data[i];
+    sample = sample / clip;
+    sample = Math.max(-1, Math.min(1, sample));
+    sample = Math.round(sample * (levels/2)) / (levels/2);
+    out.push(sample);
+  }
+  return out;
+}
+
+function drawWave() {
+  const samples = processWave(baseWave);
+  wctx.clearRect(0,0,800,200);
+  wctx.beginPath();
+  for (let i=0;i<samples.length;i++) {
+    const x = (i / samples.length) * 800;
+    const y = 100 - samples[i]*90;
+    if (i===0) wctx.moveTo(x,y);
+    else wctx.lineTo(x,y);
+  }
+  wctx.strokeStyle = 'cyan';
+  wctx.stroke();
+}
+
+// ---------- Image Processing ----------
+function drawImage() {
+  if (!sourceImg.src) return;
+  const srFactor = document.getElementById('sampleRate').value;
+  const bitDepth = document.getElementById('bitDepth').value;
+  const clip = document.getElementById('clip').value;
+  const w = imgCanvas.width;
+  const h = imgCanvas.height;
+  const levels = Math.pow(2, bitDepth);
+  const pixelSize = Math.floor(50 / srFactor) || 1;
+
+  ictx.drawImage(sourceImg, 0, 0, w, h);
+  const imgData = ictx.getImageData(0,0,w,h);
+
+  function quantize(v) {
+    v = (v - 0.5) / clip + 0.5;
+    v = Math.max(0, Math.min(1, v));
+    return Math.round(v * (levels-1)) / (levels-1);
+  }
+
+  for (let y=0;y<h;y+=pixelSize) {
+    for (let x=0;x<w;x+=pixelSize) {
+      const i = (y*w + x)*4;
+      let r = imgData.data[i]/255;
+      let g = imgData.data[i+1]/255;
+      let b = imgData.data[i+2]/255;
+      r = quantize(r);
+      g = quantize(g);
+      b = quantize(b);
+      for (let dy=0; dy<pixelSize; dy++) {
+        for (let dx=0; dx<pixelSize; dx++) {
+          const px = x+dx;
+          const py = y+dy;
+          if (px>=w || py>=h) continue;
+          const idx = (py*w + px)*4;
+          imgData.data[idx] = r*255;
+          imgData.data[idx+1] = g*255;
+          imgData.data[idx+2] = b*255;
+        }
+      }
+    }
+  }
+  ictx.putImageData(imgData,0,0);
+}
+
+// ---------- Redraw ----------
+function redraw() {
+  drawWave();
+  drawImage();
+  playProcessedAudio();
+}
+
+['sampleRate','bitDepth','clip'].forEach(id => {
+  document.getElementById(id).oninput = redraw;
+});
+
+redraw();
+</script>
+
+</body>
+</html>

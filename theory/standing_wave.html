@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Harmonic Series Visualizer</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #eee;
+    text-align: center;
+  }
+  canvas {
+    background: #000;
+    border: 1px solid #444;
+    margin-top: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .controls {
+    margin-top: 20px;
+  }
+  input[type=range] {
+    width: 300px;
+  }
+  .label {
+    margin-top: 10px;
+  }
+  button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Harmonic Series Visualizer</h1>
+standing wave (like the vibration of a violin string)
+
+<canvas id="transverseCanvas" width="1000" height="300"></canvas>
+<canvas id="longitudinalCanvas" width="1000" height="300"></canvas>
+
+<div class="controls">
+  <div class="label">Harmonic #: <span id="harmonicVal">1</span></div>
+  <input type="range" id="harmonic" min="1" max="20" step="1" value="1">
+
+  <div class="label">String Length (cm): <span id="lengthVal">100</span></div>
+  <input type="range" id="length" min="100" max="1000" step="1" value="1000">
+
+  <div class="label">Amplitude: <span id="ampVal">0.5</span></div>
+  <input type="range" id="amplitude" min="0" max="1" step="0.01" value="0.5">
+
+  <br>
+  <button id="start">Start</button>
+  <button id="stop">Stop</button>
+</div>
+
+<div class="label" id="info"></div>
+
+<script>
+const transverseCanvas = document.getElementById("transverseCanvas");
+const tCtx = transverseCanvas.getContext("2d");
+
+const longitudinalCanvas = document.getElementById("longitudinalCanvas");
+const lCtx = longitudinalCanvas.getContext("2d");
+
+const harmonicSlider = document.getElementById("harmonic");
+const lengthSlider = document.getElementById("length");
+const ampSlider = document.getElementById("amplitude");
+
+const harmonicVal = document.getElementById("harmonicVal");
+const lengthVal = document.getElementById("lengthVal");
+const ampVal = document.getElementById("ampVal");
+const info = document.getElementById("info");
+
+let audioCtx;
+let oscillator;
+let gainNode;
+let running = false;
+let phase = 0;
+
+const baseFreq = 130.81; // C3
+const particleCount = 500;
+let particles = [];
+
+// Initialize random particles
+for (let i = 0; i < particleCount; i++) {
+  particles.push({ x: Math.random() * longitudinalCanvas.width, y: Math.random() * longitudinalCanvas.height });
+}
+
+function getFundamentalFreq(lengthPx) {
+  return baseFreq * (1000 / lengthPx);
+}
+
+function drawTransverse() {
+  const length = lengthSlider.value;
+  const harmonic = parseInt(harmonicSlider.value);
+  const amp = ampSlider.value;
+  const centerY = transverseCanvas.height / 2;
+
+  tCtx.clearRect(0, 0, transverseCanvas.width, transverseCanvas.height);
+  tCtx.beginPath();
+  for (let x = 0; x <= length; x++) {
+    const normX = x / length;
+    const y = centerY + Math.sin(normX * Math.PI * harmonic) * Math.sin(phase) * amp * 80;
+    if (x === 0) tCtx.moveTo(x, y);
+    else tCtx.lineTo(x, y);
+  }
+  tCtx.strokeStyle = "lime";
+  tCtx.lineWidth = 2;
+  tCtx.stroke();
+
+  // Nodes
+  tCtx.fillStyle = "red";
+  for (let i = 0; i <= harmonic; i++) {
+    const x = (i / harmonic) * length;
+    tCtx.beginPath();
+    tCtx.arc(x, centerY, 4, 0, Math.PI * 2);
+    tCtx.fill();
+  }
+}
+
+function drawLongitudinal() {
+  const length = lengthSlider.value;
+  const harmonic = parseInt(harmonicSlider.value);
+  const amp = ampSlider.value;
+
+  lCtx.clearRect(0, 0, longitudinalCanvas.width, longitudinalCanvas.height);
+
+  const maxX = length; // only show particles up to the current string length
+
+  for (let i = 0; i < particleCount; i++) {
+    const p = particles[i];
+    if (p.x > maxX) continue; // hide particles beyond current string length
+
+    const normX = p.x / length;
+    const derivative = Math.PI * harmonic * Math.cos(normX * Math.PI * harmonic);
+    const normalizedDerivative = derivative / (Math.PI * harmonic); // scale to max 1
+    const displacement = -normalizedDerivative * Math.sin(phase) * amp * 40 * length/1000;
+
+    const x = p.x + displacement;
+
+    lCtx.beginPath();
+    lCtx.arc(x, p.y, 2, 0, Math.PI * 2);
+    lCtx.fillStyle = "cyan";
+    lCtx.fill();
+  }
+}
+
+function draw() {
+  drawTransverse();
+  drawLongitudinal();
+
+  const length = lengthSlider.value;
+  const harmonic = parseInt(harmonicSlider.value);
+  const fundamentalFreq = getFundamentalFreq(length);
+  const harmonicFreq = fundamentalFreq * harmonic;
+
+  const fundamentalWavelength = (length / 1000).toFixed(2) + " m";
+  const harmonicWavelength = (length / harmonic / 1000).toFixed(2) + " m";
+
+  info.innerHTML = `
+    Fundamental wavelength: ${fundamentalWavelength} | Fundamental frequency: ${fundamentalFreq.toFixed(2)}Hz ${frequencyToPitch(fundamentalFreq)}<br/>
+    Harmonic wavelength: ${harmonicWavelength} | Output frequency: ${harmonicFreq.toFixed(2)}Hz ${frequencyToPitch(harmonicFreq)}`;
+}
+
+let lastTime = performance.now();
+function animate() {
+  if (!running) return;
+  const now = performance.now();
+  const dt = (now - lastTime) / 1000;
+  lastTime = now;
+
+  const length = lengthSlider.value;
+  const harmonic = parseInt(harmonicSlider.value);
+  const fundamentalFreq = getFundamentalFreq(length);
+  const freq = fundamentalFreq * harmonic / 200; // 200x slower vibration speed than real time
+
+  phase += 2 * Math.PI * freq * dt;
+
+  draw();
+  requestAnimationFrame(animate);
+}
+
+function startSound() {
+  if (running) return;
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  oscillator = audioCtx.createOscillator();
+  gainNode = audioCtx.createGain();
+
+  updateSound();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.start();
+  running = true;
+  lastTime = performance.now();
+  animate();
+}
+
+function stopSound() {
+  if (!running) return;
+  oscillator.stop();
+  audioCtx.close();
+  running = false;
+}
+
+function updateSound() {
+  if (!oscillator) return;
+
+  const length = lengthSlider.value;
+  const harmonic = parseInt(harmonicSlider.value);
+  const amp = ampSlider.value;
+
+  const freq = getFundamentalFreq(length) * harmonic;
+
+  oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  gainNode.gain.setValueAtTime(amp, audioCtx.currentTime);
+}
+
+function frequencyToPitch(freq) {
+  if (!freq || freq <= 0) return "";
+
+  const A4 = 440;
+  const semitone = 12 * Math.log2(freq / A4);
+  const nearest = Math.round(semitone);
+
+  // Distance from nearest semitone (in semitones)
+  const diff = Math.abs(semitone - nearest);
+
+  // Thresholds
+  const veryClose = 1 / 16; // 0.0625
+  const close = 1 / 8;      // 0.125
+
+  if (diff > close) return "";
+
+  const noteIndex = (nearest + 9) % 12; // shift so C = 0
+  const octave = 4 + Math.floor((nearest + 9) / 12);
+
+  const noteNames = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B"];
+  const note = noteNames[(noteIndex + 12) % 12];
+
+  const pitch = note + octave;
+
+  if (diff <= veryClose) {
+    return pitch;
+  } else {
+    return "~" + pitch;
+  }
+}
+
+harmonicSlider.oninput = () => { harmonicVal.textContent = harmonicSlider.value; updateSound(); draw();};
+lengthSlider.oninput = () => { lengthVal.textContent = (lengthSlider.value / 10).toFixed(0); updateSound(); draw();};
+ampSlider.oninput = () => { ampVal.textContent = ampSlider.value; updateSound(); draw();};
+
+document.getElementById("start").onclick = startSound;
+document.getElementById("stop").onclick = stopSound;
+
+// Initial draw
+draw();
+</script>
+
+<br/><br/><br/><br/><br/><br/>
+
+<h2>Standing Waves in Fire</h2>
+The faster moving anti-nodes disturb the air molecules, which lowers the flame.<br/>
+The locations non-moving air (nodes) have large flames.<br/>
+Note the sinusoidal pattern in the flames.<br/>
+The higher the pitch, the shorter the wavelength.<br/>
+<video width="1280" height="720" controls>
+    <source src="rubens_tube.mp4" type="video/mp4">
+</video>
+
+<br/><br/>
+<h2>Standing Waves in Water</h2>
+String instruments usually have nodes (labeled N) on the sides like in the above example.<br/>
+But in water, there are usually anti-nodes (labeled A) on the sides!
+<video width="1280" height="720" controls>
+    <source src="standing_wave.mp4" type="video/mp4">
+</video>
+
+<br/><br/>
+<h2>Donald Duck Talks Pythagoras</h2>
+<video width="1280" height="720" controls>
+    <source src="donald_duck_string.mp4" type="video/mp4">
+</video>
+
+</body>
+</html>

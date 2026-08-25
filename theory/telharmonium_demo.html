@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Telharmonium Simulator</title>
+
+<style>
+
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #eee;
+  text-align: center;
+  place-items: center; /* shorthand for align-items + justify-items */
+
+}
+
+canvas {
+  background: #000;
+  border: 1px solid #444;
+  margin: 8px 0;
+  display: block;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 222px 1fr 80px;
+  gap: 0px;
+  max-width: 900px;
+}
+
+label { text-align: right; }
+
+.keyboard {
+  display: flex;
+  user-select: none;
+  margin-top: 10px;
+}
+
+.key {
+  width: 40px;
+  height: 180px;
+  background: #eee;
+  border: 1px solid #333;
+  position: relative;
+}
+
+.key.black {
+  width: 28px;
+  height: 110px;
+  background: #000;
+  position: absolute;
+  left: 26px;
+  top: 0;
+  z-index: 2;
+}
+
+.key.pressed {
+  background: rgb(50, 150, 50);
+}
+
+.key.black.pressed {
+  background: rgb(50, 150, 50);
+}
+
+.but {
+  cursor: pointer;
+}
+
+</style>
+
+<script src="Midi.js"></script>
+
+</head>
+
+<body>
+
+<h1>Telharmonium Simulator</h1>
+<div class="center-wrapper">
+<div class="controls">
+  <label>Rheotome/Field Coil Dist. (μm)</label>
+  <input type="range" id="flux" min="0.1" max="5" step="0.1" value="4.6">
+  <span id="fluxVal"></span>
+
+  <label>Note Onset Click</label>
+  <input type="range" id="click" min="0" max="1" step="0.01" value="0.5">
+  <span id="clickVal"></span>
+
+  <label>Polyphony Voltage Reduction</label>
+  <input type="range" id="polyphony" min="0.1" max="5" step="0.01" value="1">
+  <span id="polyphonyVal"></span>
+
+  <label>Home Speaker Effects</label>
+  <input type="range" id="telDry" min="0" max="1" step="0.01" value="0.5">
+  <span id="telDryVal"></span>
+
+  <label>Phone Static</label>
+  <input type="range" id="static" min="0" max="1" step="0.01" value="0.12">
+  <span id="staticVal"></span>
+
+
+  <label>
+    <span class="but" onclick="playMIDIFile('https://bitmidi.com/uploads/110440.mid')">
+      🐎
+    </span>
+
+    <span class="but" onclick="playMIDIFile('https://bitmidi.com/uploads/35173.mid')">
+      🍁
+    </span>
+
+    <span class="but" onclick="playMIDIFile('https://bitmidi.com/uploads/75360.mid')">
+      🌖
+    </span>
+
+    <span class="but" onclick="playMIDIFile('https://bitmidi.com/uploads/28336.mid')">
+      🎃
+    </span>
+    <span class="but" onclick="stopMIDIPlayback()">🛑</span>
+    &nbsp;&nbsp;&nbsp;Cross-Talk
+</label>
+  <input type="range" id="crosstalk" min="0" max="1" step="0.01" value="0.05">
+  <span id="crosstalkVal"></span>
+
+</div>
+
+<canvas id="fluxCanvas" width="900" height="100"></canvas>
+<canvas id="voltCanvas" width="900" height="100"></canvas>
+
+
+<div class="controls">
+  <label>Tooth Width (aka Duty Cycle)</label>
+  <input type="range" id="toothWidth" min="0.03" max="0.97" step="0.01" value="0.85">
+  <span id="toothWidthVal"></span>
+
+  <label>Number of Teeth</label>
+  <input type="range" id="octaveSlider" min="0" max="5" step="1" value="2">
+  <span id="octaveVal"></span>
+
+  <label>Octave Drum</label>
+  <input type="range" id="harm1" min="0" max="0.3" step="0.01" value="0.09">
+  <span id="harm1Val"></span>
+
+  <label>Twelfth Drum</label>
+  <input type="range" id="harm2" min="0" max="0.3" step="0.01" value="0.03">
+  <span id="harm2Val"></span>
+
+  <label>Fifteenth Drum</label>
+  <input type="range" id="harm3" min="0" max="0.3" step="0.01" value="0.04">
+  <span id="harm3Val"></span>
+
+  <label>Mixture I Drum</label>
+  <input type="range" id="harm4" min="0" max="0.3" step="0.01" value="0.03">
+  <span id="harm4Val"></span>
+
+  <label>Mixture II Drum</label>
+  <input type="range" id="harm5" min="0" max="0.3" step="0.01" value="0.02">
+  <span id="harm5Val"></span>
+
+</div>
+</div>
+
+<canvas id="scope" width="900" height="150"></canvas>
+
+<div class="keyboard" id="keyboard"></div>
+
+<audio id="crossTalkAudio" loop autoplay style="display:none">
+<!-- <audio id="crossTalkAudio" loop autoplay controls> -->
+  <source src="cross_talk.mp3" type="audio/mp3">
+</audio>
+
+<script>
+
+let midiTransport = {
+  timeouts: [],
+  playing: false
+};
+
+const octaveSlider = document.getElementById("octaveSlider");
+const octaveVal = document.getElementById("octaveVal");
+
+// mapping slider index to teeth
+const teethOptions = [16, 32, 64, 128, 256, 512];
+let octaveShift = 0; // default 0
+</script>
+
+
+<script>
+
+  const harmonics = [
+  { slider: document.getElementById('harm1'), val: document.getElementById('harm1Val'), offset: 12 },
+  { slider: document.getElementById('harm2'), val: document.getElementById('harm2Val'), offset: 19 },
+  { slider: document.getElementById('harm3'), val: document.getElementById('harm3Val'), offset: 24 },
+  { slider: document.getElementById('harm4'), val: document.getElementById('harm4Val'), offset: 26 },
+  { slider: document.getElementById('harm5'), val: document.getElementById('harm5Val'), offset: 28 }
+];
+
+function updateHarmonicLabels() {
+  harmonics.forEach(h => h.val.textContent = h.slider.value);
+}
+updateHarmonicLabels();
+harmonics.forEach(h => h.slider.oninput = () => {
+  h.val.textContent = h.slider.value;
+  updateActiveVoices(); // update harmonics volumes if notes are playing
+});
+
+
+
+
+/* ===========================
+   MIDI KEYBOARD
+=========================== */
+if (navigator.requestMIDIAccess) {
+  navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+}
+
+function onMIDISuccess(midiAccess) {
+  midiAccess.inputs.forEach(input => input.onmidimessage = handleMIDIMessage);
+}
+
+function onMIDIFailure() {
+  console.warn("Could not access MIDI devices.");
+}
+
+function handleMIDIMessage(msg) {
+  const [status, note, velocity] = msg.data;
+
+  // Note on: 0x90, velocity > 0
+  if ((status & 0xf0) === 0x90 && velocity > 0) {
+    noteOn(note);
+  }
+  // Note off: 0x80 or note on with velocity 0
+  else if ((status & 0xf0) === 0x80 || ((status & 0xf0) === 0x90 && velocity === 0)) {
+    noteOff(note);
+  }
+}
+
+
+/* ===========================
+   CONSTANTS
+=========================== */
+const REF_NOTE = 36;
+const BASE_CYCLES = 3;
+const DRAW_SAMPLES_PER_CYCLE = 256;
+
+/* ===========================
+   CANVASES
+=========================== */
+const fctx = fluxCanvas.getContext("2d");
+const vctx = voltCanvas.getContext("2d");
+const sctx = scope.getContext("2d");
+
+/* ===========================
+   AUDIO
+=========================== */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const sampleRate = audioCtx.sampleRate;
+const activeVoices = new Map();
+
+/* ===========================
+   UI
+=========================== */
+const fluxSlider = flux;
+const clickSlider = click;
+const toothWidthSlider = toothWidth;
+const polyphonySlider = polyphony;
+const crosstalkSlider = crosstalk;
+
+function updateLabels() {
+  fluxVal.textContent = fluxSlider.value;
+  toothWidthVal.textContent = toothWidthSlider.value;
+  clickVal.textContent = clickSlider.value;
+  polyphonyVal.textContent = polyphonySlider.value;
+  crosstalkVal.textContent = crosstalkSlider.value;
+}
+updateLabels();
+
+function redrawGraphs() {
+  // Choose a default note to display, e.g., middle of the keyboard
+  const defaultNote = 48; // C3-ish
+  const freq = noteToFreq(defaultNote);
+  const cycles = cyclesForNote(defaultNote);
+  const samples = Math.floor(cycles * DRAW_SAMPLES_PER_CYCLE);
+
+  const { Phi, V } = computeWave(freq, samples, 3);
+
+  drawWave(fctx, Phi, `Magnetic Flux Φ(t)`);
+  drawWave(vctx, V, `Ideal Induced Voltage v(t)`);
+
+  // Also update the scope with audio-style sampling
+  const buffer = generateBuffer(freq, defaultNote); // this already calls drawScope
+}
+
+function updateActiveVoices() {
+  const numNotesOn = activeVoices.size;
+  const polyphonyVal = +polyphonySlider.value;
+
+  // Compute volume scale with your formula
+  let volumeScale = 1 / ((numNotesOn - 1) * polyphonyVal);
+  volumeScale = Math.min(volumeScale, 1);
+
+  const now = audioCtx.currentTime;
+  const rampTime = 0.02;
+
+  for (const [, voice] of activeVoices.entries()) {
+    // Ramp each voice's gain to the new scale
+    voice.gain.gain.cancelScheduledValues(now);
+    voice.gain.gain.linearRampToValueAtTime(0.7 * volumeScale, now + rampTime);
+  }
+}
+
+function updateOctaveShift() {
+  const idx = +octaveSlider.value;
+  const teeth = teethOptions[idx];
+  octaveVal.textContent = teeth;
+  octaveShift = Math.log2(teeth / 64); // relative to default 64
+  // octaveShift is integer: -2, -1, 0, +1, +2, +3
+  updateActiveVoices();
+  redrawGraphs();
+}
+
+octaveSlider.oninput = updateOctaveShift;
+updateOctaveShift();
+
+  updateLabels();
+  redrawGraphs();
+  updateActiveVoices();
+
+// fluxSlider.oninput = turnsSlider.oninput = toothWidthSlider.oninput = () => {
+fluxSlider.oninput = toothWidthSlider.oninput = clickSlider.oninput = () => {
+  updateLabels();
+  redrawGraphs();
+  updateActiveVoices();
+};
+
+polyphonySlider.oninput = () => {
+  polyphonyVal.textContent = polyphonySlider.value;
+  updateActiveVoices();
+  redrawGraphs();
+};
+
+/* ===========================
+   HELPERS
+=========================== */
+function noteToFreq(note) {
+  const shiftedNote = note + octaveShift * 12;
+  const C2 = 65.406;
+  return C2 * Math.pow(2, (shiftedNote - REF_NOTE) / 12);
+}
+
+
+function cyclesForNote(note) {
+  return BASE_CYCLES * Math.pow(2, (note - REF_NOTE) / 12);
+}
+
+/* ===========================
+   PHYSICAL MODEL
+=========================== */
+const telDrySlider = document.getElementById('telDry');
+const telDryVal = document.getElementById('telDryVal');
+const wetGain = audioCtx.createGain();
+const dryGain = audioCtx.createGain();
+const telEQ = createTelephoneEQ(audioCtx);
+
+dryGain.connect(audioCtx.destination);
+wetGain.connect(telEQ.input);
+telEQ.output.connect(audioCtx.destination);
+
+function updateTelDry() {
+  const val = +telDrySlider.value;
+  telDryVal.textContent = val;
+  dryGain.gain.value = 1 - val;
+  wetGain.gain.value = val;
+}
+
+telDrySlider.oninput = updateTelDry;
+updateTelDry();
+
+function createTelephoneEQ(audioCtx) {
+  // Highpass: removes low rumble
+  const highPass = audioCtx.createBiquadFilter();
+  highPass.type = 'highpass';
+  highPass.frequency.value = 300;
+  highPass.Q.value = 1;
+
+  // Peaking: boost mids slightly for nasal/metallic color
+  const midPeak = audioCtx.createBiquadFilter();
+  midPeak.type = 'peaking';
+  midPeak.frequency.value = 1200;
+  midPeak.Q.value = 1;
+  midPeak.gain.value = 3; // dB
+
+  // Lowpass: roll off highs
+  const lowPass = audioCtx.createBiquadFilter();
+  lowPass.type = 'lowpass';
+  lowPass.frequency.value = 2500;
+  lowPass.Q.value = 1;
+
+  // Connect chain
+  highPass.connect(midPeak);
+  midPeak.connect(lowPass);
+
+  return { input: highPass, output: lowPass };
+}
+
+function createStaticNoise(audioCtx) {
+  const bufferSize = audioCtx.sampleRate * 1; // 1 second buffer
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1; // white noise -1..1
+  }
+
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+
+  // Bandpass to make it “phone-like”
+  const band = audioCtx.createBiquadFilter();
+  band.type = 'bandpass';
+  band.frequency.value = 1200; // phone midrange
+  band.Q.value = 0.5;          // fairly wide
+
+  source.connect(band);
+
+  // Gain node for volume control
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.02; // start low
+  band.connect(gain);
+
+  source.start();
+
+  return { source, gain };
+}
+
+const staticNode = createStaticNoise(audioCtx);
+staticNode.gain.connect(wetGain); // mix static into EQ “wet” output
+
+const staticSlider = document.getElementById("static");
+const staticValSpan = document.getElementById("staticVal");
+
+function updateStatic() {
+  const val = +staticSlider.value;
+  staticValSpan.textContent = val.toFixed(2);
+  staticNode.gain.gain.value = val;
+}
+
+staticSlider.oninput = updateStatic;
+updateStatic();
+
+const crossTalkSlider = document.getElementById("crosstalk");
+const crossTalkVal = document.getElementById("crosstalkVal");
+
+crossTalkSlider.oninput = () => {
+    crossTalkVal.textContent = crossTalkSlider.value;
+    crossTalkAudio.volume = +crossTalkSlider.value;
+};
+
+document.body.addEventListener("click", () => {
+    crossTalkAudio.play().catch(e => console.log("play blocked:", e));
+}, { once: true });
+
+function computeWave(freq, samples, cycles = 1, forAudio = false) {
+  const Phi0 = +fluxSlider.value * 1000000;
+  const turns = 2000;
+  const duty = Math.max(0.01, Math.min(0.99, +toothWidthSlider.value / 2));
+
+  const Phi = new Float32Array(samples);
+  const V = new Float32Array(samples);
+  const dt = forAudio ? 1 / sampleRate : 1 / samples;
+
+  for (let i = 0; i < samples; i++) {
+    const cyclePos = (i / samples) * cycles;
+    const local = cyclePos % 1; // 0..1
+    const x = local * 2 - 1;    // -1..1
+
+    // width factor: narrow at 0/1, full at 0.5
+    const width = duty <= 0.5 ? duty * 2 : (1 - duty) * 2;
+    const scaledX = x / width;
+
+    if (Math.abs(scaledX) <= 1) {
+      Phi[i] = Math.cos(scaledX * Math.PI / 2) ** 2;
+    } else {
+      Phi[i] = 0;
+    }
+  }
+
+  // Faraday: v = -N dΦ/dt
+  for (let i = 1; i < samples - 1; i++) {
+    V[i] = -turns * (Phi[i + 1] - Phi[i - 1]) / (2 * dt);
+    V[i] = Math.min(V[i], Phi0);
+    V[i] = Math.max(V[i], -Phi0);
+  }
+
+  return { Phi, V };
+}
+
+/* ===========================
+   DRAWING
+=========================== */
+function drawWave(ctx, data, label) {
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  const max = Math.max(...data.map(v => Math.abs(v))) || 1;
+
+  ctx.strokeStyle = "#0f0";
+  ctx.beginPath();
+
+  data.forEach((v, i) => {
+    const x = i / data.length * ctx.canvas.width;
+    const y = ctx.canvas.height / 2 -
+      v / max * ctx.canvas.height * 0.4;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+
+  ctx.stroke();
+  ctx.fillStyle = "#aaa";
+  ctx.fillText(label, 10, 16);
+}
+
+function computeMixedWave(samples = 1024) {
+  const mixed = new Float32Array(samples);
+
+  // Loop over each active voice
+  for (const [note] of activeVoices.entries()) {
+    const freq = noteToFreq(note);
+    const { V } = computeWave(freq, samples, cyclesForNote(note), true);
+
+    // Add this note to the mix
+    for (let i = 0; i < samples; i++) {
+      mixed[i] += V[i];
+    }
+  }
+
+  // Optional: normalize to prevent clipping
+  let peak = Math.max(...mixed.map(v => Math.abs(v))) || 1;
+  for (let i = 0; i < samples; i++) mixed[i] /= peak;
+
+  return mixed;
+}
+
+function drawScopeMixed() {
+  const data = computeMixedWave(scope.width); // one sample per pixel
+  sctx.clearRect(0, 0, scope.width, scope.height);
+
+  sctx.strokeStyle = "#0f0";
+  sctx.beginPath();
+
+  data.forEach((v, i) => {
+    const x = i / data.length * scope.width;
+    const y = scope.height / 2 - v * scope.height * 0.4;
+    i === 0 ? sctx.moveTo(x, y) : sctx.lineTo(x, y);
+  });
+
+  sctx.stroke();
+    sctx.fillStyle = "#aaa";
+  sctx.font = "10px sans-serif";   // need a font set!
+  sctx.fillText("Ideal Waveform", 10, 16);
+}
+
+
+function drawScope(data) {
+  console.log(data)
+  sctx.clearRect(0, 0, scope.width, scope.height);
+  const max = Math.max(...data.map(v => Math.abs(v))) || 1;
+
+  sctx.strokeStyle = "#0f0";
+  sctx.beginPath();
+
+  data.forEach((v, i) => {
+    const x = i / data.length * scope.width;
+    const y = scope.height / 2 -
+      v / max * scope.height * 0.4;
+    i === 0 ? sctx.moveTo(x, y) : sctx.lineTo(x, y);
+  });
+
+  sctx.stroke();
+}
+
+/* ===========================
+   AUDIO
+=========================== */
+function generateBuffer(freq, note) {
+  const samples = Math.floor(sampleRate / freq);  // 1 period
+  const { V } = computeWave(freq, samples, 1, true);
+
+  const buffer = audioCtx.createBuffer(1, samples, sampleRate);
+  const data = buffer.getChannelData(0);
+
+  let max = 0;
+  for (let i = 0; i < samples; i++) max = Math.max(max, Math.abs(V[i]));
+  for (let i = 0; i < samples; i++) data[i] = V[i] / max;
+
+  drawScopeMixed(data);
+  return buffer;
+}
+
+
+/* ===========================
+   NOTES
+=========================== */
+function noteOn(note) {
+  if (activeVoices.has(note)) return;
+
+  const keyEl = document.getElementById(`key_${note}`);
+  if (keyEl) keyEl.classList.add('pressed');
+
+  // === Root Note ===
+  const rootFreq = noteToFreq(note);
+  const rootSrc = audioCtx.createBufferSource();
+  rootSrc.buffer = generateBuffer(rootFreq, note);
+  rootSrc.loop = true;
+
+  const rootGain = audioCtx.createGain();
+  // Root always max
+  rootGain.gain.value = 0.7;
+
+  // Click scaled by polyphony
+  const numNotesOn = activeVoices.size + 1;
+  let volumeScale = 1 / ((numNotesOn - 1) * +polyphonySlider.value);
+  volumeScale = Math.min(volumeScale, 1);
+  playClick(+clickSlider.value * volumeScale);
+
+  rootSrc.connect(rootGain);
+  rootGain.connect(dryGain);
+  rootGain.connect(wetGain);
+  rootSrc.start();
+
+  // Store root in voices
+  activeVoices.set(note, { src: rootSrc, gain: rootGain, harmonics: [] });
+
+  // === Harmonics ===
+  harmonics.forEach((h, i) => {
+    const hNote = note + h.offset;
+    const hFreq = noteToFreq(hNote);
+    const hSrc = audioCtx.createBufferSource();
+    hSrc.buffer = generateBuffer(hFreq, hNote);
+    hSrc.loop = true;
+
+    const hGain = audioCtx.createGain();
+    hGain.gain.value = +h.slider.value * 0.7; // scale by slider
+
+    hSrc.connect(hGain);
+    hGain.connect(dryGain);
+    hGain.connect(wetGain);
+    hSrc.start();
+
+    // Save harmonic sources for volume updates or noteOff
+    activeVoices.get(note).harmonics.push({ src: hSrc, gain: hGain });
+  });
+
+  drawScopeMixed();
+  updateVolumes(); // ramp volumes correctly
+}
+
+function updateVolumes() {
+  const numNotes = activeVoices.size;
+  if (numNotes === 0) return;
+
+  const polyVal = +polyphonySlider.value;
+  let volumeScale = 1 / ((numNotes - 1) * polyVal);
+  volumeScale = Math.min(volumeScale, 1);
+
+  activeVoices.forEach(voice => {
+    voice.gain.gain.linearRampToValueAtTime(0.7 * volumeScale, audioCtx.currentTime + 0.02);
+    voice.harmonics.forEach((h, i) => {
+      h.gain.gain.linearRampToValueAtTime(+harmonics[i].slider.value * 0.7 * volumeScale, audioCtx.currentTime + 0.02);
+    });
+  });
+}
+
+
+
+
+function playClick(volume = 0.5) {
+  if (volume <= 0) return; // nothing to do
+
+  const length = 64; // tiny number of samples, ~1-2ms at 44100Hz
+  const buffer = audioCtx.createBuffer(1, length, sampleRate);
+  const data = buffer.getChannelData(0);
+
+  // simple impulse: 1 at first sample, 0 rest
+  data[0] = volume;
+  for (let i = 1; i < length; i++) data[i] = 0;
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = buffer;
+
+  const gain = audioCtx.createGain();
+  gain.gain.value = 1;
+
+  src.connect(gain).connect(audioCtx.destination);
+  src.start();
+}
+
+function noteOff(note) {
+  const voice = activeVoices.get(note);
+  if (!voice) return;
+
+  const keyEl = document.getElementById(`key_${note}`);
+  if (keyEl) keyEl.classList.remove('pressed');
+
+  const now = audioCtx.currentTime;
+  // root
+  voice.gain.gain.linearRampToValueAtTime(0, now + 0.05);
+  setTimeout(() => voice.src.stop(), 100);
+
+  // harmonics
+  voice.harmonics.forEach(h => {
+    h.gain.gain.linearRampToValueAtTime(0, now + 0.05);
+    setTimeout(() => h.src.stop(), 100);
+  });
+
+  activeVoices.delete(note);
+  updateActiveVoices();
+  drawScopeMixed();
+}
+
+
+
+/* ===========================
+   KEYBOARD
+=========================== */
+
+let activePlay = false;
+let currentMouseNote = null;
+
+const keyboard = document.getElementById("keyboard");
+const base = 36;
+
+for (let i = 0; i < 38; i++) {
+  const n = base + i;
+  const k = document.createElement("div");
+  k.className = "key";
+
+
+
+  k.id=`key_${n}`;
+  // k.onmousedown = () => noteOn(n);
+  // k.onmouseup = () => noteOff(n);
+  // k.onmouseleave = () => noteOff(n);
+
+  k.onmousedown = () => {
+    activePlay = true;
+    currentMouseNote = n;
+    noteOn(n);
+  };
+
+  k.onmouseenter = () => {
+    if (!activePlay) return;
+    switchMouseNote(n);
+  };
+
+  k.onmouseleave = () => {
+    // if (currentMouseNote === n) {
+    //   noteOff(n);
+    //   currentMouseNote = null;
+    // }
+  };
+
+  keyboard.appendChild(k);
+
+
+
+
+  if ([0, 2, 5, 7, 9].includes(i % 12)) {
+    const b = document.createElement("div");
+    b.className = "key black";
+    b.onmousedown = e => {
+      e.stopPropagation();
+      activePlay = true;
+      currentMouseNote = n + 1;
+      noteOn(n + 1);
+    };
+
+    b.onmouseenter = e => {
+      e.stopPropagation();
+      if (!activePlay) return;
+      switchMouseNote(n + 1);
+    };
+
+    b.onmouseleave = () => {
+      // if (currentMouseNote === n + 1) {
+      //   noteOff(n + 1);
+      //   currentMouseNote = null;
+      // }
+    };
+    b.id=`key_${n + 1}`;
+    i +=1;
+    k.appendChild(b);
+  }
+}
+
+function switchMouseNote(newNote) {
+  if (currentMouseNote === newNote) return;
+
+  if (currentMouseNote !== null) {
+    noteOff(currentMouseNote);
+  }
+
+  currentMouseNote = newNote;
+  noteOn(newNote);
+}
+
+
+document.addEventListener("mouseup", () => {
+  activePlay = false;
+  if (currentMouseNote !== null) {
+    noteOff(currentMouseNote);
+    currentMouseNote = null;
+  }
+});
+
+const keyNoteMap = {
+  "1": 46,
+  "2": 48,
+  "3": 50,
+  "4": 51,
+  "5": 53,
+  "6": 55,
+  "7": 57,
+  "8": 58,
+  "9": 60,
+  "0": 62,
+  "-": 63,
+  "=": 65
+};
+
+const activeKeyNotes = new Set();
+
+document.addEventListener("keydown", e => {
+  if (e.repeat) return;
+
+  const note = keyNoteMap[e.key];
+  if (note === undefined) return;
+
+  if (activeKeyNotes.has(note)) return;
+
+  activeKeyNotes.add(note);
+  noteOn(note);
+});
+
+document.addEventListener("keyup", e => {
+  const note = keyNoteMap[e.key];
+  if (note === undefined) return;
+
+  activeKeyNotes.delete(note);
+  noteOff(note);
+});
+
+
+async function playMIDIFile(url) {
+  stopMIDIPlayback();
+
+  const res = await fetch(url);
+  const arrayBuffer = await res.arrayBuffer();
+  const midi = new Midi(arrayBuffer);
+
+  playParsedMIDI(midi);
+}
+
+
+
+function stopMIDIPlayback() {
+  midiTransport.timeouts.forEach(t => clearTimeout(t));
+  midiTransport.timeouts.length = 0;
+  midiTransport.playing = false;
+
+  // Kill any sounding notes
+  [...activeVoices.keys()].forEach(note => noteOff(note));
+}
+
+function playParsedMIDI(midi) {
+  midiTransport.playing = true;
+
+  midi.tracks.forEach(track => {
+    track.notes.forEach(note => {
+      const onTime = note.time;
+      const offTime = note.time + note.duration;
+
+      midiTransport.timeouts.push(
+        setTimeout(() => {
+          if (midiTransport.playing) noteOn(note.midi);
+        }, onTime * 1000)
+      );
+
+      midiTransport.timeouts.push(
+        setTimeout(() => {
+          if (midiTransport.playing) noteOff(note.midi);
+        }, offTime * 1000)
+      );
+    });
+  });
+}
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sonic Boom Visualizer</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #eee;
+    text-align: center;
+}
+
+canvas {
+  background: #000;
+  border: 1px solid #444;
+  margin-top: 20px;
+}
+
+#controls {
+  margin-top: 15px;
+}
+</style>
+</head>
+<body>
+
+<h1>Sonic Boom Visualizer</h1>
+set the speed to 767 mph or faster to see the sonic boom
+<div>
+  <canvas id="field" width="900" height="500"></canvas>
+</div>
+
+<div id="controls">
+  <div>Speed: <span id="speedLabel">0</span> mph <span id="speedCategoryLabel"></span></div>
+  <input type="range" id="speedSlider" min="0" max="1000" value="0" style="width:400px;">
+</div>
+
+<script>
+// ---------------- CONFIG ----------------
+const waveSpeed = 200;
+const emitRate = 4;
+const MACH_1 = 767; // mph
+const waveLife = 4;
+let bgOffset = 0;
+
+// ---------------- CANVAS ----------------
+const canvas = document.getElementById("field");
+const ctx = canvas.getContext("2d");
+
+// ---------------- PLANE ----------------
+const planeImg = new Image();
+planeImg.src = "airplane.png";
+
+const bgImg = new Image();
+bgImg.src = "city_background_night.png";
+
+const plane = {
+  x: 150 + (canvas.width / 2),
+  y: canvas.height / 2
+};
+
+// ---------------- SPEED ----------------
+const slider = document.getElementById("speedSlider");
+const label = document.getElementById("speedLabel");
+const catLabel = document.getElementById("speedCategoryLabel");
+
+
+let speed = 0;
+
+slider.oninput = () => {
+  speed = parseFloat(slider.value);
+  label.textContent = Math.round(speed);
+  const mach = speed / 767.269;
+  let speedCat = `- Mach ${mach.toFixed(2)} (`
+  if (speed > 920.7228) {
+    speedCat += "supersonic";
+  } else if (speed > 613.8152) {
+    speedCat += "transonic";
+  } else {
+    speedCat += "subsonic";
+  }
+  speedCat += ")"
+  catLabel.textContent = speedCat
+};
+
+// ---------------- WAVES ----------------
+let waves = [];
+let lastEmit = 0;
+
+// ---------------- LOOP ----------------
+let last = performance.now();
+
+function loop(now){
+  let dt = (now - last) / 1000;
+  last = now;
+
+  const maxBgSpeed = 400;
+  let bgVelocity = (speed / 1000) * maxBgSpeed;
+  // move left (plane flying right)
+  bgOffset += bgVelocity * dt;
+  bgOffset = bgOffset % bgImg.width;
+  if (bgOffset < 0) bgOffset += bgImg.width;
+
+  // EMIT WAVES
+  if(now - lastEmit > 1000 / emitRate){
+    let driftFactor = speed / MACH_1;
+
+    waves.push({
+      x: plane.x,
+      y: plane.y,
+      r: 0,
+      age: 0
+    });
+
+    lastEmit = now;
+  }
+
+  // UPDATE WAVES
+  let driftFactor = speed / MACH_1;
+  let driftVelocity = -waveSpeed * driftFactor;
+
+  waves.forEach(w => {
+    w.r += waveSpeed * dt;
+    w.x += driftVelocity * dt;
+    w.age += dt;
+  });
+
+  waves = waves.filter(w => w.r < 2000);
+
+  draw();
+
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// ---------------- DRAW ----------------
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+// gradient
+  let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  skyGrad.addColorStop(0, "#0a0a1f");
+  skyGrad.addColorStop(0.3, "#342D33");
+  skyGrad.addColorStop(0.9, "#9B4F58");
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// ---- CITY ----
+if (bgImg.complete) {
+
+  const targetHeight = canvas.height / 3;
+  const scale = targetHeight / bgImg.height;
+
+  const bgDrawWidth = bgImg.width * scale;
+  const bgDrawHeight = targetHeight;
+
+  const bgY = canvas.height - bgDrawHeight;
+
+  let x = Math.floor(-bgOffset);
+
+  while (x < canvas.width) {
+    ctx.drawImage(
+      bgImg,
+      x,
+      bgY,
+      bgDrawWidth,
+      bgDrawHeight
+    );
+    x += bgDrawWidth - 1;
+  }
+}
+
+  ctx.strokeStyle = "green";
+  ctx.lineWidth = 4;
+
+  waves.forEach(w => {
+    let alpha = 1 - (w.age / waveLife);
+    if(alpha < 0) alpha = 0;
+
+    ctx.strokeStyle = `rgba(0,255,0,${alpha})`;
+
+    ctx.beginPath();
+    ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+
+  // DRAW PLANE
+  ctx.drawImage(
+    planeImg,
+    plane.x - 15,
+    plane.y - 15,
+    30,
+    30
+  );
+}
+</script>
+<br/><br/><br/><br/><br/><br/>
+<h2>Hear Sonic Booms in Music</h2>
+Though uncommon, there are some seldom-used instruments that travel faster than the speed of sound.
+<br/><br/><br/>
+
+<div style="display: flex; gap: 20px; justify-content: center;">
+  <div style="display: flex; flex-direction: column; align-items: center;">
+    <h3>Leroy Anderson's Sleigh Ride</h3>
+    whip cracks
+    <video width="426" height="240" controls>
+      <source src="sleigh_ride.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <div style="display: flex; flex-direction: column; align-items: center;">
+    <h3>Pyotr Ilyich Tchaikovsky's 1812 Overture</h3>
+    cannon fire
+    <video width="426" height="240" controls>
+      <source src="1812.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <div style="display: flex; flex-direction: column; align-items: center;">
+    <h3>John Corigliano's Circus Maximus</h3>
+    shotgun blast
+    <video width="426" height="240" controls>
+      <source src="corigliano.mp4" type="video/mp4">
+    </video>
+  </div>
+</div>
+
+<br/><br/>
+
+<h2>"See" a Sonic Boom</h2>
+At around the speed of sound (Mach 0.8–1.2), a drop in air pressure can cause a drop in temperature, which can lead to a small cloud in the shape of the sonic boom called a "vapor cone".
+
+<video width="1280" height="720" controls>
+    <source src="vapor_cone.mp4" type="video/mp4">
+</video>
+</body>
+</html>

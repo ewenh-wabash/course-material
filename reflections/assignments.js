@@ -20,6 +20,8 @@
 // ============================================================
 
 export const assignments = [
+  { name: "Test 1", length: 1, prompts: []},
+  { name: "Test 2", length: 1, prompts: []},
   { name: "Jaws", length: 15, prompts: [
     "this is a movie about fear",
     "this is a movie about masculinity",

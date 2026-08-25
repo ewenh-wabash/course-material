@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="../../../bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../../modules.css">
+  <script src="../../../bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../../ui.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="lockedMessage" style="display:none;"></div>
+  <div id="moduleContent" class="mt-4">
+    <div class="row g-4 mx-3">
+
+      <!-- LEFT COLUMN — Instructions / Game -->
+      <div class="col-md-9">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header text-bg-primary unclickable pe-2">
+            <h5 class="mb-0 d-flex justify-content-between align-items-center">
+              <span>Instructions</span>
+              <span>
+                <span id="totalUnitCount" class="pe-1"></span>
+                <span class="header-trophy">&#127942;</span>
+              </span>
+            </h5>
+          </div>
+          <div class="card-body text-center">
+            <p id="instructionText" class="lead">
+              Wait for the <span data-meaning="sound">beep</span>, which will play at a variety of dynamics. Click your mouse or press any key as soon as you hear it.<br/>
+              <small class="text-muted">
+                This unit works best in a quiet room. You have 2 seconds to click!
+              </small>
+            </p>
+            <button id="startBtn" class="btn btn-primary btn-lg my-3">
+              Start
+            </button>
+            <h3 id="statusText" class="my-4"></h3>
+            <h4 id="resultText" class="my-3 text-success"></h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN — Scores -->
+      <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+          <div id="scoresHeader" class="card-header text-bg-light unclickable pe-0">
+            <h5 class="mb-0 pe-0"><span id="scoreAvg" class="d-flex justify-content-between align-items-center"></span></h5>
+          </div>
+          <div class="card-body">
+            <div id="pastTimes" class="list-group"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const unitName = "Hearing By Dynamics";
+    const unitId = "hearingByDynamics";
+    const threshold = 1;
+    const alpha = 0.3;
+    const beepLenMs = 2000;
+
+    import { currentUser } from '../../../auth.js';
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { checkModuleAccess } from '../../../module-loader.js';
+    import { setupPage } from '../../../layout.js';
+    import { scaleAndClamp } from "../../../math.js";
+    import { submitUnitScore, renderScoreHeader, renderUnitCount, appendScoreRow } from "../../../dbFuncs.js";
+    import { dictionary } from "../../../dictionary.js";
+
+    const db = getFirestore();
+    setupPage(unitName);
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const waitForUser = () => new Promise(resolve => {
+        const check = () => currentUser ? resolve(currentUser) : setTimeout(check, 100);
+        check();
+      });
+      await waitForUser();
+
+      await checkModuleAccess(db, unitId);
+
+      const userRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(userRef);
+      const initialScore = docSnap.exists() ? docSnap.data()[`${unitId}_Score`] || 0 : 0;
+      const initialCount = docSnap.data()[unitId] || 0;
+
+      renderScoreHeader(initialScore);
+      renderUnitCount(initialCount, "totalUnitCount");
+    });
+
+    const startBtn = document.getElementById("startBtn");
+    const statusText = document.getElementById("statusText");
+    const resultText = document.getElementById("resultText");
+
+    let audioCtx;
+    let waitingForBeep = false;
+    let listeningForReaction = false;
+    let timeoutId = null;
+    let currentOscillator = null;
+    let currentGain = null;
+    let randomGain = null;
+    let isSilentTrial = false;
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    function playBeep() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      currentOscillator = audioCtx.createOscillator();
+      currentGain = audioCtx.createGain();
+
+      const minGain = -0.2;
+      const maxGain = 1.0;
+      randomGain = minGain + Math.random() * (maxGain - minGain);
+      randomGain = scaleAndClamp(randomGain, 0, 1, 0.01, 1);
+
+      currentGain.gain.setValueAtTime(randomGain, audioCtx.currentTime);
+
+      currentOscillator.type = "sine";
+      currentOscillator.frequency.setValueAtTime(400 + Math.random()*800, audioCtx.currentTime);
+
+      currentOscillator.connect(currentGain);
+      currentGain.connect(audioCtx.destination);
+
+      currentOscillator.start();
+      setTimeout(stopBeep, beepLenMs);
+    }
+
+    function stopBeep() {
+      if (currentOscillator) {
+        try { currentOscillator.stop(); } catch (e) {}
+        currentOscillator.disconnect();
+        currentOscillator = null;
+      }
+    }
+
+    function resetToIdle(buttonText = "Try Again") {
+      startBtn.textContent = buttonText;
+      startBtn.style.display = "inline-block";
+      waitingForBeep = false;
+      listeningForReaction = false;
+    }
+
+    async function startRound() {
+      startBtn.style.display = "none";
+      resultText.textContent = "";
+      statusText.textContent = "Ready...";
+
+      await sleep(500 + Math.random() * 500);
+      statusText.textContent = "Set...";
+      await sleep(500 + Math.random() * 500);
+      statusText.textContent = "Listen!";
+
+      waitingForBeep = true;
+
+      timeoutId = setTimeout(() => {
+        waitingForBeep = false;
+        listeningForReaction = true;
+
+        isSilentTrial = Math.random() < 0.25;
+
+        if (!isSilentTrial) {
+          playBeep();
+        }
+
+        setTimeout(async () => {
+          if (listeningForReaction) {
+            listeningForReaction = false;
+
+            if (isSilentTrial) {
+              const score = 100;
+              appendScoreRow(`Correct - no sound`, score);
+              resultText.textContent = `Correct - no sound!`;
+              statusText.textContent = "";
+              fireConfetti();
+
+              const newScoreAvg = await submitUnitScore({
+                db,
+                currentUser,
+                unitId,
+                unitName,
+                score,
+                scoreField: `${unitId}_Score`,
+                countField: unitId,
+                threshold,
+                alpha
+              });
+
+              renderScoreHeader(newScoreAvg);
+            } else {
+              stopBeep();
+              appendScoreRow(`Miss`, 0);
+              statusText.textContent = "";
+              resultText.textContent = `You missed! Score: 0`;
+
+              const newScoreAvg = await submitUnitScore({
+                db,
+                currentUser,
+                unitId,
+                unitName,
+                score: 0,
+                scoreField: `${unitId}_Score`,
+                countField: unitId,
+                threshold,
+                alpha
+              });
+
+              renderScoreHeader(newScoreAvg);
+            }
+
+            resetToIdle("Try Again");
+          }
+        }, beepLenMs);
+
+      }, 500 + Math.random() * 4500);
+    }
+
+    function gainToDynamics(gain) {
+      if (gain >= 0.9) {
+        return `<span class="dynamic" data-meaning="fortissimo">ff</span>`;
+      } else if (gain >= 0.75) {
+        return `<span class="dynamic" data-meaning="forte">f</span>`;
+      } else if (gain >= 0.5) {
+        return `<span class="dynamic" data-meaning="mezzo forte">F</span>`;
+      } else if (gain >= 0.3) {
+        return `<span class="dynamic" data-meaning="mezzo piano">P</span>`;
+      } else if (gain >= 0.2) {
+        return `<span class="dynamic" data-meaning="piano">p</span>`;
+      } else {
+        return `<span class="dynamic" data-meaning="pianissimo">pp</span>`;
+      }
+    }
+
+    async function handleReaction() {
+      if (!listeningForReaction) {
+        if (waitingForBeep) {
+          clearTimeout(timeoutId);
+          statusText.textContent = "";
+          resultText.textContent = "Missed!";
+          resetToIdle("Try Again");
+
+          const score = 0;
+          appendScoreRow(`Miss`, score);
+
+          const newScoreAvg = await submitUnitScore({
+            db,
+            currentUser,
+            unitId,
+            unitName,
+            score,
+            scoreField: `${unitId}_Score`,
+            countField: unitId,
+            threshold,
+            alpha
+          });
+
+          renderScoreHeader(newScoreAvg);
+          return;
+        }
+        return;
+      }
+
+      listeningForReaction = false;
+
+      if (isSilentTrial) {
+        appendScoreRow(`False Positive`, 0);
+        statusText.textContent = "";
+        resultText.textContent = "False Positive!";
+        resetToIdle("Try Again");
+
+        const newScoreAvg = await submitUnitScore({
+          db,
+          currentUser,
+          unitId,
+          unitName,
+          score: 0,
+          scoreField: `${unitId}_Score`,
+          countField: unitId,
+          threshold,
+          alpha
+        });
+
+        renderScoreHeader(newScoreAvg);
+        return;
+      }
+
+      stopBeep();
+
+      const score = 100;
+      appendScoreRow(`Success at ${gainToDynamics(randomGain)}`, score);
+
+      resultText.textContent = `You heard it!`;
+      statusText.textContent = "";
+      resetToIdle("Try Again");
+
+      if (score >= threshold) {
+        fireConfetti();
+      }
+
+      const newScoreAvg = await submitUnitScore({
+        db,
+        currentUser,
+        unitId,
+        unitName,
+        score,
+        scoreField: `${unitId}_Score`,
+        countField: unitId,
+        threshold,
+        alpha
+      });
+
+      renderScoreHeader(newScoreAvg);
+    }
+
+    startBtn.addEventListener("click", startRound);
+    document.addEventListener("mousedown", handleReaction);
+    document.addEventListener("keydown", handleReaction);
+  </script>
+
+  <div id="footer"></div>
+</body>
+</html>

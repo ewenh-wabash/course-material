@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Modules</title>
+  <style>
+    .module {
+      font-size: 1.5em;
+      margin: 1em;
+      padding: 1em;
+      border: 2px solid #ccc;
+      display: inline-block;
+      text-align: center;
+      width: 150px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .locked {
+      color: #aaa;
+      text-decoration: line-through;
+      cursor: not-allowed;
+      border-color: #eee;
+    }
+
+    .unlocked:hover {
+      background-color: #f0f8ff;
+      border-color: #3399ff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Modules</h1>
+  <div id="modulesContainer"></div>
+  <hr>
+  <h2>Debug: Lock/Unlock Modules</h2>
+  <div id="debugButtons"></div>
+  <div>
+    <a href="module_1.html">module_1.html</a>
+    <a href="module_2.html">module_2.html</a>
+    <a href="module_3.html">module_3.html</a>
+  </div>
+
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCygLMRUJuf6pxIRD7rmKGNZ5k-FhJWi3U",
+      authDomain: "test-quiz-a125a.firebaseapp.com",
+      projectId: "test-quiz-a125a",
+      storageBucket: "test-quiz-a125a.firebasestorage.app",
+      messagingSenderId: "211214067673",
+      appId: "1:211214067673:web:8ed8bc612609cfa2085bc8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const modules = ["module_1", "module_2", "module_3"];
+    const modulesContainer = document.getElementById("modulesContainer");
+
+    function renderModules(userModules) {
+      modulesContainer.innerHTML = "";
+
+      modules.forEach(mod => {
+        const unlocked = userModules[mod] || false;
+
+        const div = document.createElement("div");
+        div.className = "module " + (unlocked ? "unlocked" : "locked");
+        div.textContent = mod.replace("_", " ").toUpperCase();
+
+        if (unlocked) {
+          div.onclick = () => {
+            window.location.href = mod + ".html";
+          };
+        }
+
+        modulesContainer.appendChild(div);
+      });
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        modulesContainer.textContent = "Please log in first.";
+        return;
+      }
+
+      const userDocRef = doc(db, "userModules", user.uid);
+      let userModules = {};
+
+      const snap = await getDoc(userDocRef);
+      if (snap.exists()) {
+        userModules = snap.data();
+      } else {
+        // default locked
+        userModules = { module_1: false, module_2: false, module_3: false };
+        await setDoc(userDocRef, userModules);
+      }
+
+      renderModules(userModules);
+      renderDebugButtons(user, userModules);
+
+    });
+
+
+    function renderDebugButtons(user, userModules) {
+      const debugContainer = document.getElementById("debugButtons");
+      debugContainer.innerHTML = "";
+
+      modules.forEach(mod => {
+        const unlocked = userModules[mod] || false;
+
+        const btn = document.createElement("button");
+        btn.textContent = unlocked ? `Lock ${mod}` : `Unlock ${mod}`;
+        btn.style.margin = "0.5em";
+
+        btn.onclick = async () => {
+          const userDocRef = doc(db, "userModules", user.uid);
+          await updateDoc(userDocRef, { [mod]: !unlocked });
+
+          // Refresh UI
+          userModules[mod] = !unlocked;
+          renderModules(userModules);
+          renderDebugButtons(user, userModules);
+        };
+
+        debugContainer.appendChild(btn);
+      });
+    }
+
+  </script>
+</body>
+</html>

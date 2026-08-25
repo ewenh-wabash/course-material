@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+  <script src="./bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div class="container mt-4">
+
+    <div class="card">
+      <div class="card-header">
+        Featured
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">Special title treatment</h5>
+        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+        <p class="card-text">Right-click (or double click) words you don't understand to see what they mean</p>
+        <a href="#" class="btn btn-primary" onclick="fireConfetti()">Go somewhere</a>
+
+        <br/>
+        <div>What can affect this test?</div>
+        <div>Best with headphones, best in a quiet spot</div>
+        <div>Do you need a piano keyboard? Hopefully I can do it all without it</div>
+        <div>Can you do it on your phone?</div>
+        <div>Can you do it with bluetooth (things like "reaction time" might be slightly slower)</div>
+        <br/>
+        <div>Right-click on any word or phrase you don't know to get a quick definition. Keep in mind sometimes words are used differently in music than in real-life (for example)</div>
+
+        I'll try not to add too much vocab, but it's a bit unavoidable in music. Knowing vocab isn't necessary for training here - in fact, you may learn some new words!
+        <ul>
+          <li>
+            Score
+          </li>
+          <li>
+            Register
+          </li>
+          <li>
+            Forte
+          </li>
+          <li>
+            Movement
+          </li>
+          <li>
+            Conductor
+          </li>
+          <li>
+            Bridge
+          </li>
+          <li>
+            Presto
+          </li>
+          <li>
+            Accidental
+          </li>
+          <li>
+            Speaker
+          </li>
+          <li>
+            Staff
+          </li>
+          <li>
+            Scale
+          </li>
+          <li>
+            Envelope
+          </li>
+          <li>
+            Track
+          </li>
+          <li>
+            Sample
+          </li>
+          <li>
+            Keyboard
+          </li>
+        </ul>
+
+        Even within music, the same word can mean multiple things (mostly electronic vs acoustic, but sometimes not)
+        <ul>
+          <li>
+            Key (piano key, keyboard key, key of Bb)
+          </li>
+          <li>
+            Meter (measure loudness in recorded music, and also the grid of beats and measures)
+          </li>
+          <li>
+            Piano (quiet, and keyboard)
+          </li>
+          <li>
+            Canon (a collection of music of a certain kind, Pachelbel)
+          </li>
+          <li>
+            Modulate (change key, alter an electronic waveform)
+          </li>
+          <li>
+            Track (either a full piece of music - like on an album, or a single line of music within a full piece of music - like the flute line)
+          </li>
+          <li>
+            Tune (intonation vs a song)
+          </li>
+          <li>
+            Program (which pieces to play in a performance, the story of a piece of music, the software you use to make music, the specific settings of a synth)
+          </li>
+          <li>
+            Record (Heteronym - something you play vs how you capture audio)
+          </li>
+          <li>
+            Release (ADSR vs to launch a new album or project)
+          </li>
+          <li>
+            Sample (a small chunk of music for looping, a single number representing a unique speaker placement - ie samples per second)
+          </li>
+          <li>
+            Chorus (audio effect, type of performance ensemble)
+          </li>
+          <li>
+            Cutoff (to stop playing music, or the frequency where a filter kicks in)
+          </li>
+          <li>
+            Dynamic (loud/soft vs type of microphone)
+          </li>
+        </ul>
+
+
+
+
+      </div>
+    </div>
+
+  </div>
+  <script type="module">
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { setupPage } from './layout.js';
+    import { dictionary } from "../../../dictionary.js";
+    const db = getFirestore();
+    setupPage();
+  </script>
+  <div id="footer"></div>
+</body>
+</html>

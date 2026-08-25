@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="../../../bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../../modules.css">
+  <script src="../../../bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../../ui.js"></script>
+  <style>
+
+input[type="range"] {
+  -webkit-appearance: none;  /* remove default styling on Chrome/Safari */
+  width: 100%;
+  height: 24px;               /* overall slider height */
+  border-radius: 12px;
+  background: #ddd;           /* neutral gray track before submit */
+  border: 0.5px solid gray;
+}
+
+/* Track styling */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 12px;               /* track height */
+  border-radius: 6px;
+  background: inherit;        /* inherit background from slider element */
+}
+
+input[type="range"]::-moz-range-track {
+  height: 12px;
+  border-radius: 6px;
+  background: inherit;
+}
+
+/* Thumb styling */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  /*background: #333;*/
+  border-radius: 50%;
+  margin-top: -4px; /* center on taller track */
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  /*background: #333;*/
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="lockedMessage" style="display:none;"></div>
+  <div id="moduleContent" class="mt-4">
+    <div class="row g-4 mx-3">
+
+      <!-- LEFT COLUMN — Instructions / Game -->
+      <div class="col-md-9">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header text-bg-primary unclickable pe-2">
+            <h5 class="mb-0 d-flex justify-content-between align-items-center">
+              <span>Instructions</span>
+              <span>
+                <span id="totalUnitCount" class="pe-1"></span>
+                <span class="header-trophy">&#127942;</span>
+              </span>
+            </h5>
+          </div>
+          <div class="card-body text-center">
+            <p id="instructionText" class="lead">
+              Press <strong>Start</strong> to hear a reference pitch.<br/>
+              Drag the slider while holding the mouse to match the second pitch.<br/>
+              <small class="text-muted">
+                Eliminate the beating (faster beating means more out of tune). The number of beats per second is the difference in frequency (in Hertz) of the two sound waves
+              </small>
+            </p>
+
+            <div class="position-relative w-100" id="sliderWrapper">
+              <input
+                type="range"
+                id="tuningSlider"
+                class="form-range w-100"
+                min="-50"
+                max="50"
+                step="0.1"
+                value="0"
+                disabled
+              >
+              <div id="answerArrow"
+                   style="
+                     position:absolute;
+                     top:-18px;
+                     left:0;
+                     transform:translateX(-50%);
+                     font-size:18px;
+                     display:none;
+                     pointer-events:none;">
+                &darr;
+              </div>
+            </div>
+
+            <div class = "mt-3">
+              <button id="startBtn" class="btn btn-primary me-3">Start</button>
+              <button id="submitBtn" class="btn btn-success" disabled>Submit</button>
+<!--               <h5 id="beatingText" class="my-2 text-primary" style="display:none;">
+                Beating: <span id="beatingValue">0.00</span> beats per second (Hz)
+              </h5> -->
+
+              <h5 id="beatingText" class="my-2 text-primary" style="display:none;">
+                <span id="centsValue">0</span> - beating at <span id="beatingValue">0.00</span> Hz
+              </h5>
+
+            </div>
+
+            <h4 id="resultText" class="my-3 text-success"></h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN — Scores -->
+      <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+          <div id="scoresHeader" class="card-header text-bg-light unclickable pe-0">
+            <h5 class="mb-0 pe-0"><span id="scoreAvg" class="d-flex justify-content-between align-items-center"></span></h5>
+          </div>
+          <div class="card-body">
+            <div id="pastTimes" class="list-group"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+  const unitName = "Tuning";
+  const unitId = "tuning";
+  const threshold = 1;
+  const alpha = 0.4;
+  let currentWaveform;
+
+  import { currentUser } from '../../../auth.js';
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { checkModuleAccess } from '../../../module-loader.js';
+  import { setupPage } from '../../../layout.js';
+  import { submitUnitScore, renderScoreHeader, renderUnitCount, appendScoreRow } from "../../../dbFuncs.js";
+  import { scaleAndClamp } from "../../../math.js";
+  import { dictionary } from "../../../dictionary.js";
+
+  const db = getFirestore();
+  setupPage(unitName);
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const waitForUser = () => new Promise(resolve => {
+      const check = () => currentUser ? resolve(currentUser) : setTimeout(check, 100);
+      check();
+    });
+    await waitForUser();
+    await checkModuleAccess(db, unitId);
+
+    const userRef = doc(db, "users", currentUser.uid);
+    const docSnap = await getDoc(userRef);
+    const initialScore = docSnap.exists() ? docSnap.data()[`${unitId}_Score`] || 0 : 0;
+    const initialCount = docSnap.data()[unitId] || 0;
+
+    renderScoreHeader(initialScore);
+    renderUnitCount(initialCount, "totalUnitCount");
+  });
+
+  const startBtn = document.getElementById("startBtn");
+  const resultText = document.getElementById("resultText");
+  const slider = document.getElementById("tuningSlider");
+  const submitBtn = document.getElementById("submitBtn");
+  const arrow = document.getElementById("answerArrow");
+
+  let audioCtx;
+  let refOsc, sliderOsc;
+  let baseFreq;
+  let maxFreq;
+  let answerFreq;
+
+  const waveforms = ["sine", "sawtooth", "triangle", "square"];
+
+  function hzToCents(sliderFreq, refFreq) {
+      // console.log(sliderFreq, refFreq, 1200 * Math.log2(sliderFreq / refFreq))
+
+    return 1200 * Math.log2(sliderFreq / refFreq);
+  }
+
+  // console.log(400, 600, hzToCents(600, 300))
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+
+
+function clearSliderGradient() {
+  slider.style.background = "#ddd"; // neutral gray
+}
+
+function setSliderGradient(answerFreq) {
+  const min = parseFloat(slider.min);
+  const max = parseFloat(slider.max);
+  const totalRange = max - min;
+
+  // Convert frequency to % along slider
+  const freqToPercent = f => ((f - min) / totalRange) * 100;
+
+  // Zone boundaries in Hz
+  const blueRadius = 0.5;   // solid blue ±0.05 Hz
+  const greenStart = blueRadius;
+  const yellowStart = 5;     // green → yellow
+  const redStart = 10;       // yellow → light red
+
+  // Positions in %
+  const leftBlueEnd   = freqToPercent(answerFreq - blueRadius);
+  const rightBlueEnd  = freqToPercent(answerFreq + blueRadius);
+
+  const leftYellowStart = freqToPercent(answerFreq - yellowStart);
+  const leftGreenStart  = freqToPercent(answerFreq - greenStart);
+  const rightGreenEnd   = freqToPercent(answerFreq + greenStart);
+  const rightYellowEnd  = freqToPercent(answerFreq + yellowStart);
+
+  const leftRedStart  = freqToPercent(answerFreq - redStart);
+  const rightRedEnd   = freqToPercent(answerFreq + redStart);
+
+  const clamp = v => Math.max(0, Math.min(100, v));
+
+  slider.style.background = `linear-gradient(
+    to right,
+    #f8a7aa ${clamp(leftRedStart)}%,            /* pale red far left */
+    #ffff00 ${clamp(leftYellowStart)}%,        /* yellow start left */
+    #00ff00 ${clamp(leftGreenStart)}%,         /* green zone left */
+    #007bff ${clamp(leftBlueEnd)}%,            /* solid blue left edge */
+    #007bff ${clamp(rightBlueEnd)}%,           /* solid blue right edge */
+    #00ff00 ${clamp(rightGreenEnd)}%,          /* green zone right */
+    #ffff00 ${clamp(rightYellowEnd)}%,         /* yellow fade right */
+    #f8a7aa ${clamp(rightRedEnd)}%             /* pale red far right */
+  )`;
+}
+
+  function setupRound() {
+    baseFreq = 220 + Math.random() * 440;
+
+    // 6th root of 2 above base
+    maxFreq = baseFreq * Math.pow(2, 1/6);
+
+    slider.min = baseFreq;
+    slider.max = maxFreq;
+    slider.step = 0.01;
+    slider.value = (baseFreq + maxFreq) / 2;
+    slider.disabled = false;
+
+    answerFreq = baseFreq + Math.random() * (maxFreq - baseFreq);
+
+    submitBtn.disabled = false;
+    arrow.style.display = "none";
+  }
+
+function playReference() {
+  ensureAudio();
+  refOsc = audioCtx.createOscillator();
+  currentWaveform = waveforms[Math.floor(Math.random() * waveforms.length)];
+  refOsc.type = currentWaveform;
+  refOsc.frequency.value = answerFreq;
+  refOsc.connect(audioCtx.destination);
+  refOsc.start();
+}
+
+  function stopReference() {
+    if (refOsc) {
+      try { refOsc.stop(); } catch(e){}
+      refOsc.disconnect();
+      refOsc = null;
+    }
+  }
+
+  function playSlider(freq) {
+    ensureAudio();
+    sliderOsc = audioCtx.createOscillator();
+    sliderOsc.type = currentWaveform; // use the stored waveform
+    sliderOsc.frequency.value = freq;
+    sliderOsc.connect(audioCtx.destination);
+    sliderOsc.start();
+  }
+
+  function stopSlider() {
+    if (sliderOsc) {
+      try { sliderOsc.stop(); } catch(e){}
+      sliderOsc.disconnect();
+      sliderOsc = null;
+    }
+  }
+
+slider.addEventListener("mousedown", () => {
+  if (submitBtn.disabled) {
+    // post-submit mode: play both sounds
+    playPostOscillators(parseFloat(slider.value));
+  } else {
+    playSlider(parseFloat(slider.value)); // pre-submit behavior
+  }
+});
+
+slider.addEventListener("input", () => {
+  console.log(slider.value, answerFreq);
+  if (submitBtn.disabled) {
+    if (postOsc2) postOsc2.frequency.value = parseFloat(slider.value);
+  } else if (sliderOsc) {
+    sliderOsc.frequency.value = parseFloat(slider.value);
+  }
+});
+
+slider.addEventListener("mouseup", () => {
+  if (submitBtn.disabled) {
+    stopPostOscillators();
+  } else {
+    stopSlider();
+  }
+});
+
+
+  submitBtn.addEventListener("click", async () => {
+    stopSlider();
+    stopReference();
+
+    const guess = parseFloat(slider.value);
+    const diff = Math.abs(guess - answerFreq);
+
+    let score;
+    if (diff >= 10) {
+      score = 0;
+    } else {
+      // score = Math.round(100 - (diff / 20) * 100);
+      score = scaleAndClamp(diff, 0.5, 10, 100, 0);
+    }
+
+
+    setSliderGradient(answerFreq);
+
+    appendScoreRow(`${diff.toFixed(2)} Hz off`, score, "pastTimes", threshold);
+
+    const newScoreAvg = await submitUnitScore({
+      db,
+      currentUser,
+      unitId,
+      unitName,
+      score,
+      scoreField: `${unitId}_Score`,
+      countField: unitId,
+      threshold,
+      alpha
+    });
+
+    renderScoreHeader(newScoreAvg);
+
+
+    let centsOff = hzToCents(guess, answerFreq);
+    console.log("centsOff", centsOff, guess, answerFreq)
+    if (Math.abs(diff) <= 0.5) {
+      centsOff = `in tune`;
+    } else if (centsOff > 0) {
+      centsOff = `${Math.round(centsOff)} cents sharp`;
+    } else {
+      centsOff = `${Math.round(Math.abs(centsOff))} cents flat`;
+    }
+
+
+    resultText.textContent =
+      `Response was ${centsOff}. Score: ${score.toFixed(0)}%`;
+
+    // Position arrow (pure % mapping)
+    const min = parseFloat(slider.min);
+    const max = parseFloat(slider.max);
+    const percent = (answerFreq - min) / (max - min);
+
+    arrow.style.left = `${percent * 100}%`;
+    arrow.style.display = "block";
+
+    slider.disabled = false;
+    submitBtn.disabled = true;
+
+    startBtn.textContent = "Try Again";
+    startBtn.style.display = "inline-block";
+  });
+
+  startBtn.addEventListener("click", () => {
+    resultText.textContent = "";
+    startBtn.style.display = "none";
+    setupRound();
+    clearSliderGradient();
+    playReference();
+  });
+
+let postOsc1, postOsc2;
+let beatingInterval;
+
+function playPostOscillators(freq) {
+  ensureAudio();
+  stopPostOscillators();
+
+  postOsc1 = audioCtx.createOscillator();
+  postOsc1.type = currentWaveform;
+  postOsc1.frequency.value = answerFreq;
+
+  postOsc2 = audioCtx.createOscillator();
+  postOsc2.type = currentWaveform;
+  postOsc2.frequency.value = freq;
+
+  postOsc1.connect(audioCtx.destination);
+  postOsc2.connect(audioCtx.destination);
+
+  postOsc1.start();
+  postOsc2.start();
+
+  const beatingText = document.getElementById("beatingText");
+  const beatingValue = document.getElementById("beatingValue");
+  const centsValue = document.getElementById("centsValue");
+  beatingText.style.display = "block";
+
+  beatingInterval = setInterval(() => {
+    const diffHz = Math.abs(postOsc2.frequency.value - postOsc1.frequency.value);
+    const cents = hzToCents(postOsc2.frequency.value, postOsc1.frequency.value);
+
+    beatingValue.textContent = diffHz.toFixed(2);
+
+    if (cents >= 0) {
+      centsValue.textContent = `${cents.toFixed(1)} cents sharp`;
+    } else {
+      centsValue.textContent = `${Math.abs(cents).toFixed(1)} cents flat`;
+    }
+  }, 50);
+}
+
+function stopPostOscillators() {
+  if (postOsc1) { try { postOsc1.stop(); } catch(e){} postOsc1.disconnect(); postOsc1 = null; }
+  if (postOsc2) { try { postOsc2.stop(); } catch(e){} postOsc2.disconnect(); postOsc2 = null; }
+  if (beatingInterval) { clearInterval(beatingInterval); beatingInterval = null; }
+  const beatingText = document.getElementById("beatingText");
+  beatingText.style.display = "none";
+}
+
+</script>
+
+
+  <div id="footer"></div>
+</body>
+</html>

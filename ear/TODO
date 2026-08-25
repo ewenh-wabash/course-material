@@ -1,0 +1,37 @@
+https://console.firebase.google.com/project/test-quiz-a125a/authentication/providers
+
+TODO
+
+Fade in/out the beeps
+
+automatically route people to index.html if they're not logged in (instead of show/hiding stuff on the page itself)
+    OR Don't lock or check individual units against unlocked status...
+
+Make sure a user can only update scores, etc for their specific user id (not everyone)
+    Write security rules (https://console.firebase.google.com/project/test-quiz-a125a/firestore/databases/-default-/security/rules)
+
+put all this on firebase
+
+use custom subdomain
+
+show the ones people missed
+
+consolidate two firebase indexes into one (the only difference is ranking by timestamp direction?)
+
+
+NO CAN'T DO IT - server-side grading (impossible with free account)
+
+admin access mode (new user login) with more permissions
+
+regular user access mode with limited permissions (read + write in some cases)
+
+get some audio stored there for playback examples (figure out how much storage I get)
+    https://chatgpt.com/c/6984d292-3154-832d-913c-31ec9ec278cc
+
+better scrolling on progress graph (better widgets)
+
+nav page that's procedurally generated (maybe the webpages are stored as data in the db?)
+
+instead of a single raw score, have a more realistic breakdownn of how they're doing
+
+NOT REALLY WITHOUT $$$ - any way to hide the code from people

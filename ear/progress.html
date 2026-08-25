@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    table {
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+    }
+  </style>
+  <script src="./bootstrap/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+  <script src="ui.js"></script>
+</head>
+
+<body>
+  <div id="header"></div>
+  <!-- <h1>Your Progress</h1> -->
+
+  <!-- <button id="loginBtn">Login with Google</button> -->
+  <!-- <button id="logoutBtn" style="display:none;">Logout</button> -->
+  <button id="resetZoom">Reset Zoom</button>
+
+  <p id="userInfo"></p>
+
+  <canvas id="scoreChart" width="800" height="400"></canvas>
+
+  <h2>Score History</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Module</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="scoreTable"></tbody>
+  </table>
+
+  <!-- Luxon -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <!-- Chart.js Luxon adapter -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithRedirect,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      query,
+      where,
+      orderBy,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { setupPage } from './layout.js';
+    // import { setupAuthUI } from './auth.js';
+
+
+    // 🔥 SAME firebaseConfig as index.html
+    const firebaseConfig = {
+      apiKey: "AIzaSyCygLMRUJuf6pxIRD7rmKGNZ5k-FhJWi3U",
+      authDomain: "test-quiz-a125a.firebaseapp.com",
+      projectId: "test-quiz-a125a",
+      storageBucket: "test-quiz-a125a.firebasestorage.app",
+      messagingSenderId: "211214067673",
+      appId: "1:211214067673:web:8ed8bc612609cfa2085bc8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    setupPage("Your Progress");
+    // setupHeaderFooter("Your Progress");
+    // setupAuthUI("loginBtn", "logoutBtn", "userInfo", "profilePic");
+    // setupAuthUI("loginBtn", "logoutBtn", "userInfoName", "userInfoEmail", "userInfoEmailDropdown", "totalCorrect", "startDate", "profilePic");
+    // setupAuthUI();
+
+    const provider = new GoogleAuthProvider();
+
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const userInfo = document.getElementById("userInfo");
+    const scoreTable = document.getElementById("scoreTable");
+
+    let chart;
+
+    loginBtn.onclick = () => signInWithRedirect(auth, provider);
+    logoutBtn.onclick = () => signOut(auth);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        loginBtn.style.display = "inline";
+        logoutBtn.style.display = "none";
+        userInfo.textContent = "";
+        return;
+      }
+
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline";
+      userInfo.textContent = user.email;
+
+      loadScores(user.uid);
+    });
+
+    async function loadScores(uid) {
+      scoreTable.innerHTML = "";
+
+      const q = query(
+        collection(db, "scores"),
+        where("uid", "==", uid),
+        orderBy("timestamp")
+      );
+
+      const snapshot = await getDocs(q);
+
+      const modulePoints = {}; // { unitName: [{x, y}, ...] }
+      const moduleColors = {}; // { unitName: "#color" }
+      const palette = ["#e74c3c", "#3498db", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c"];
+      let colorIndex = 0;
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const time = data.timestamp?.toDate();
+        if (!time) return;
+
+        // Group points by module
+        if (!modulePoints[data.unitName]) modulePoints[data.unitName] = [];
+        modulePoints[data.unitName].push({ x: time, y: data.score });
+
+        // Assign color per module
+        if (!moduleColors[data.unitName]) {
+          moduleColors[data.unitName] = palette[colorIndex++ % palette.length];
+        }
+
+        // Add row to score table
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${time.toLocaleString()}</td>
+          <td>${data.unitName}</td>
+          <td>${data.score}</td>
+        `;
+        scoreTable.appendChild(row);
+      });
+
+      // Create datasets: one per module
+      const datasets = Object.keys(modulePoints).map(unitId => ({
+        label: unitId,
+        data: modulePoints[unitId],
+        backgroundColor: moduleColors[unitId],
+        pointRadius: 6,       // size of points
+        pointHoverRadius: 8   // hover effect
+      }));
+
+      renderChart(datasets);
+    }
+
+
+    function renderChart(datasets) {
+      const ctx = document.getElementById("scoreChart");
+
+      if (chart) chart.destroy(); // destroy old chart if reloading
+
+      chart = new Chart(ctx, {
+        type: "scatter",
+        data: { datasets },
+        options: {
+          scales: {
+            x: {
+              type: "time",
+              time: { unit: "day", displayFormats: { day: "MMM dd" } },
+              title: { display: true, text: "Date" },
+              ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 },
+              grid: { display: true, color: "#eee" }
+            },
+            y: {
+              title: { display: true, text: "Score" },
+              min: 0,    // fixed minimum
+              max: 100.0,   // fixed maximum
+              offset: true,   // shift grid lines half a step
+
+              grid: { display: true, color: "#eee" }
+            }
+          },
+          plugins: {
+            legend: { display: true, position: "top" },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.raw.y}`;
+                }
+              }
+            },
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'xy',   // allow both x and y panning
+                modifierKey: 'ctrl'  // optional: require ctrl to pan
+              },
+              zoom: {
+                wheel: {
+                  enabled: true
+                },
+                pinch: {
+                  enabled: true
+                },
+                mode: 'x',   // "xy" zooms both axes
+              }
+            }
+          }
+        }
+      });
+    }
+
+    document.getElementById("resetZoom").onclick = () => {
+      chart.resetZoom();
+    };
+
+  </script>
+<a href="index.html">go back</a>
+<div id="footer"></div>
+</body>
+</html>

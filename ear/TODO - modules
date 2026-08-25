@@ -1,0 +1,27 @@
+TODO
+intervalTuning
+hide piano when setting is unchecked
+hide piano when setting up a new round
+figure out why piano is sometimes not showing up (octave down?)
+Maybe don't submit the scores officially unless intervals and directions are all checked? maybe show a message
+When you play with the interval after, have it play both intervals?
+When you click on an interval have a little envelope when it starts playing the new pitch then fades in the original pitch
+
+
+
+chordTuning
+Bass note isn't playing anymore post-submit
+arrows and piano icons showing up outside the card (should be just ouside the slider)
+having no chord options checked should do the alert (it is), but then there's a bug where it's still playing some reference pitch in future rounds
+Equal temperment icon still doesn't show/hide appropriately
+Maybe there should be settings to attenuate the non-active slider pitches by different amounts to make tuning easier/harder (it's hard-coded to 0.7 now)
+The medal isn't quite in the right spot
+Make sure the % offset on the coloration isn't getting screwed up by putting the intervals to the left of the sliders
+
+
+Noise
+better EQ for gray and green
+You can click on buttons after submitting to re-submit! ack. If you click on buttons after submitting, it should just play the sample but not submit anything
+The buttons color should match its type
+There should be a little graph
+There should be toggles to turn on/off the options

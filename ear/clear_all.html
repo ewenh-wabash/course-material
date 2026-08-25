@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear Scores</title>
+</head>
+<body>
+  <h1>Clear Scores Demo</h1>
+  <button id="clearBtn">Delete All Scores (except one)</button>
+  <div id="status"></div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // 🔥 Replace with your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCygLMRUJuf6pxIRD7rmKGNZ5k-FhJWi3U",
+      authDomain: "test-quiz-a125a.firebaseapp.com",
+      projectId: "test-quiz-a125a",
+      storageBucket: "test-quiz-a125a.firebasestorage.app",
+      messagingSenderId: "211214067673",
+      appId: "1:211214067673:web:8ed8bc612609cfa2085bc8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const clearBtn = document.getElementById("clearBtn");
+    const statusDiv = document.getElementById("status");
+
+    // ID of the document you want to keep (optional)
+    const KEEP_DOC_ID = ""; // replace with real ID or leave as null to delete everything
+
+    clearBtn.onclick = async () => {
+      statusDiv.textContent = "Deleting...";
+
+      try {
+        const colRef = collection(db, "scores");
+        const snapshot = await getDocs(colRef);
+
+        if (snapshot.empty) {
+          statusDiv.textContent = "No documents found.";
+          return;
+        }
+
+        const batch = writeBatch(db);
+        let deleteCount = 0;
+
+        snapshot.forEach(docSnap => {
+          if (docSnap.id !== KEEP_DOC_ID) {
+            batch.delete(doc(db, "scores", docSnap.id));
+            deleteCount++;
+          }
+        });
+
+        if (deleteCount > 0) {
+          await batch.commit();
+          statusDiv.textContent = `Deleted ${deleteCount} documents. Kept: ${KEEP_DOC_ID}`;
+        } else {
+          statusDiv.textContent = `Nothing deleted. Kept: ${KEEP_DOC_ID}`;
+        }
+
+      } catch (err) {
+        console.error(err);
+        statusDiv.textContent = "Error deleting documents: " + err.message;
+      }
+    };
+  </script>
+</body>
+</html>

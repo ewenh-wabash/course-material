@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="../../../bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../../modules.css">
+  <script src="../../../bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../../ui.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="lockedMessage" style="display:none;"></div>
+  <div id="moduleContent" class="mt-4">
+    <div class="row g-4 mx-3">
+
+      <!-- LEFT COLUMN — Instructions / Game -->
+      <div class="col-md-9">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header text-bg-primary unclickable pe-2">
+            <h5 class="mb-0 d-flex justify-content-between align-items-center">
+              <span>Instructions</span>
+              <span>
+                <span id="totalUnitCount" class="pe-1"></span>
+                <span class="header-trophy">&#127942;</span>
+              </span>
+            </h5>
+          </div>
+          <div class="card-body text-center">
+            <p id="instructionText" class="lead">
+              Wait for the <span data-meaning="sound">noise</span> and identify which type it is<br/>
+              <small class="text-muted">
+                The noise will play for 2 seconds.
+              </small>
+            </p>
+            <div id="noiseButtons" class="my-3 d-flex flex-wrap justify-content-center gap-2" style="display:none;">
+              <!-- <button class="btn btn-light" data-noise="white">White Noise</button> -->
+
+              <button class="btn py-3 px-4 btn-lg btn-light"
+                      data-noise="white"
+                      style="border: 1px solid #aaa; transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;">
+                White Noise
+                <!-- <br/>(equal power) -->
+              </button>
+
+              <!-- <button class="btn btn-danger" data-noise="pink">Pink Noise<br/>(equal power per octave)</button> -->
+              <button class="btn py-3 px-4 btn-lg"
+                      data-noise="pink"
+                      style="background-color:#FF69B4; color:white; transition: background-color 0.15s ease-in-out;"
+                      onmouseover="this.style.backgroundColor='#FF4C9E';"
+                      onmouseout="this.style.backgroundColor='#FF69B4';">
+                Pink Noise
+                <!-- <br/>(equal power per octave) -->
+              </button>
+
+              <!-- <button class="btn btn-outline-danger" data-noise="brown">Brown Noise</button> -->
+              <!-- <button class="btn" style="background-color:#8B4513; color:white;" data-noise="brown">Brown Noise</button> -->
+              <button class="btn py-3 px-4 btn-lg"
+                      data-noise="brown"
+                      style="background-color:#8B4513; color:white; transition: background-color 0.15s ease-in-out;"
+                      onmouseover="this.style.backgroundColor='#7A3910';"
+                      onmouseout="this.style.backgroundColor='#8B4513';">
+                Brown Noise
+                <!-- <br/>(Brownian motion) -->
+              </button>
+
+              <button class="btn py-3 px-4 btn-lg btn-dark" data-noise="black">
+                Black Noise
+                <!-- <br/>(silence) -->
+              </button>
+
+              <button class="btn py-3 px-4 btn-lg btn-success" data-noise="mid">
+                Green Noise
+                <!-- <br/>(mid-range) -->
+              </button>
+
+              <!-- <button class="btn btn-info" data-noise="violet">High-frequency Noise</button> -->
+              <!-- <button class="btn" style="background-color:#8A2BE2; color:white;" data-noise="violet">High-frequency Noise</button> -->
+              <button class="btn py-3 px-4 btn-lg"
+                      data-noise="violet"
+                      style="background-color:#8A2BE2; color:white; transition: background-color 0.15s ease-in-out;"
+                      onmouseover="this.style.backgroundColor='#7824D8';"
+                      onmouseout="this.style.backgroundColor='#8A2BE2';">
+                Violet Noise
+                <!-- <br/>(high-frequency) -->
+              </button>
+
+              <button class="btn py-3 px-4 btn-lg btn-secondary" data-noise="gray">
+                Gray Noise
+                <!-- <br/>(equal loudness) -->
+              </button>
+            </div>
+
+            <button id="startBtn" class="btn btn-primary btn-lg my-3">
+              Start
+            </button>
+
+            <h3 id="statusText" class="my-4"></h3>
+            <h4 id="resultText" class="my-3 text-success"></h4>
+            <img src="noise_types.jpg" width="100%" style="border-radius:5px;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN — Scores -->
+      <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+          <div id="scoresHeader" class="card-header text-bg-light unclickable pe-0">
+            <h5 class="mb-0 pe-0"><span id="scoreAvg" class="d-flex justify-content-between align-items-center"></span></h5>
+          </div>
+          <div class="card-body">
+            <div id="pastTimes" class="list-group"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const unitName = "Electronic Noise Identification";
+    const unitId = "electronicNoiseId";
+    const threshold = 0;
+    const alpha = 0.2;
+    const beepLenMs = 2000;
+    const previewBeepLenMs = 1000;
+    let previewPlaying = false;
+
+    import { currentUser } from '../../../auth.js';
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { checkModuleAccess } from '../../../module-loader.js';
+    import { setupPage } from '../../../layout.js';
+    import { scaleAndClamp } from "../../../math.js";
+    import { submitUnitScore, renderScoreHeader, renderUnitCount, appendScoreRow } from "../../../dbFuncs.js";
+    import { dictionary } from "../../../dictionary.js";
+
+    const db = getFirestore();
+    setupPage(unitName);
+
+    // Wait for DOM
+    document.addEventListener("DOMContentLoaded", async () => {
+      const waitForUser = () => new Promise(resolve => {
+        const check = () => currentUser ? resolve(currentUser) : setTimeout(check, 100);
+        check();
+      });
+      await waitForUser();
+
+      await checkModuleAccess(db, unitId);
+
+      const userRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(userRef);
+      const initialScore = docSnap.exists() ? docSnap.data()[`${unitId}_Score`] || 0 : 0;
+      const initialCount = docSnap.data()[unitId] || 0;
+
+      renderScoreHeader(initialScore);
+      renderUnitCount(initialCount, "totalUnitCount");
+    });
+
+    const startBtn = document.getElementById("startBtn");
+    const statusText = document.getElementById("statusText");
+    const resultText = document.getElementById("resultText");
+
+    let audioCtx;
+    let waitingForBeep = false;
+    let listeningForReaction = false;
+    let timeoutId = null;
+    let currentOscillator = null;
+    let currentGain = null;
+    let roundActive = false;
+
+    // Utility delay
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+
+    function playBeep() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      currentOscillator = audioCtx.createOscillator();
+      currentGain = audioCtx.createGain();
+
+      currentOscillator.type = "sine";
+      currentOscillator.frequency.setValueAtTime(300 + Math.random()*700, audioCtx.currentTime);
+
+      currentOscillator.connect(currentGain);
+      currentGain.connect(audioCtx.destination);
+
+      currentOscillator.start();
+
+      // Auto-stop after 1 second
+      // beepTimeout = setTimeout(() => { stopBeep(); }, beepLenMs);
+      setTimeout(stopBeep, beepLenMs);
+
+    }
+
+    function generateNoise(type) {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+
+      // --- Generate raw white noise first ---
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      let source = audioCtx.createBufferSource();
+      source.buffer = noiseBuffer;
+
+      let node = source; // connectable node to destination
+
+      switch(type) {
+        case "white":
+          // White noise — no filter needed
+          break;
+
+        case "pink":
+          // Pink noise: Voss-McCartney approximation
+          let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = output[i];
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+            output[i] *= 0.11; // normalize
+            b6 = white * 0.115926;
+          }
+          break;
+
+        case "brown":
+          // Brown noise: integrate white noise
+          let lastOut = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            lastOut = (lastOut + (0.02 * output[i])) / 1.02;
+            output[i] = lastOut * 3.5; // normalize
+          }
+          break;
+
+        case "black":
+          // Silence
+          for (let i = 0; i < bufferSize; i++) output[i] = 0;
+          break;
+
+        case "mid": // Green / mid-range noise
+          const bandpass = audioCtx.createBiquadFilter();
+          bandpass.type = "bandpass";
+          bandpass.frequency.value = 1000; // center of mid-range
+          bandpass.Q.value = 2;
+          node.connect(bandpass);
+          node = bandpass;
+          break;
+
+        case "violet": // High-frequency noise
+          const highpass = audioCtx.createBiquadFilter();
+          highpass.type = "highpass";
+          highpass.frequency.value = 4000; // let high freqs dominate
+          node.connect(highpass);
+          node = highpass;
+          break;
+
+          case "gray":
+            // Much stronger perceptual weighting
+
+            const bassBoost = audioCtx.createBiquadFilter();
+            bassBoost.type = "lowshelf";
+            bassBoost.frequency.value = 120;
+            bassBoost.gain.value = 10;   // strong bass boost
+
+            const midDip = audioCtx.createBiquadFilter();
+            midDip.type = "peaking";
+            midDip.frequency.value = 1000;
+            midDip.Q.value = 0.8;
+            midDip.gain.value = -6;      // mid reduction
+
+            const presenceBoost = audioCtx.createBiquadFilter();
+            presenceBoost.type = "peaking";
+            presenceBoost.frequency.value = 4000;
+            presenceBoost.Q.value = 1;
+            presenceBoost.gain.value = 6; // presence boost
+
+            const airBoost = audioCtx.createBiquadFilter();
+            airBoost.type = "highshelf";
+            airBoost.frequency.value = 6000;
+            airBoost.gain.value = 5;    // strong high boost
+
+            node.connect(bassBoost);
+            bassBoost.connect(midDip);
+            midDip.connect(presenceBoost);
+            presenceBoost.connect(airBoost);
+
+            node = airBoost;
+            break;
+
+        default:
+          console.warn("Unknown noise type:", type);
+          break;
+      }
+
+      // Gain node to control volume
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0.2;
+
+      if (type === "gray") {
+        gainNode.gain.value = 0.05;
+      } else if (type == "white") {
+        gainNode.gain.value = 0.3;
+      }
+
+      node.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      source.start();
+      return source;
+    }
+
+
+    function stopBeep() {
+      if (currentOscillator) {
+        try { currentOscillator.stop(); } catch (e) {}
+        currentOscillator.disconnect();
+        currentOscillator = null;
+      }
+    }
+
+    // Reset
+    function resetToIdle(buttonText = "Try Again") {
+      startBtn.textContent = buttonText;
+      startBtn.style.display = "inline-block";
+      waitingForBeep = false;
+      listeningForReaction = false;
+    }
+
+    let currentNoiseType;
+    let currentNoiseSource;
+
+    async function startRound() {
+      startBtn.style.display = "none";
+      resultText.textContent = "";
+      statusText.textContent = "Ready...";
+
+      await sleep(700);
+      statusText.textContent = "Listen!";
+
+      const noiseTypes = ["white","pink","brown","black","mid","violet","gray"];
+      currentNoiseType = noiseTypes[Math.floor(Math.random() * noiseTypes.length)];
+
+      const noiseButtonsDiv = document.getElementById("noiseButtons");
+      noiseButtonsDiv.style.display = "flex";
+
+      roundActive = true;
+
+      currentNoiseSource = generateNoise(currentNoiseType);
+
+      setTimeout(() => {
+        if (currentNoiseSource) {
+          try { currentNoiseSource.stop(); } catch(e){}
+          currentNoiseSource.disconnect();
+          currentNoiseSource = null;
+        }
+        // roundActive = false; // round finished
+      }, beepLenMs);
+    }
+
+    function playPreviewNoise(type) {
+      if (previewPlaying) return;
+
+      previewPlaying = true;
+      const preview = generateNoise(type);
+
+      setTimeout(() => {
+        if (preview) {
+          try { preview.stop(); } catch(e){}
+          preview.disconnect();
+        }
+        previewPlaying = false;
+      }, previewBeepLenMs);
+    }
+
+    // Handle click / keypress
+    async function handleReaction() {
+      if (!listeningForReaction) {
+        // If user clicks before the beep (too early)
+        if (waitingForBeep) {
+          clearTimeout(timeoutId);
+          statusText.textContent = "";
+          resultText.textContent = "Missed!";  // show same as normal missed
+          resetToIdle("Try Again");
+
+          // Treat as missed score
+          const score = 0;
+          appendScoreRow(`Miss`, score);
+
+          const newScoreAvg = await submitUnitScore({
+            db,
+            currentUser,
+            unitId,
+            unitName,
+            score,
+            scoreField: `${unitId}_Score`,
+            countField: unitId,
+            threshold,
+            alpha
+          });
+
+          renderScoreHeader(newScoreAvg);
+
+          return;
+        }
+        return; // ignore any other clicks
+      }
+
+      // Normal click within listening window
+      listeningForReaction = false;
+      stopBeep();
+
+      const rtcEl = document.getElementById("totalUnitCount");
+      const currentCount = parseInt(rtcEl.textContent, 10) || 0;
+      rtcEl.textContent = currentCount + 1;
+
+      const score = 100;
+      appendScoreRow("Success", score)
+
+      statusText.textContent = "";
+      resultText.textContent = `You heard it!`;
+      resetToIdle("Try Again");
+
+      if (score >= threshold) {
+        const rtcEl = document.getElementById("totalUnitCount");
+        const currentCount = parseInt(rtcEl.textContent, 10) || 0;
+        rtcEl.textContent = currentCount + 1;
+        fireConfetti();
+      }
+
+      const newScoreAvg = await submitUnitScore({
+        db,
+        currentUser,
+        unitId,
+        unitName,
+        score,
+        scoreField: `${unitId}_Score`,
+        countField: unitId,
+        threshold,
+        alpha
+      });
+
+      renderScoreHeader(newScoreAvg);
+    }
+
+    document.querySelectorAll("#noiseButtons button").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+
+        const choice = e.currentTarget.dataset.noise;
+
+        // If no round is active → just preview the noise
+        if (!roundActive) {
+          playPreviewNoise(choice);
+          return;
+        }
+
+        // ----- NORMAL SUBMISSION -----
+
+        roundActive = false;
+
+        document.getElementById("noiseButtons").style.display = "none";
+
+        if (currentNoiseSource) {
+          try { currentNoiseSource.stop(); } catch(e){}
+          currentNoiseSource.disconnect();
+          currentNoiseSource = null;
+        }
+
+        const isCorrect = choice === currentNoiseType;
+        const score = isCorrect ? 100 : 0;
+
+        statusText.textContent = "";
+        resultText.textContent = isCorrect
+          ? "Correct!"
+          : `Wrong! It was ${currentNoiseType}`;
+
+        appendScoreRow(
+          isCorrect ? `${currentNoiseType} correct` : `${currentNoiseType} missed`,
+          score
+        );
+
+        resetToIdle("Try Again");
+
+        const newScoreAvg = await submitUnitScore({
+          db,
+          currentUser,
+          unitId,
+          unitName,
+          score,
+          scoreField: `${unitId}_Score`,
+          countField: unitId,
+          threshold,
+          alpha
+        });
+
+        renderScoreHeader(newScoreAvg);
+      });
+    });
+
+    // Event listeners
+    startBtn.addEventListener("click", startRound);
+    document.addEventListener("mousedown", handleReaction);
+    document.addEventListener("keydown", handleReaction);
+  </script>
+  <div id="footer"></div>
+</body>
+</html>

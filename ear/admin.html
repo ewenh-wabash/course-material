@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+  <script src="./bootstrap/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-light">
+
+<div class="container py-3">
+
+  <!-- ============================= -->
+  <!-- CREATE UNIT -->
+  <!-- ============================= -->
+  <div class="card shadow mb-4">
+    <div class="card-header">
+      <h4 class="mb-0">Create New Unit</h4>
+    </div>
+    <div class="card-body">
+
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <input type="text" id="description" class="form-control"
+          value="Select the timing ratio for the following polyrhythms">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">ID</label>
+        <input type="text" id="unitId" class="form-control"
+          value="polyrhythmsGrid">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Module</label>
+        <select id="moduleSelect" class="form-select">
+          <option>Loading modules...</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input type="text" id="name" class="form-control"
+          value="Polyrhythms on a Grid">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Number</label>
+        <input type="number" id="num" class="form-control" value="1">
+      </div>
+
+<!--       <div class="mb-3">
+        <label class="form-label">URL</label>
+        <input type="text" id="url" class="form-control"
+          value="polyrhythms_grid.html">
+      </div> -->
+
+      <button id="createUnitBtn" class="btn btn-primary">
+        Create Unit
+      </button>
+
+      <div id="unitStatusMessage" class="mt-3"></div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================= -->
+  <!-- CREATE MODULE -->
+  <!-- ============================= -->
+  <div class="card shadow">
+    <div class="card-header">
+      <h4 class="mb-0">Create New Module</h4>
+    </div>
+    <div class="card-body">
+
+      <div class="mb-3">
+        <label class="form-label">ID</label>
+        <input type="text" id="moduleId" class="form-control"
+          value="polyrhythmsGrid">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input type="text" id="moduleName" class="form-control"
+          value="Polyrhythms on a Grid">
+      </div>
+
+
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <input type="text" id="moduleDescription" class="form-control"
+          value="Select the timing ratio for the following polyrhythms">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Number</label>
+        <input type="number" id="moduleNum" class="form-control" value="1">
+      </div>
+
+      <button id="createModuleBtn" class="btn btn-success">
+        Create Module
+      </button>
+
+      <div id="moduleStatusMessage" class="mt-3"></div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    doc,
+    setDoc,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCygLMRUJuf6pxIRD7rmKGNZ5k-FhJWi3U",
+    authDomain: "test-quiz-a125a.firebaseapp.com",
+    projectId: "test-quiz-a125a",
+    storageBucket: "test-quiz-a125a.firebasestorage.app",
+    messagingSenderId: "211214067673",
+    appId: "1:211214067673:web:8ed8bc612609cfa2085bc8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+
+  // ================================
+  // LOAD MODULES INTO DROPDOWN
+  // ================================
+  async function loadModules() {
+    const select = document.getElementById("moduleSelect");
+    select.innerHTML = "";
+
+    const snapshot = await getDocs(collection(db, "modules"));
+
+    if (snapshot.empty) {
+      select.innerHTML = `<option value="">No modules found</option>`;
+      return;
+    }
+
+    select.innerHTML = `<option value="">Select a module...</option>`;
+
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const displayName = data.name ?? data.moduleName ?? docSnap.id;
+      const option = document.createElement("option");
+      option.value = docSnap.id;
+      option.textContent = `${displayName} (${docSnap.id})`;
+      select.appendChild(option);
+    });
+  }
+
+  loadModules();
+
+
+  // ================================
+  // CREATE UNIT (updated to use setDoc with ID as document name)
+  // ================================
+  document.getElementById("createUnitBtn").addEventListener("click", async () => {
+    const description = document.getElementById("description").value.trim();
+    const unitId = document.getElementById("unitId").value.trim();
+    const moduleId = document.getElementById("moduleSelect").value;
+    const name = document.getElementById("name").value.trim();
+    const num = Number(document.getElementById("num").value);
+    // const url = document.getElementById("url").value.trim();
+    const status = document.getElementById("unitStatusMessage");
+
+    if (!moduleId) {
+      status.innerHTML = `<div class="alert alert-warning">Please select a module.</div>`;
+      return;
+    }
+
+    try {
+      const moduleRef = doc(db, "modules", moduleId);
+      const unitRef = doc(db, "units", unitId); // use ID as document name
+
+      await setDoc(unitRef, {
+        description,
+        id: unitId,
+        module: moduleRef,
+        name,
+        num
+        // url
+      });
+
+      status.innerHTML = `<div class="alert alert-success">Unit created successfully</div>`;
+
+    } catch (error) {
+      console.error(error);
+      status.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+    }
+  });
+
+
+  // ================================
+  // CREATE MODULE (updated to include description)
+  // ================================
+  document.getElementById("createModuleBtn").addEventListener("click", async () => {
+    const moduleId = document.getElementById("moduleId").value.trim();
+    const moduleName = document.getElementById("moduleName").value.trim();
+    const moduleNum = Number(document.getElementById("moduleNum").value);
+    const description = document.getElementById("moduleDescription")?.value?.trim() ?? ""; // optional extra field
+    const status = document.getElementById("moduleStatusMessage");
+
+    if (!moduleId || !moduleName) {
+      status.innerHTML = `<div class="alert alert-warning">ID and Name are required.</div>`;
+      return;
+    }
+
+    try {
+      const moduleRef = doc(db, "modules", moduleId);
+
+      await setDoc(moduleRef, {
+        id: moduleId,
+        name: moduleName,
+        num: moduleNum,
+        description // added field
+      });
+
+      status.innerHTML = `<div class="alert alert-success">Module created successfully</div>`;
+
+      // Refresh dropdown after adding new module
+      loadModules();
+
+    } catch (error) {
+      console.error(error);
+      status.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+    }
+  });
+
+</script>
+
+</body>
+</html>

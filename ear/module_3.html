@@ -1,0 +1,81 @@
+<body>
+  <!-- Auth UI -->
+  <button id="loginBtn">Login with Google</button>
+  <button id="logoutBtn" style="display:none;">Logout</button>
+  <div id="userInfo"></div>
+  <img id="profilePic" width="80" height="80" style="border-radius:50%;" />
+
+  <!-- Module content -->
+  <a href="progress.html">see progress</a> |
+  <a href="nav.html">nav</a>
+
+  <hr>
+
+  <div id="lockedMessage" style="display:none; color:red;"></div>
+  <div id="moduleContent" style="display:none;">
+    <h2>Module 3 Quiz</h2>
+    <button id="submitScoreBtn">Submit Score</button>
+  </div>
+
+  <hr>
+
+  <h2>Previous Scores</h2>
+  <ul id="scoreList"></ul>
+
+  <script type="module">
+    import { setupAuthUI, currentUser } from './auth.js';
+    import { getFirestore, doc, setDoc, collection, addDoc, query, where, getDocs, serverTimestamp, increment, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { checkModuleAccess } from './module-loader.js';
+
+    const db = getFirestore();
+
+    // Wait for DOM
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Setup auth UI and handlers
+      const auth = setupAuthUI("loginBtn", "logoutBtn", "userInfo", "profilePic");
+
+      // Wait for user login
+      const waitForUser = () => new Promise(resolve => {
+        const check = () => {
+          if (currentUser) resolve(currentUser);
+          else setTimeout(check, 100);
+        };
+        check();
+      });
+
+      await waitForUser();
+
+      // Check module access
+      await checkModuleAccess(db, "module_3", "moduleContent", "lockedMessage");
+
+      // Load scores
+      const scoreList = document.getElementById("scoreList");
+      const q = query(collection(db, "scores"), where("uid", "==", currentUser.uid));
+      const snapshot = await getDocs(q);
+      scoreList.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const li = document.createElement("li");
+        li.textContent = `${data.moduleId}: ${data.score} points`;
+        scoreList.appendChild(li);
+      });
+
+      // Submit score
+      const submitBtn = document.getElementById("submitScoreBtn");
+      submitBtn.onclick = async () => {
+        const score = 7 + Math.random();
+        await addDoc(collection(db, "scores"), {
+          uid: currentUser.uid,
+          moduleId: "module_3",
+          score,
+          timestamp: serverTimestamp()
+        });
+        await updateDoc(doc(db, "users", currentUser.uid), { totalScore: increment(score) });
+
+        const li = document.createElement("li");
+        li.textContent = `module_3: ${score.toFixed(1)} points`;
+        scoreList.appendChild(li);
+      };
+    });
+  </script>
+</body>

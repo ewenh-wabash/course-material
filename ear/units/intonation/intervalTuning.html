@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="../../../bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../../modules.css">
+  <script src="../../../bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../../ui.js"></script>
+  <style>
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 24px;
+  border-radius: 12px;
+  background: #ddd;
+  border: 0.5px solid gray;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 12px;
+  border-radius: 6px;
+  background: inherit;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 12px;
+  border-radius: 6px;
+  background: inherit;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-top: -4px;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="lockedMessage" style="display:none;"></div>
+  <div id="moduleContent" class="mt-4">
+    <div class="row g-4 mx-3">
+
+      <div class="col-md-9">
+        <div class="card shadow-sm">
+          <div class="card-header text-bg-primary unclickable pe-2">
+            <h5 class="mb-0 d-flex justify-content-between align-items-center">
+              <span>Instructions</span>
+              <span>
+                <span id="totalUnitCount" class="pe-1"></span>
+                <span class="header-trophy">&#127942;</span>
+              </span>
+            </h5>
+          </div>
+          <div class="card-body text-center">
+            <p id="instructionText" class="lead">
+              Press <strong>Start</strong> to hear an interval.<br/>
+              Drag the slider while holding the mouse to tune the adjustable note.<br/>
+              <small class="text-muted">
+                You can still hear and eliminate beating, but it's more subtle with intervals.
+              </small>
+            </p>
+
+            <h4 id="intervalLabel" class="text-primary mb-3"></h4>
+
+            <div class="position-relative w-100" id="sliderWrapper">
+              <input
+                type="range"
+                id="tuningSlider"
+                class="form-range w-100"
+                min="-50"
+                max="50"
+                step="0.1"
+                value="0"
+                disabled
+              >
+
+              <div id="pianoArrow"
+                   style="
+                     position:absolute;
+                     bottom:-18px;
+                     left:0;
+                     transform:translateX(-50%);
+                     font-size:18px;
+                     display:none;
+                     pointer-events:none;">
+                &#127929;
+              </div>
+              <div id="answerArrow"
+                   style="
+                     position:absolute;
+                     top:-22px;
+                     left:0;
+                     transform:translateX(-50%);
+                     font-size:18px;
+                     display:none;
+                     pointer-events:none;
+                     color: blue">
+                &darr;
+              </div>
+
+
+            </div>
+
+            <div class="mt-3">
+              <button id="startBtn" class="btn btn-primary me-3">Start</button>
+              <button id="submitBtn" class="btn btn-success" disabled>Submit</button>
+
+              <h5 id="beatingText" class="my-2 text-primary" style="display:none;">
+                <span id="centsValue">0</span> - beating at <span id="beatingValue">0.00</span> Hz
+              </h5>
+            </div>
+
+            <h4 id="resultText" class="my-3 text-success"></h4>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+          <div class="card-header text-bg-primary unclickable pe-2">
+            <h5 class="mb-0 d-flex justify-content-between align-items-center">
+              <span>Settings</span>
+            </h5>
+          </div>
+          <div class="card-body">
+
+            <!-- Interval Toggles -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Intervals</label>
+              <div class="btn-group btn-group-sm flex-wrap" role="group" id="intervalTogglesContainer">
+              </div>
+            </div>
+
+            <!-- Direction Toggle -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Direction</label>
+              <div class="btn-group btn-group-sm" role="group">
+                <input type="radio" class="btn-check direction-toggle" name="direction" id="dirUp" value="up">
+                <label class="btn btn-outline-primary" for="dirUp">Up</label>
+
+                <input type="radio" class="btn-check direction-toggle" name="direction" id="dirDown" value="down">
+                <label class="btn btn-outline-primary" for="dirDown">Down</label>
+
+                <input type="radio" class="btn-check direction-toggle" name="direction" id="dirBoth" value="both" checked>
+                <label class="btn btn-outline-primary" for="dirBoth">Both</label>
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label fw-bold" data-meaning="equal temperment position">Equal Temperment &#127929;</label>
+              <div class="btn-group btn-group-sm" role="group">
+                <input type="radio" class="btn-check piano-toggle" name="piano" id="pianoShow" value="show" checked>
+                <label class="btn btn-outline-primary" for="pianoShow">Show</label>
+
+                <input type="radio" class="btn-check piano-toggle" name="piano" id="pianoHide" value="hide">
+                <label class="btn btn-outline-primary" for="pianoHide">Hide</label>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+          <div id="scoresHeader" class="card-header text-bg-light unclickable pe-0">
+            <h5 class="mb-0 pe-0">
+              <span id="scoreAvg" class="d-flex justify-content-between align-items-center"></span>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div id="pastTimes" class="list-group"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script type="module">
+  const unitName = "Interval Tuning";
+  const unitId = "intervalTuning";
+  const threshold = 1;
+  const alpha = 0.4;
+  let currentWaveform;
+  let chosenInterval;
+
+  import { currentUser } from '../../../auth.js';
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { checkModuleAccess } from '../../../module-loader.js';
+  import { setupPage } from '../../../layout.js';
+  import { submitUnitScore, renderScoreHeader, renderUnitCount, appendScoreRow } from "../../../dbFuncs.js";
+  import { scaleAndClamp } from "../../../math.js";
+  import { dictionary } from "../../../dictionary.js";
+
+  const db = getFirestore();
+  setupPage(unitName);
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const waitForUser = () => new Promise(resolve => {
+      const check = () => currentUser ? resolve(currentUser) : setTimeout(check, 100);
+      check();
+    });
+    await waitForUser();
+    await checkModuleAccess(db, unitId);
+
+    const userRef = doc(db, "users", currentUser.uid);
+    const docSnap = await getDoc(userRef);
+    const initialScore = docSnap.exists() ? docSnap.data()[`${unitId}_Score`] || 0 : 0;
+    const initialCount = docSnap.data()[unitId] || 0;
+
+    renderScoreHeader(initialScore);
+    renderUnitCount(initialCount, "totalUnitCount");
+  });
+
+  const intervals = [
+  // { name: "Minor 2nd", semitones: 1 },
+  // { name: "Major 2nd", semitones: 2 },
+  { name: "Perfect Unison", semitones: 0, intervalRatio: 1, abbreviation: "P0" },
+  { name: "Minor 3rd", semitones: 3, intervalRatio: 1.2, abbreviation: "m3" },
+  { name: "Major 3rd", semitones: 4, intervalRatio: 1.25, abbreviation: "M3"  },
+  { name: "Perfect 4th", semitones: 5, intervalRatio:  1.3333333333, abbreviation: "P4" },
+  // { name: "Tritone", semitones: 6 },
+  { name: "Perfect 5th", semitones: 7, intervalRatio: 1.5, abbreviation: "P5"  },
+  // { name: "Minor 6th", semitones: 8 },
+  // { name: "Major 6th", semitones: 9 },
+  // { name: "Minor 7th", semitones: 10 },
+  // { name: "Major 7th", semitones: 11 }
+  { name: "Perfect Octave", semitones: 12, intervalRatio: 2, abbreviation: "P8" }
+];
+
+  const startBtn = document.getElementById("startBtn");
+  const resultText = document.getElementById("resultText");
+  const slider = document.getElementById("tuningSlider");
+  const submitBtn = document.getElementById("submitBtn");
+  const arrow = document.getElementById("answerArrow");
+
+  let audioCtx;
+  let refOsc, sliderOsc;
+  let baseFreq;
+  let fixedFreq;
+  let answerFreq;
+  let tuneTop;
+
+  const waveforms = ["sine", "sawtooth", "triangle", "square"];
+
+  function hzToCents(sliderFreq, refFreq) {
+    return 1200 * Math.log2(sliderFreq / refFreq);
+  }
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+
+  function getSelectedIntervals() {
+    const checked = Array.from(document.querySelectorAll(".interval-toggle:checked"))
+      .map(cb => parseInt(cb.value));
+
+    return intervals.filter(i => checked.includes(i.semitones));
+  }
+
+  function getSelectedDirection() {
+    return document.querySelector(".direction-toggle:checked").value;
+  }
+
+  function setupRound() {
+
+    baseFreq = 220 + Math.random() * 440;
+
+    const availableIntervals = getSelectedIntervals();
+
+    if (availableIntervals.length === 0) {
+      alert("Please select at least one interval.");
+      slider.disabled = true;
+      submitBtn.disabled = true;
+      arrow.style.display = "none";
+      resultText.textContent = "";
+      startBtn.style.display = "inline-block";
+      startBtn.textContent = "Start";
+      return;
+    }
+
+    chosenInterval = availableIntervals[Math.floor(Math.random() * availableIntervals.length)];
+    const semitones = chosenInterval.semitones;
+    const intervalRatio = chosenInterval.intervalRatio;
+
+    let intervalLabel = `Tune a ${chosenInterval.name.toLowerCase()} (${chosenInterval.abbreviation})`;
+    const direction = getSelectedDirection();
+
+    if (direction === "up") {
+      tuneTop = true;
+    } else if (direction === "down") {
+      tuneTop = false;
+    } else {
+      tuneTop = Math.random() < 0.5;
+    }
+
+    if (semitones == 0) {
+    } else if (tuneTop) {
+      intervalLabel += " up";
+    } else {
+      intervalLabel += " down";
+    }
+
+    document.getElementById("intervalLabel").textContent = intervalLabel;
+
+    if (tuneTop) {
+      fixedFreq = baseFreq;
+      answerFreq = baseFreq * intervalRatio;
+    } else {
+      fixedFreq = baseFreq * intervalRatio;
+      answerFreq = baseFreq;
+    }
+
+    // Define total slider width (10% of the correct frequency)
+    const rangeWidth = answerFreq * 0.10;
+    // const rangeWidth = answerFreq * 0.30; // hard mode!
+
+    // Randomly choose where the answer sits within that range
+    // 0 → left edge, 1 → right edge
+    const answerPosition = Math.random();
+
+    // Compute slider bounds so that answer lands randomly within range
+    const min = answerFreq - (answerPosition * rangeWidth);
+    const max = min + rangeWidth;
+
+    slider.min = min;
+    slider.max = max;
+    console.log(answerFreq, answerPosition, rangeWidth, slider.min, slider.max)
+
+    // Randomize starting slider position (but NOT the answer)
+    slider.value = parseFloat(slider.min) + Math.random() * rangeWidth;
+
+    slider.step = 0.01;
+    slider.disabled = false;
+    submitBtn.disabled = false;
+    arrow.style.display = "none";
+
+
+
+  }
+
+  function playReference() {
+    ensureAudio();
+    refOsc = audioCtx.createOscillator();
+    currentWaveform = waveforms[Math.floor(Math.random() * waveforms.length)];
+    refOsc.type = currentWaveform;
+    refOsc.frequency.value = fixedFreq;
+    refOsc.connect(audioCtx.destination);
+    refOsc.start();
+  }
+
+  function stopReference() {
+    if (refOsc) {
+      try { refOsc.stop(); } catch(e){}
+      refOsc.disconnect();
+      refOsc = null;
+    }
+  }
+
+  function playSlider(freq) {
+    ensureAudio();
+    sliderOsc = audioCtx.createOscillator();
+    sliderOsc.type = currentWaveform;
+    sliderOsc.frequency.value = freq;
+    sliderOsc.connect(audioCtx.destination);
+    sliderOsc.start();
+  }
+
+  function stopSlider() {
+    if (sliderOsc) {
+      try { sliderOsc.stop(); } catch(e){}
+      sliderOsc.disconnect();
+      sliderOsc = null;
+    }
+  }
+
+  slider.addEventListener("mousedown", () => {
+    playSlider(parseFloat(slider.value));
+  });
+
+  slider.addEventListener("input", () => {
+    if (sliderOsc) {
+      sliderOsc.frequency.value = parseFloat(slider.value);
+    }
+  });
+
+  slider.addEventListener("mouseup", () => {
+    stopSlider();
+  });
+
+
+function clearSliderGradient() {
+  slider.style.background = "#ddd";
+}
+
+function setSliderGradient(answerFreq) {
+
+  const min = parseFloat(slider.min);
+  const max = parseFloat(slider.max);
+  const totalRange = max - min;
+
+  const freqToPercent = f => ((f - min) / totalRange) * 100;
+
+  const blueRadius = answerFreq * 0.002;   // tight zone
+  const yellowStart = answerFreq * 0.02;
+  const redStart = answerFreq * 0.04;
+
+  const leftBlueEnd   = freqToPercent(answerFreq - blueRadius);
+  const rightBlueEnd  = freqToPercent(answerFreq + blueRadius);
+
+  const leftYellowStart = freqToPercent(answerFreq - yellowStart);
+  const rightYellowEnd  = freqToPercent(answerFreq + yellowStart);
+
+  const leftRedStart  = freqToPercent(answerFreq - redStart);
+  const rightRedEnd   = freqToPercent(answerFreq + redStart);
+
+  const clamp = v => Math.max(0, Math.min(100, v));
+
+  slider.style.background = `linear-gradient(
+    to right,
+    #f8a7aa ${clamp(leftRedStart)}%,
+    #ffff00 ${clamp(leftYellowStart)}%,
+    #00ff00 ${clamp(leftBlueEnd)}%,
+    #007bff ${clamp(leftBlueEnd)}%,
+    #007bff ${clamp(rightBlueEnd)}%,
+    #00ff00 ${clamp(rightBlueEnd)}%,
+    #ffff00 ${clamp(rightYellowEnd)}%,
+    #f8a7aa ${clamp(rightRedEnd)}%
+  )`;
+}
+
+
+  submitBtn.addEventListener("click", async () => {
+
+    stopSlider();
+    stopReference();
+
+    const guess = parseFloat(slider.value);
+    const diff = Math.abs(guess - answerFreq);
+
+    let score = diff >= answerFreq*0.05
+      ? 0
+      : scaleAndClamp(diff, answerFreq*0.002, answerFreq*0.05, 100, 0);
+
+    appendScoreRow(`${diff.toFixed(2)} Hz off`, score, "pastTimes", threshold);
+
+    const newScoreAvg = await submitUnitScore({
+      db,
+      currentUser,
+      unitId,
+      unitName,
+      score,
+      scoreField: `${unitId}_Score`,
+      countField: unitId,
+      threshold,
+      alpha
+    });
+
+    renderScoreHeader(newScoreAvg);
+
+    let centsOff = hzToCents(guess, answerFreq);
+    if (Math.abs(centsOff) < 2) {
+      centsOff = `in tune`;
+    } else if (centsOff > 0) {
+      centsOff = `${Math.round(centsOff)} cents sharp`;
+    } else {
+      centsOff = `${Math.round(Math.abs(centsOff))} cents flat`;
+    }
+
+    resultText.textContent =
+      `Response was ${centsOff}. Score: ${score.toFixed(0)}%`;
+
+    const min = parseFloat(slider.min);
+    const max = parseFloat(slider.max);
+    const percent = (answerFreq - min) / (max - min);
+
+const pianoInterval = baseFreq * Math.pow(2, chosenInterval.semitones / 12);
+console.log("Piano Interval:", pianoInterval);
+const pianoPercent = (pianoInterval - min) / (max - min);
+console.log("pianoPercent", pianoPercent)
+const pianoArrow = document.getElementById("pianoArrow");
+pianoArrow.style.left = `${pianoPercent * 100}%`;
+pianoArrow.style.display = "block";
+
+    arrow.style.left = `${percent * 100}%`;
+    arrow.style.display = "block";
+
+    slider.disabled = false;
+    submitBtn.disabled = true;
+
+    startBtn.textContent = "Try Again";
+    startBtn.style.display = "inline-block";
+
+    setSliderGradient(answerFreq);
+  });
+
+  startBtn.addEventListener("click", () => {
+    resultText.textContent = "";
+    startBtn.style.display = "none";
+    setupRound();
+    clearSliderGradient();
+    playReference();
+  });
+
+  const intervalContainer = document.getElementById("intervalTogglesContainer");
+
+  intervals.forEach(interval => {
+    // Skip intervals without abbreviation if you want
+    if (!interval.abbreviation) return;
+
+    const checkboxId = interval.abbreviation;
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "btn-check interval-toggle";
+    input.id = checkboxId;
+    input.value = interval.semitones;
+    input.checked = true;
+
+    const label = document.createElement("label");
+    label.className = "btn btn-outline-primary";
+    label.htmlFor = checkboxId;
+
+    // Wrap abbreviation in span with data-meaning
+    const span = document.createElement("span");
+    span.dataset.meaning = interval.name.toLowerCase();
+    span.textContent = interval.abbreviation;
+
+    label.appendChild(span);
+
+    intervalContainer.appendChild(input);
+    intervalContainer.appendChild(label);
+  });
+</script>
+
+<div id="footer"></div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+  <script src="./bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div id="lockedMessage" style="display:none; color:red;"></div>
+  <div id="moduleContent" class="mt-4 p-3">
+    <!-- <h2>Polyrhythms Circle Quiz</h2> -->hisdfsfdfdsfdsfsdfsd
+    <button id="submitScoreBtn">Submit Score</button>
+  </div>
+
+  <hr>
+
+  <h2>Previous Scores</h2>
+  <ul id="scoreList"></ul>
+
+  <script type="module">
+    import { setupAuthUI, currentUser } from './auth.js';
+    import { getFirestore, doc, setDoc, collection, addDoc, query, where, getDocs, serverTimestamp, increment, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { checkModuleAccess } from './module-loader.js';
+    import { setupPage } from './layout.js';
+    const db = getFirestore();
+    setupPage("Polyrhythms Circle");
+
+    // Wait for DOM
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Setup auth UI and handlers
+      const auth = setupAuthUI("loginBtn", "logoutBtn", "userInfo", "profilePic");
+
+      // Wait for user login
+      const waitForUser = () => new Promise(resolve => {
+        const check = () => {
+          if (currentUser) resolve(currentUser);
+          else setTimeout(check, 100);
+        };
+        check();
+      });
+
+      await waitForUser();
+
+      // Check module access
+      await checkModuleAccess(db, "polyrhythmsCircle", "moduleContent", "lockedMessage");
+
+      // Load scores
+      const scoreList = document.getElementById("scoreList");
+      const q = query(collection(db, "scores"), where("uid", "==", currentUser.uid));
+      const snapshot = await getDocs(q);
+      scoreList.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const li = document.createElement("li");
+        li.textContent = `${data.moduleId}: ${data.score} points`;
+        scoreList.appendChild(li);
+      });
+
+      // Submit score
+      const submitBtn = document.getElementById("submitScoreBtn");
+      submitBtn.onclick = async () => {
+        fireConfetti();
+
+        const score = 50 + Math.random()*50;
+        await addDoc(collection(db, "scores"), {
+          uid: currentUser.uid,
+          unitId: "polyrhythmsCircle",
+          unitName: "Polyrhythms in a Circle",
+          score,
+          timestamp: serverTimestamp()
+        });
+        // await updateDoc(doc(db, "users", currentUser.uid), { totalCorrectUnits: increment(1) });
+
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          totalCorrectUnits: increment(1),
+          polyrhythmsCircle: increment(1)
+        });
+
+        const li = document.createElement("li");
+        li.textContent = `polyrhythmsCircle: ${score.toFixed(1)} points`;
+        scoreList.appendChild(li);
+      };
+    });
+  </script>
+  <div id="footer"></div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+.header-medal {
+  font-size: 2.75em;
+  line-height: 0;
+  position: relative;
+  top: 0.1em;
+  display: inline-block;
+}
+
+.unclickable {
+  pointer-events: none;
+  cursor: arrow;
+}
+
+.header-trophy {
+  font-size: 1.3em;
+  line-height: 0;
+  position: relative;
+  top: 0.1em;
+  display: inline-block;
+}
+
+.locked-message {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 1.8em;
+  height: 80vh;
+  display: block;
+}
+
+.fade-in {
+  animation: fadeIn 1s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@font-face {
+  font-family: "Maestro";
+  src: url("../../../EngraverFontSet.suit") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.dynamic {
+  font-family: "Maestro", sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+  margin: 0 3px;
+
+}

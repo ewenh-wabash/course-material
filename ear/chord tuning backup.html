@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="../../../bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="../../../modules.css">
+<script src="../../../bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../../../ui.js"></script>
+
+<style>
+
+input[type="range"]{
+-webkit-appearance:none;
+width:100%;
+height:24px;
+border-radius:12px;
+background:#ddd;
+border:0.5px solid gray;
+}
+
+input[type="range"]::-webkit-slider-runnable-track{
+height:12px;
+border-radius:6px;
+background:inherit;
+}
+
+input[type="range"]::-moz-range-track{
+height:12px;
+border-radius:6px;
+background:inherit;
+}
+
+input[type="range"]::-webkit-slider-thumb{
+-webkit-appearance:none;
+width:20px;
+height:20px;
+border-radius:50%;
+margin-top:-4px;
+cursor:pointer;
+}
+
+input[type="range"]::-moz-range-thumb{
+width:20px;
+height:20px;
+border-radius:50%;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="header"></div>
+<div id="lockedMessage" style="display:none;"></div>
+
+<div id="moduleContent" class="mt-4">
+
+<div class="row g-4 mx-3">
+
+<div class="col-md-9">
+
+<div class="card shadow-sm">
+
+<div class="card-header text-bg-primary unclickable pe-2">
+<h5 class="mb-0 d-flex justify-content-between align-items-center">
+<span>Instructions</span>
+<span>
+<span id="totalUnitCount" class="pe-1"></span>
+<span class="header-trophy">&#127942;</span>
+</span>
+</h5>
+</div>
+
+<div class="card-body text-center">
+
+<p id="instructionText" class="lead">
+Press <strong>Start</strong> to hear the chord root.<br/>
+Tune each slider to match the chord tones above the bass.
+</p>
+
+<h4 id="intervalLabel" class="text-primary mb-3"></h4>
+
+<div id="sliderContainer"></div>
+
+<div class="mt-3">
+<button id="startBtn" class="btn btn-primary me-3">Start</button>
+<button id="submitBtn" class="btn btn-success" disabled>Submit</button>
+</div>
+
+<h4 id="resultText" class="my-3 text-success"></h4>
+
+</div>
+</div>
+
+
+<div class="card shadow-sm mt-4">
+
+<div class="card-header text-bg-primary unclickable pe-2">
+<h5 class="mb-0">Settings</h5>
+</div>
+
+<div class="card-body">
+
+<div class="mb-3">
+<label class="form-label fw-bold">Chords</label>
+<div class="btn-group btn-group-sm flex-wrap" role="group" id="intervalTogglesContainer"></div>
+</div>
+
+<div>
+<label class="form-label fw-bold">Equal Temperament &#127929;</label>
+
+<div class="btn-group btn-group-sm">
+
+<input type="radio" class="btn-check piano-toggle" name="piano" id="pianoShow" checked>
+<label class="btn btn-outline-primary" for="pianoShow">Show</label>
+
+<input type="radio" class="btn-check piano-toggle" name="piano" id="pianoHide">
+<label class="btn btn-outline-primary" for="pianoHide">Hide</label>
+
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card h-100 shadow-sm">
+
+<div id="scoresHeader" class="card-header text-bg-light">
+<h5 class="mb-0">
+<span id="scoreAvg"></span>
+</h5>
+</div>
+
+<div class="card-body">
+<div id="pastTimes" class="list-group"></div>
+</div>
+
+</div>
+</div>
+
+</div>
+</div>
+
+
+<script type="module">
+
+const unitName="Chord Tuning";
+const unitId="chordTuning";
+const threshold=1;
+const alpha=0.4;
+const sliderAttenuation = 0.7 // how much to reduce volume of unselected sliders
+
+let currentWaveform;
+let chosenChord;
+
+import {currentUser} from '../../../auth.js';
+import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {checkModuleAccess} from '../../../module-loader.js';
+import {setupPage} from '../../../layout.js';
+import {submitUnitScore,renderScoreHeader,renderUnitCount,appendScoreRow} from "../../../dbFuncs.js";
+import {scaleAndClamp} from "../../../math.js";
+import { dictionary } from "../../../dictionary.js";
+
+const db=getFirestore();
+setupPage(unitName);
+
+document.addEventListener("DOMContentLoaded",async()=>{
+
+const waitForUser=()=>new Promise(resolve=>{
+const check=()=>currentUser?resolve(currentUser):setTimeout(check,100);
+check();
+});
+
+await waitForUser();
+await checkModuleAccess(db,unitId);
+
+const userRef=doc(db,"users",currentUser.uid);
+const docSnap=await getDoc(userRef);
+
+const initialScore=docSnap.exists()?docSnap.data()[`${unitId}_Score`]||0:0;
+const initialCount=docSnap.data()[unitId]||0;
+
+renderScoreHeader(initialScore);
+renderUnitCount(initialCount,"totalUnitCount");
+
+});
+
+
+const chords=[
+
+{ name:"Major Triad", abbreviation:"Maj", semitones:[4,7], ratios:[1.25,1.5], intervals:['<span data-meaning="major 3">M3</span>', '<span data-meaning="perfect 5">P5</span>'] },
+
+{ name:"Minor Triad", abbreviation:"min", semitones:[3,7], ratios:[1.2,1.5], intervals:['<span data-meaning="minor 3">m3</span>', '<span data-meaning="perfect 5">P5</span>'] },
+
+{ name:"Dominant 7", abbreviation:"Dom7", semitones:[4,7,10], ratios:[1.25,1.5,1.75], intervals:['<span data-meaning="major 3">M3</span>', '<span data-meaning="perfect 5">P5</span>', '<span data-meaning="minor 7">m7</span>'] },
+
+{ name:"Major 7", abbreviation:"Maj7", semitones:[4,7,11], ratios:[1.25,1.5,1.875], intervals:['<span data-meaning="major 3">M3</span>', '<span data-meaning="perfect 5">P5</span>', '<span data-meaning="major 7">M7</span>'] },
+
+{ name:"Minor 7", abbreviation:"min7", semitones:[3,7,10], ratios:[1.2,1.5,1.75], intervals:['<span data-meaning="minor 3">m3</span>', '<span data-meaning="perfect 5">P5</span>', '<span data-meaning="minor 7">m7</span>'] },
+
+{ name:"Major Triad (1st Inversion)", abbreviation:"Maj6", semitones:[3,8], ratios:[1.2,1.6], intervals:['<span data-meaning="minor 3">m3</span>', '<span data-meaning="minor 6">m6</span>'] },
+
+{ name:"Minor Triad (1st Inversion)", abbreviation:"min6", semitones:[4,9], ratios:[1.25,1.6666667], intervals:['<span data-meaning="major 3">M3</span>', '<span data-meaning="major 6">M6</span>'] }
+
+];
+
+
+const startBtn=document.getElementById("startBtn");
+const submitBtn=document.getElementById("submitBtn");
+const resultText=document.getElementById("resultText");
+
+let audioCtx;
+let refOsc;
+
+let baseFreq;
+let fixedFreq;
+
+let sliders=[];
+let sliderOscs=[];
+let sliderGains=[];
+let bassOsc;
+let bassGain;
+let answerFreqs=[];
+
+const waveforms=["sine","sawtooth","triangle","square"];
+
+
+function ensureAudio(){
+if(!audioCtx){
+audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+}
+}
+
+
+function createSliders(intervals){
+
+const container=document.getElementById("sliderContainer");
+container.innerHTML="";
+
+sliders=[];
+sliderOscs=[];
+
+for(let i=0;i<intervals.length;i++){
+
+const wrapper=document.createElement("div");
+wrapper.className="d-flex align-items-center mb-4";
+
+const label=document.createElement("div");
+label.className="fw-bold text-primary me-3 text-end";
+label.style.width="60px";
+label.innerHTML=intervals[i];
+
+wrapper.appendChild(label);
+
+const slider=document.createElement("input");
+slider.type="range";
+slider.className="form-range";
+
+const pianoArrow=document.createElement("div");
+pianoArrow.innerHTML="&#127929;";
+pianoArrow.style=`
+position:absolute;
+bottom:-18px;
+left:0;
+transform:translateX(-50%);
+font-size:18px;
+display:none;
+pointer-events:none;
+`;
+
+const answerArrow=document.createElement("div");
+answerArrow.innerHTML="&darr;";
+answerArrow.style=`
+position:absolute;
+top:-22px;
+left:0;
+transform:translateX(-50%);
+font-size:18px;
+display:none;
+pointer-events:none;
+color:blue;
+`;
+
+wrapper.appendChild(slider);
+wrapper.appendChild(pianoArrow);
+wrapper.appendChild(answerArrow);
+
+container.appendChild(wrapper);
+
+sliders.push({slider,pianoArrow,answerArrow});
+
+slider.addEventListener("mousedown",()=>{
+
+ensureAudio();
+
+/* stop existing oscillators */
+
+sliderOscs.forEach(o=>{
+  try{o.stop()}catch(e){}
+  o.disconnect();
+});
+
+sliderOscs=[];
+sliderGains=[];
+
+if(bassOsc){
+  try{bassOsc.stop()}catch(e){}
+  bassOsc.disconnect();
+}
+
+/* bass note (full volume) */
+
+bassOsc=audioCtx.createOscillator();
+bassGain=audioCtx.createGain();
+
+bassGain.gain.value=1;
+
+bassOsc.type=currentWaveform;
+bassOsc.frequency.value=fixedFreq;
+
+bassOsc.connect(bassGain);
+bassGain.connect(audioCtx.destination);
+
+bassOsc.start();
+
+console.log("nass", bassOsc.type)
+/* chord tones */
+
+sliders.forEach((s,j)=>{
+
+const osc=audioCtx.createOscillator();
+const gain=audioCtx.createGain();
+
+osc.type=currentWaveform;
+
+const freq=parseFloat(sliders[j].slider.value);
+osc.frequency.value=freq;
+
+/* volume logic */
+
+if(j===i){
+gain.gain.value=1;          // active slider
+}else{
+gain.gain.value=sliderAttenuation;        // other sliders
+}
+
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+
+console.log("osc", osc.type, freq, gain.gain.value)
+
+osc.start();
+
+sliderOscs.push(osc);
+sliderGains.push(gain);
+
+});
+
+});
+
+slider.addEventListener("input",()=>{
+
+if(sliderOscs.length){
+
+sliderOscs.forEach((osc,j)=>{
+const freq=parseFloat(sliders[j].slider.value);
+osc.frequency.value=freq;
+});
+
+}
+
+});
+
+slider.addEventListener("mouseup",()=>{
+
+sliderOscs.forEach(o=>{
+  try{o.stop()}catch(e){}
+  o.disconnect();
+});
+
+sliderOscs=[];
+sliderGains=[];
+
+if(bassOsc){
+  try{bassOsc.stop()}catch(e){}
+  bassOsc.disconnect();
+  bassOsc=null;
+}
+
+});
+
+}
+
+}
+
+
+function setupRound(){
+
+chosenChord=chords[Math.floor(Math.random()*chords.length)];
+currentWaveform = waveforms[Math.floor(Math.random() * waveforms.length)];
+
+document.getElementById("intervalLabel").textContent=`Tune a ${chosenChord.name}`;
+
+createSliders(chosenChord.intervals);
+
+baseFreq=220+Math.random()*440;
+fixedFreq=baseFreq;
+
+answerFreqs=[];
+
+chosenChord.ratios.forEach((ratio,i)=>{
+
+const answerFreq=baseFreq*ratio;
+answerFreqs.push(answerFreq);
+
+const rangeWidth=answerFreq*0.10;
+
+const answerPosition=Math.random();
+
+const min=answerFreq-answerPosition*rangeWidth;
+const max=min+rangeWidth;
+
+const slider=sliders[i].slider;
+
+slider.min=min;
+slider.max=max;
+
+slider.value=min+Math.random()*rangeWidth;
+
+slider.step=0.01;
+slider.disabled=false;
+
+clearSliderGradient(slider);
+
+});
+
+submitBtn.disabled=false;
+
+}
+
+function clearSliderGradient(slider){
+  slider.style.background="#ddd";
+}
+
+function setSliderGradient(slider,answerFreq){
+
+  const min=parseFloat(slider.min);
+  const max=parseFloat(slider.max);
+  const totalRange=max-min;
+
+  const freqToPercent=f=>((f-min)/totalRange)*100;
+
+  const blueRadius=answerFreq*0.002;
+  const yellowStart=answerFreq*0.02;
+  const redStart=answerFreq*0.04;
+
+  const leftBlueEnd=freqToPercent(answerFreq-blueRadius);
+  const rightBlueEnd=freqToPercent(answerFreq+blueRadius);
+
+  const leftYellowStart=freqToPercent(answerFreq-yellowStart);
+  const rightYellowEnd=freqToPercent(answerFreq+yellowStart);
+
+  const leftRedStart=freqToPercent(answerFreq-redStart);
+  const rightRedEnd=freqToPercent(answerFreq+redStart);
+
+  const clamp=v=>Math.max(0,Math.min(100,v));
+
+  slider.style.background=`linear-gradient(
+  to right,
+  #f8a7aa ${clamp(leftRedStart)}%,
+  #ffff00 ${clamp(leftYellowStart)}%,
+  #00ff00 ${clamp(leftBlueEnd)}%,
+  #007bff ${clamp(leftBlueEnd)}%,
+  #007bff ${clamp(rightBlueEnd)}%,
+  #00ff00 ${clamp(rightBlueEnd)}%,
+  #ffff00 ${clamp(rightYellowEnd)}%,
+  #f8a7aa ${clamp(rightRedEnd)}%
+  )`;
+}
+
+
+function playReference(){
+
+ensureAudio();
+
+refOsc=audioCtx.createOscillator();
+refOsc.type=currentWaveform;
+refOsc.frequency.value=fixedFreq;
+
+refOsc.connect(audioCtx.destination);
+
+refOsc.start();
+
+}
+
+
+function stopReference(){
+
+if(refOsc){
+try{refOsc.stop();}catch(e){}
+refOsc.disconnect();
+refOsc=null;
+}
+
+}
+
+
+submitBtn.addEventListener("click",async()=>{
+
+stopReference();
+
+sliderOscs.forEach(o=>{
+if(o){
+try{o.stop()}catch(e){}
+o.disconnect();
+}
+});
+
+let totalError=0;
+
+sliders.forEach((s,i)=>{
+
+const guess=parseFloat(s.slider.value);
+const answer=answerFreqs[i];
+
+totalError+=Math.abs(guess-answer);
+
+});
+
+const avgError=totalError/answerFreqs.length;
+const ref=answerFreqs[0];
+
+let score=avgError>=ref*0.05?0:scaleAndClamp(avgError,ref*0.002,ref*0.05,100,0);
+
+appendScoreRow(`${avgError.toFixed(2)} Hz off`,score,"pastTimes",threshold);
+
+const newScoreAvg=await submitUnitScore({
+db,
+currentUser,
+unitId,
+unitName,
+score,
+scoreField:`${unitId}_Score`,
+countField:unitId,
+threshold,
+alpha
+});
+
+renderScoreHeader(newScoreAvg);
+
+resultText.textContent=`Score: ${score.toFixed(0)}%`;
+
+sliders.forEach((s,i)=>{
+
+const min=parseFloat(s.slider.min);
+const max=parseFloat(s.slider.max);
+const answer=answerFreqs[i];
+
+const percent=(answer-min)/(max-min);
+
+s.answerArrow.style.left=`${percent*100}%`;
+s.answerArrow.style.display="block";
+
+const pianoInterval=baseFreq*Math.pow(2,chosenChord.semitones[i]/12);
+const pianoPercent=(pianoInterval-min)/(max-min);
+
+s.pianoArrow.style.left=`${pianoPercent*100}%`;
+s.pianoArrow.style.display="block";
+
+setSliderGradient(s.slider,answerFreqs[i]);
+
+});
+
+submitBtn.disabled=true;
+
+startBtn.textContent="Try Again";
+startBtn.style.display="inline-block";
+
+});
+
+
+startBtn.addEventListener("click",()=>{
+
+resultText.textContent="";
+startBtn.style.display="none";
+
+setupRound();
+playReference();
+
+});
+
+
+const intervalContainer=document.getElementById("intervalTogglesContainer");
+
+chords.forEach(chord=>{
+
+const id=chord.abbreviation;
+
+const input=document.createElement("input");
+input.type="checkbox";
+input.className="btn-check interval-toggle";
+input.id=id;
+input.checked=true;
+
+const label=document.createElement("label");
+label.className="btn btn-outline-primary";
+label.htmlFor=id;
+label.textContent=id;
+
+intervalContainer.appendChild(input);
+intervalContainer.appendChild(label);
+
+});
+
+</script>
+
+<div id="footer"></div>
+
+</body>
+</html>

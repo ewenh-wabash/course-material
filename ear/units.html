@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="../../../bootstrap/css/bootstrap.min.css">
+  <script src="../../../bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../../ui.js"></script>
+  <style>
+    .header-medal {
+      font-size: 2.75em;
+      line-height: 0;
+      position: relative;
+      top: 0.1em;
+      display: inline-block;
+    }
+    .unclickable {
+      pointer-events: none;
+      cursor: arrow;
+    }
+    .header-trophy {
+      font-size: 1.3em;
+      line-height: 0;
+      position: relative;
+      top: 0.1em;
+      display: inline-block;
+    }
+    .unit-card {
+      cursor: pointer;
+    }
+    .unit-card.locked {
+      cursor: not-allowed;
+      background-color: #e9ecef;
+      color: #6c757d;
+      text-decoration: line-through;
+    }
+    .unit-flex {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .large-icon {
+      font-size: 1.5em;
+      line-height: 0;
+      position: relative;
+      top: 0.1em;
+      display: inline-block;
+    }
+    .unit-flex {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+        width: 100%; /* <-- this is the key */
+    }
+
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container mt-4">
+    <h1 id="moduleTitle"></h1>
+    <p id="moduleDescription" class="lead"></p>
+    <div id="unitsContainer" class="row g-4"></div>
+  </div>
+
+  <script type="module">
+    import { setupAuthUI, currentUser } from '../../../auth.js';
+    import { setupPage } from '../../../layout.js';
+    import { getFirestore, doc, getDoc, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { dictionary } from "../../../dictionary.js";
+
+    const db = getFirestore();
+    setupPage();
+
+    const unitsContainer = document.getElementById("unitsContainer");
+    const moduleTitleEl = document.getElementById("moduleTitle");
+    const moduleDescriptionEl = document.getElementById("moduleDescription");
+
+    // Get moduleId from query string or fallback to parent folder
+    const params = new URLSearchParams(window.location.search);
+    let moduleId = params.get("module");
+
+    if (!moduleId) {
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      moduleId = pathParts[pathParts.length - 2]; // parent folder
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const auth = setupAuthUI("loginBtn", "logoutBtn", "userInfo", "profilePic");
+
+      // Wait for login
+      await new Promise(resolve => {
+        const check = () => { if(currentUser) resolve(currentUser); else setTimeout(check,100); };
+        check();
+      });
+
+      // Load module info
+      const moduleSnap = await getDoc(doc(db, "modules", moduleId));
+      if (!moduleSnap.exists()) {
+        unitsContainer.innerHTML = "<p>Module not found.</p>";
+        return;
+      }
+      const moduleData = moduleSnap.data();
+      moduleTitleEl.textContent = moduleData.name;
+      moduleDescriptionEl.textContent = moduleData.description;
+
+      // Load all units
+      const unitsSnap = await getDocs(collection(db, "units"));
+      const units = [];
+      unitsSnap.forEach(u => units.push({ id: u.id, ...u.data() }));
+
+      // Filter units for this module
+      const moduleUnits = units.filter(u => u.module.id === moduleId)
+                               .sort((a, b) => a.num - b.num);
+
+      // Load user stats
+      const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+      const userData = userSnap.exists() ? userSnap.data() : {};
+
+      renderUnitCards(moduleUnits, userData);
+    });
+
+    function getUnitColor(avgScore) {
+      const score = Math.max(0, Math.min(100, avgScore));
+      if (score <= 50) {
+        const t = score / 50;
+        const r = Math.round(220 + (255 - 220) * t);
+        const g = Math.round(53 + (193 - 53) * t);
+        const b = Math.round(69 + (7 - 69) * t);
+        return `rgba(${r},${g},${b},0.35)`;
+      } else {
+        const t = (score - 50)/50;
+        const r = Math.round(255 + (40-255)*t);
+        const g = Math.round(193 + (167-193)*t);
+        const b = Math.round(7 + (69-7)*t);
+        return `rgba(${r},${g},${b},0.35)`;
+      }
+    }
+
+    function renderUnitCards(units, userData) {
+      unitsContainer.innerHTML = "";
+
+      units.forEach(unit => {
+        const avgScore = userData[unit.id + "_Score"] || 0;
+        const completions = userData[unit.id] || 0;
+        const isLocked = userData[unit.id] === undefined || userData[unit.id] === -1;
+
+        let medal = "";
+        // if (avgScore >= 100) medal = "&#128175;";
+        // else if (avgScore >= 90) medal = "&#129351;";
+        if (avgScore >= 90) medal = "&#129351;";
+        else if (avgScore >= 80) medal = "&#129352;";
+        else if (avgScore >= 70) medal = "&#129353;";
+
+        const col = document.createElement("div");
+        col.className = "col-12 col-md-6 col-lg-4";
+
+        const card = document.createElement("div");
+        card.className = "card h-100 shadow-sm unit-card";
+        if(isLocked) card.classList.add("locked");
+
+        const cardHeader = document.createElement("div");
+        cardHeader.className = "card-header pe-2 unit-flex";
+        cardHeader.innerHTML = `<span>${unit.num}. ${unit.name}</span>`;
+
+        const headerMiddle = document.createElement("span");
+        if(avgScore > 0) headerMiddle.innerHTML = `<span class="large-icon">${medal}</span>`;
+        cardHeader.appendChild(headerMiddle);
+
+        const headerRight = document.createElement("span");
+        if(completions > 0) headerRight.innerHTML += `<span class="ms-2">${completions}<span class="header-trophy">&#127942;</span></span>`;
+        cardHeader.appendChild(headerRight);
+
+        card.appendChild(cardHeader);
+
+        if(unit.description) {
+          const body = document.createElement("div");
+          body.className = "card-body";
+          body.textContent = unit.description;
+          card.appendChild(body);
+        }
+
+        if(!isLocked) {
+          card.onclick = () => {
+            window.location.href = `units/${moduleId}/${unit.id}.html`;
+          };
+        }
+
+        if(avgScore > 0 && !isLocked) {
+          card.style.backgroundColor = getUnitColor(avgScore);
+        }
+
+        col.appendChild(card);
+        unitsContainer.appendChild(col);
+      });
+    }
+
+  </script>
+
+  <div id="footer"></div>
+</body>
+</html>

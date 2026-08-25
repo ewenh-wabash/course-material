@@ -223,7 +223,7 @@ A rough schedule is included below—though this syllabus is fluid and subject t
 
 we'll dive right in before even touching the syllabus
 
-#### To-do
+#### To-do in lab
 
 - Finding a pitch on piano
 - Piano-to-piano dictation
@@ -255,6 +255,8 @@ how does music work?
 #### To-do before class
 
 - [Review: the staff](https://www.musictheory.net/lessons/10)
+- [Register for Artusi](https://wabash.instructure.com/courses/8208568/assignments/56936842)
+- Complete week 1 self-assessment
 
 #### To-do in class
 
@@ -267,7 +269,7 @@ how does music work?
 
 ### Lab: Soundwalk
 
-#### To-do
+#### To-do in lab
 
 - Wander around listening to sounds
 - Discuss the sounds around us
@@ -304,6 +306,7 @@ how sounds are arranged in time, duration, tempo, fermata
 - [Review: rest duration](https://www.musictheory.net/lessons/13)
 - [Review: dots and ties](https://www.musictheory.net/lessons/14)
 - [Read and complete: rhythm and note types](https://www.artusimusic.com/assignments/297114/wabash-college_music-6_chapter002/)
+- Complete week 2 self-assessment
 
 #### To-do in class
 
@@ -318,7 +321,7 @@ how sounds are arranged in time, duration, tempo, fermata
 
 ### Lab: Rhythm Dictation
 
-#### To-do
+#### To-do in lab
 
 - Practice writing down and performing back rhythms
 
@@ -355,6 +358,7 @@ the grids our brain makes up to organize rhythm
 - [Review: simple & compound meter](https://www.musictheory.net/lessons/15)
 - [Review: odd meters (advanced)](https://www.musictheory.net/lessons/16)
 - [Read and complete: rhythm beat and meter](https://www.artusimusic.com/assignments/297113/wabash-college_music-6_chapter001/)
+- Complete week 3 self-assessment
 
 #### To-do in class
 
@@ -367,7 +371,7 @@ the grids our brain makes up to organize rhythm
 
 ### Lab: Conducting
 
-#### To-do
+#### To-do in lab
 
 - Practice conducting in various meters and various tempos
 
@@ -403,6 +407,7 @@ notes + rhythms = melodies
 - [Review: the minor scale](https://www.musictheory.net/lessons/22)
 - [Review: scale degrees](https://www.musictheory.net/lessons/23)
 - [Read & complete: major scales](https://www.artusimusic.com/assignments/297120/wabash-college_music-6_chapter009/)
+- Complete week 4 self-assessment
 
 #### To-do in class
 
@@ -415,7 +420,7 @@ notes + rhythms = melodies
 
 ### Lab: Eurythmics - in Salter Hall
 
-#### To-do
+#### To-do in lab
 
 - Walking and clapping
 
@@ -447,6 +452,7 @@ how phrases and sections are combined into songs
 #### To-do before class
 
 - Turn in: melody composition project
+- Complete week 5 self-assessment
 
 #### To-do in class
 
@@ -462,7 +468,7 @@ how phrases and sections are combined into songs
 
 exploring structure and form by making music together
 
-#### To-do
+#### To-do in lab
 
 - Listening and writing down melodies
 
@@ -494,6 +500,7 @@ How three pitches relate to each other
 #### To-do before class
 
 - [Read & complete: interval and triad types](https://www.artusimusic.com/assignments/297119/wabash-college_music-6_chapter011/)
+- Complete week 5 self-assessment
 
 #### To-do in class
 
@@ -507,7 +514,7 @@ How three pitches relate to each other
 
 we may not have perfect pitch, but we can work on relative pitch
 
-#### To-do
+#### To-do in lab
 
 - Listening and internalizing intervals (ascending / descending / simultaneous)
 
@@ -535,7 +542,8 @@ how triads relate to scales
 
 #### To-do before class
 
-- Turn in: score elements ID challenge
+- Complete score elements ID challenge
+- Complete week 6 self-assessment
 
 #### To-do in class
 
@@ -547,7 +555,7 @@ how triads relate to scales
 
 ### Lab: Harmonic Dictation
 
-#### To-do
+#### To-do in lab
 
 - Listening and writing down chord progressions
 
@@ -568,6 +576,7 @@ melodies intervals, chords, and scales can all be inverted
 #### To-do before class
 
 - [Brain training: intervals pt.1 (generic intervals)](https://www.artusimusic.com/assignments/297102/wabash-college_music-6_chapter003/)
+- Complete week 7 self-assessment
 
 #### To-do in class
 
@@ -581,7 +590,7 @@ melodies intervals, chords, and scales can all be inverted
 
 ### Lab: Hearing Inversions
 
-#### To-do
+#### To-do in lab
 
 - Listening for and identifying inversions
 
@@ -609,6 +618,7 @@ melodies intervals, chords, and scales can all be inverted
 #### To-do before class
 
 - [Brain training: intervals pt.2 (specific)](https://www.artusimusic.com/assignments/297103/wabash-college_music-6_chapter004/)
+- Complete week 8 self-assessment
 
 #### To-do in class
 
@@ -620,7 +630,7 @@ melodies intervals, chords, and scales can all be inverted
 
 ### Lab: Playing Harmony
 
-#### To-do
+#### To-do in lab
 
 - Making music together with harmony in mind
 
@@ -643,6 +653,7 @@ melodies intervals, chords, and scales can all be inverted
 #### To-do before class
 
 - Turn in: songwriting project
+- Complete week 9 self-assessment
 
 #### To-do in class
 
@@ -655,7 +666,7 @@ melodies intervals, chords, and scales can all be inverted
 
 ### Lab: Sight Singing
 
-#### To-do
+#### To-do in lab
 
 - Singing without practicing beforehand
 
@@ -678,6 +689,7 @@ melodies intervals, chords, and scales can all be inverted
 #### To-do before class
 
 - [Brain training: chords](https://www.artusimusic.com/assignments/297105/wabash-college_music-6_chapter006/)
+- Complete week 10 self-assessment
 
 #### To-do in class
 
@@ -689,7 +701,7 @@ melodies intervals, chords, and scales can all be inverted
 
 ### Lab: Mode Identification
 
-#### To-do
+#### To-do in lab
 
 - Identify modes by listening
 
@@ -710,6 +722,10 @@ melodies intervals, chords, and scales can all be inverted
 
 ### Arranging
 
+#### To-do before class
+
+- Complete week 11 self-assessment
+
 #### To-do in class
 
 - Talk about the challenges of arranging music
@@ -720,7 +736,7 @@ melodies intervals, chords, and scales can all be inverted
 
 ### Lab: Instrument Recognition
 
-#### To-do
+#### To-do in lab
 
 - Identify instruments by listening
 
@@ -765,6 +781,7 @@ melodies intervals, chords, and scales can all be inverted
 #### To-do before class
 
 - [Brain training: interval review and melodic dictation](https://www.artusimusic.com/assignments/297107/wabash-college_music-6_chapter008/)
+- Complete week 12 self-assessment
 
 #### To-do in class
 
@@ -777,7 +794,7 @@ melodies intervals, chords, and scales can all be inverted
 
 ### Lab: Dictation, Analysis
 
-#### To-do
+#### To-do in lab
 
 - Somewhat open-topic—we'll do dictation of some sort
 
@@ -789,7 +806,7 @@ melodies intervals, chords, and scales can all be inverted
 
 #### To-do before class
 
-- Complete: vocab challenge
+- Complete: vocabulary challenge
 
 #### To-do in class
 
@@ -804,6 +821,7 @@ melodies intervals, chords, and scales can all be inverted
 #### To-do before class
 
 - [Brain training: harmonic dictation](https://www.artusimusic.com/assignments/297108/wabash-college_music-6_chapter009/)
+- Complete week 13 self-assessment
 
 #### To-do in class
 
@@ -815,7 +833,7 @@ melodies intervals, chords, and scales can all be inverted
 
 ### Lab: Experimentalism
 
-#### To-do
+#### To-do in lab
 
 - Open-topic but with a focus on experimentalism and avant-garde music
 
@@ -832,6 +850,7 @@ melodies intervals, chords, and scales can all be inverted
 #### To-do in class
 
 - Open-topic
+- Complete week 14 (final) self-assessment
 
 ---
 
@@ -839,7 +858,7 @@ melodies intervals, chords, and scales can all be inverted
 
 ### 1:30–4:30pm Full Song Analysis Challenge
 
-#### To-do
+#### To-do in lab
 
 - I'll play a recording and lyrics and ask you to identify form
 - Then I'll give you the form and ask you to identify the structure

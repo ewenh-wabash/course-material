@@ -60,6 +60,14 @@ const SCHEDULE_DATA = [
       {
         "text": "Review: the staff",
         "url": "https://www.musictheory.net/lessons/10"
+      },
+      {
+        "text": "Register for Artusi",
+        "url": "https://wabash.instructure.com/courses/8208568/assignments/56936842"
+      },
+      {
+        "text": "Complete week 1 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -143,6 +151,10 @@ const SCHEDULE_DATA = [
       {
         "text": "Read and complete: rhythm and note types",
         "url": "https://www.artusimusic.com/assignments/297114/wabash-college_music-6_chapter002/"
+      },
+      {
+        "text": "Complete week 2 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -234,6 +246,10 @@ const SCHEDULE_DATA = [
       {
         "text": "Read and complete: rhythm beat and meter",
         "url": "https://www.artusimusic.com/assignments/297113/wabash-college_music-6_chapter001/"
+      },
+      {
+        "text": "Complete week 3 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -313,6 +329,10 @@ const SCHEDULE_DATA = [
       {
         "text": "Read & complete: major scales",
         "url": "https://www.artusimusic.com/assignments/297120/wabash-college_music-6_chapter009/"
+      },
+      {
+        "text": "Complete week 4 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -375,6 +395,10 @@ const SCHEDULE_DATA = [
     "todoBeforeClass": [
       {
         "text": "Turn in: melody composition project",
+        "url": null
+      },
+      {
+        "text": "Complete week 5 self-assessment",
         "url": null
       }
     ],
@@ -443,6 +467,10 @@ const SCHEDULE_DATA = [
       {
         "text": "Read & complete: interval and triad types",
         "url": "https://www.artusimusic.com/assignments/297119/wabash-college_music-6_chapter011/"
+      },
+      {
+        "text": "Complete week 5 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -505,7 +533,11 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "Turn in: score elements ID challenge",
+        "text": "Complete score elements ID challenge",
+        "url": null
+      },
+      {
+        "text": "Complete week 6 self-assessment",
         "url": null
       }
     ],
@@ -552,6 +584,10 @@ const SCHEDULE_DATA = [
       {
         "text": "Brain training: intervals pt.1 (generic intervals)",
         "url": "https://www.artusimusic.com/assignments/297102/wabash-college_music-6_chapter003/"
+      },
+      {
+        "text": "Complete week 7 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -619,6 +655,10 @@ const SCHEDULE_DATA = [
       {
         "text": "Brain training: intervals pt.2 (specific)",
         "url": "https://www.artusimusic.com/assignments/297103/wabash-college_music-6_chapter004/"
+      },
+      {
+        "text": "Complete week 8 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -668,6 +708,10 @@ const SCHEDULE_DATA = [
     "todoBeforeClass": [
       {
         "text": "Turn in: songwriting project",
+        "url": null
+      },
+      {
+        "text": "Complete week 9 self-assessment",
         "url": null
       }
     ],
@@ -723,6 +767,10 @@ const SCHEDULE_DATA = [
       {
         "text": "Brain training: chords",
         "url": "https://www.artusimusic.com/assignments/297105/wabash-college_music-6_chapter006/"
+      },
+      {
+        "text": "Complete week 10 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -773,7 +821,12 @@ const SCHEDULE_DATA = [
     "date": "Nov 17",
     "title": "Arranging",
     "description": "",
-    "todoBeforeClass": [],
+    "todoBeforeClass": [
+      {
+        "text": "Complete week 11 self-assessment",
+        "url": null
+      }
+    ],
     "todoDuringClass": [
       {
         "text": "Talk about the challenges of arranging music",
@@ -857,6 +910,10 @@ const SCHEDULE_DATA = [
       {
         "text": "Brain training: interval review and melodic dictation",
         "url": "https://www.artusimusic.com/assignments/297107/wabash-college_music-6_chapter008/"
+      },
+      {
+        "text": "Complete week 12 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -894,7 +951,7 @@ const SCHEDULE_DATA = [
     "description": "",
     "todoBeforeClass": [
       {
-        "text": "Complete: vocab challenge",
+        "text": "Complete: vocabulary challenge",
         "url": null
       }
     ],
@@ -916,6 +973,10 @@ const SCHEDULE_DATA = [
       {
         "text": "Brain training: harmonic dictation",
         "url": "https://www.artusimusic.com/assignments/297108/wabash-college_music-6_chapter009/"
+      },
+      {
+        "text": "Complete week 13 self-assessment",
+        "url": null
       }
     ],
     "todoDuringClass": [
@@ -961,6 +1022,10 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [
       {
         "text": "Open-topic",
+        "url": null
+      },
+      {
+        "text": "Complete week 14 (final) self-assessment",
         "url": null
       }
     ],

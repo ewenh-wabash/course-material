@@ -76,7 +76,7 @@ def _build_week_card_html(week: dict) -> str:
     if week.get("fourthHour"):
         todo_items = "".join(
             _build_todo_item_html(item) for item in week.get("todo", []))
-        columns_html = (f'<div class="week-column"><h4>To-do</h4>'
+        columns_html = (f'<div class="week-column"><h4>To-do in lab</h4>'
                         f'<ul class="check-list">{todo_items}</ul></div>')
     else:
         before_html = _build_todo_column_html("To-do before class",

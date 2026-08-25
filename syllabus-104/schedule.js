@@ -13,19 +13,15 @@ const SCHEDULE_DATA = [
         "url": null
       },
       {
-        "text": "discuss projects",
+        "text": "Discuss projects and communal viewing",
         "url": null
       },
       {
-        "text": "communal viewing",
+        "text": "Explore Film Philosophy",
         "url": null
       },
       {
-        "text": "philosophy",
-        "url": null
-      },
-      {
-        "text": "broad discussion of music and film",
+        "text": "Broad discussion of music and film",
         "url": null
       }
     ],
@@ -121,7 +117,7 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [],
     "todo": [
       {
-        "text": "Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.",
+        "text": "Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.",
         "url": null
       }
     ],
@@ -138,8 +134,8 @@ const SCHEDULE_DATA = [
         "url": null
       },
       {
-        "text": "Watch & Submit Reflection: Pontypool (Youtube)",
-        "url": null
+        "text": "Watch & Submit Reflection: Pontypool - Youtube",
+        "url": "https://www.youtube.com/watch?v=dLWWwAw2Zyc"
       }
     ],
     "todoDuringClass": [
@@ -152,7 +148,7 @@ const SCHEDULE_DATA = [
         "url": null
       },
       {
-        "text": "discuss non-jumpscare uses of sound",
+        "text": "Discuss non-jumpscare uses of sound",
         "url": null
       },
       {
@@ -180,7 +176,7 @@ const SCHEDULE_DATA = [
         "url": null
       },
       {
-        "text": "Discuss and listen to classic hollywood scores and their early film influences",
+        "text": "Discuss and listen to classic Hollywood scores and their early film influences",
         "url": null
       }
     ],
@@ -231,7 +227,7 @@ const SCHEDULE_DATA = [
         "url": null
       },
       {
-        "text": "Watch: Mini-documentary on the dies Irae",
+        "text": "Watch: Mini-documentary on the Dies Irae",
         "url": null
       }
     ],
@@ -257,7 +253,7 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [],
     "todo": [
       {
-        "text": "Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.",
+        "text": "Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.",
         "url": null
       }
     ],
@@ -356,7 +352,7 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [],
     "todo": [
       {
-        "text": "Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.",
+        "text": "Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.",
         "url": null
       }
     ],
@@ -439,7 +435,7 @@ const SCHEDULE_DATA = [
         "url": null
       },
       {
-        "text": "Home by 10:30",
+        "text": "Back on campus by 10:30pm",
         "url": null
       }
     ],
@@ -503,7 +499,7 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [],
     "todo": [
       {
-        "text": "Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.",
+        "text": "Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.",
         "url": null
       }
     ],
@@ -591,8 +587,8 @@ const SCHEDULE_DATA = [
         "url": null
       },
       {
-        "text": "Watch & Submit Reflection: The Burbs (YouTube)",
-        "url": null
+        "text": "Watch & Submit Reflection: The Burbs - YouTube",
+        "url": "https://www.youtube.com/watch?v=GW5AjXOWo6E"
       }
     ],
     "todoDuringClass": [
@@ -633,7 +629,7 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [],
     "todo": [
       {
-        "text": "Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.",
+        "text": "Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.",
         "url": null
       }
     ],
@@ -646,7 +642,7 @@ const SCHEDULE_DATA = [
     "description": "how a French composition style from the 1940s made it to Hollywood",
     "todoBeforeClass": [
       {
-        "text": "Read",
+        "text": "Read: Aiki Aubrey Candyman Interview",
         "url": "https://www.motionpictures.org/2021/08/how-candyman-composer-robert-aiki-aubrey-lowe-manipulated-madness-into-music"
       },
       {
@@ -704,7 +700,7 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [],
     "todo": [
       {
-        "text": "Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.",
+        "text": "Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.",
         "url": null
       }
     ],
@@ -762,7 +758,7 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [],
     "todo": [
       {
-        "text": "Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.",
+        "text": "Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.",
         "url": null
       }
     ],
@@ -844,7 +840,7 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [],
     "todo": [
       {
-        "text": "Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.",
+        "text": "Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.",
         "url": null
       }
     ],
@@ -907,7 +903,7 @@ const SCHEDULE_DATA = [
     "todoDuringClass": [],
     "todo": [
       {
-        "text": "Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.",
+        "text": "Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.",
         "url": null
       }
     ],

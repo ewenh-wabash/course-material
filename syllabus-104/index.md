@@ -9,9 +9,11 @@ Fall 2026
 - Fine Arts Center M-140
 
 ### Drop in Office Hours
+
 - MWF - usually before 3:00
 - TR - until 1:10, after class
 - or schedule an appointment
+
 - Fine Arts Center M-121
 
 ### Instructor
@@ -52,13 +54,13 @@ This is subject to change if needed. Specifics are on [Canvas](http://canvas.wab
 
 There are no textbook or other material to purchase. If you have access to films through the library, DVDs, or a streaming service, you may use those—but you are not required to pay for a streaming service for this class.
 
-- Films will be streaming on [Swank](https://login.wcproxy.palni.edu/login?url=https://digitalcampus.swankmp.net/wabash284421/)
+- Films will be streaming on [Swank](https://digitalcampus-swankmp-net.wcproxy.palni.edu/wabash284421)
 - Course content will be on [Canvas](http://canvas.wabash.edu)
 - Classroom [Code of Conduct](#)
 
 ## Grades
 
-Final grades are calculated as a total of the projects above, the assessments below, and any extra credit. Rounding is not guaranteed and is up to my discression. There is no D+ or D-. See more information on credit/no credit and GPA on the [Academic Policies](https://bulletin.wabash.edu/academic-policies/grading-system/) page.
+Final grades are calculated as a total of the projects and assessments and any extra credit. Rounding is not guaranteed and is up to my discression. There is no D+ or D-. See more information on credit/no credit and GPA on the [Academic Policies](https://bulletin.wabash.edu/academic-policies/grading-system/) page.
 
 Assessments can generally be retaken, if you reach out to me to discuss what happened, strategize for success, and we agree on a good time to do the retake.
 
@@ -119,14 +121,14 @@ Wabash asks a great deal from its future leaders. It is not enough to attend cla
 
 ## *on fear...*
 
-**This is not a scary class**, but we will watch, hear, and discuss scary things here. It’s okay to be frightened—the point of the media we’re studying is to scare you. But if something is too much, you don’t have to force yourself to endure it. In this class, It is always okay to leave if a film, score, or conversation becomes too much. It’s okay to close your eyes, plug your ears, or walk out of the room if something feels too intense or if you need a breather. It’s okay to look up [jumpscares](https://wheresthejump.com) or [trigger warnings](https://www.doesthedogdie.com)beforehand and identify movies you don’t want to consume for class. If there are specific movies or topics you want to avoid, send me an email so we can figure out another way for you to engage with the material.
+**This is not a scary class**, but we will watch, hear, and discuss scary things here. It’s okay to be frightened—the point of the media we’re studying is to scare you. But if something is too much, you don’t have to force yourself to endure it. In this class, It is always okay to leave if a film, score, or conversation becomes too much. It’s okay to close your eyes, plug your ears, or walk out of the room if something feels too intense or if you need a breather. It’s okay to look up [jumpscares](https://wheresthejump.com) or [trigger warnings](https://www.doesthedogdie.com) beforehand and identify movies you don’t want to consume for class. If there are specific movies or topics you want to avoid, send me an [email](mailto:ewenh@wabash.edu) so we can figure out another way for you to engage with the material.
 
 Some good resources for content warnings:
 
 - [DoesTheDogDie.com](https://www.doesthedogdie.com) (trigger and content warnings)
 - [IMDB.com](https://www.imdb.com/title/tt0075005/parentalguide)'s parental guides (sex/nudity, violence/gore, alcohol/drugs, frightening scenes)
 - [WheresTheJump.com](https://wheresthejump.com) (timestampted jumpscare locations)
-- [Jumpscare Subtitles](https://google.com) (my script that takes [jumpscare](https://wheresthejump.com) or [translation](https://kickasssubtitles.com/en/search) subtitles and syncs them to the movie)
+- [Jumpscare Subtitles](https://ewenh-wabash.github.io/course-material/subtitles.html) (my script that takes [jumpscare](https://wheresthejump.com) or [translation](https://kickasssubtitles.com/en/search) subtitles and syncs them to the movie - download the jumpscare files for the [courselist](https://ewenh-wabash.github.io/course-material/subtitle_files.zip))
 
 Our goal is to study fiction, but sometimes reality sneaks in. There are lots of movies we won't watch because real-life bad things found their way into the fiction. This course will focus on **fictional** horror by avoiding the following:
 
@@ -162,7 +164,7 @@ The only truly inflexible rule I have is that I am unable to accept work beyond 
 
 **I expect you to attend every class and event**. However, with enough notice, I am generous with excused absences. Let me know as soon as you know you'll need to miss class—for sports, illness, emergencies, etc.
 
-If you miss a class (excused or not), I still expect you to engage with the day's material to receive full attendance/participation points. It is not possible for me to re-teach a previous lecture following an absense, so asking "what did I miss in class yesterday" is not a viable way to engage with that day's material. [**Contact me**](mailto:ewenh@wabash.edu) so we can agree on the scope of make-up work required to receive full points.
+If you miss a class (excused or not), I still expect you to engage with the day's material to receive full attendance/participation points. It is not possible for me to re-teach a previous lecture following an absence, so asking "what did I miss in class yesterday" is not a viable way to engage with that day's material. [**Contact me**](mailto:ewenh@wabash.edu) so we can agree on the scope of make-up work required to receive full points.
 
 ### Late Work
 
@@ -178,15 +180,15 @@ I love extra credit! [**Reach out**](mailto:ewenh@wabash.edu) or **drop by my of
 
 Using AI for this class is like going to the gym, sitting on a bench, and watching a video of someone else working out.
 
-Your brain is a muscle. Your attention span is a muscle. Your analytic prowess is a muscle. You are here to exercise your brain. Generatie AI use can lead to [cognitive decline](ai-cognitive-decline.pdf), and it can [make you more dependent](ai-dependence-and-cognitive-intertia.pdf) on it in the future (cognitive intertia). Using it in class is lazy and rude—and it's an academic integrity violation. Last year, we had a record breaking amount of academic dishonestly, and that was overwhelmingly from unauthorized use of AI. It’s too easy to circumvent the friction that you’re here to experience.
+Your brain is a muscle. Your attention span is a muscle. Your analytic prowess is a muscle. You are here to exercise your brain. Generative AI use can lead to [cognitive decline](ai-cognitive-decline.pdf), and it can [make you more dependent](ai-dependence-and-cognitive-intertia.pdf) on it in the future (cognitive intertia). Using it in class is lazy and rude—and it's an academic integrity violation. Last year, we had a record breaking amount of academic dishonestly, and that was overwhelmingly from unauthorized use of AI. It’s too easy to circumvent the friction that you’re here to experience.
 
 I don’t want polished, lazy, ChatGPT-fueled responses from you. I want weird, buzzy, human writing that crackles with the uncertainty of original thought. Do not use generative AI, including but not limited to:
 
-- generate part of an assignment
-- get summaries of movies
-- wordsmith your written work
-- summarize ideas or arguments
-- help format an email or other written document
+- generating part of an assignment
+- getting summaries of movies
+- wordsmithing your written work
+- summarizing ideas or arguments
+- helping format an email or other written document
 
 **Use of generative AI in any similar context is a strike on your academic record**—and possible expulsion if you already have a strike.
 
@@ -228,10 +230,9 @@ A rough schedule is included below—though this syllabus is fluid and subject t
 #### To-do in class
 
 - Syllabus discussion
-- discuss projects
-- communal viewing
-- philosophy
-- broad discussion of music and film
+- Discuss projects and communal viewing
+- Explore Film Philosophy
+- Broad discussion of music and film
 
 ---
 
@@ -294,7 +295,7 @@ physiology of jumpscares, the cat scare, history, philosophy, and creative ethic
 
 #### To-do
 
-- Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.
+- Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.
 
 ---
 
@@ -307,13 +308,13 @@ scary movies relationship with radio dramas, and the use of sound to set the moo
 #### To-do before class
 
 - Submit Reflection: Candyman
-- Watch & Submit Reflection: Pontypool (Youtube)
+- [Watch & Submit Reflection: Pontypool - Youtube](https://www.youtube.com/watch?v=dLWWwAw2Zyc)
 
 #### To-do in class
 
 - Discuss Pontypool
 - Discuss the history of film and the relationship scary movies have to radio dramas
-- discuss non-jumpscare uses of sound
+- Discuss non-jumpscare uses of sound
 - Discuss Candyman
 
 ---
@@ -331,7 +332,7 @@ romantic era's influence on modern film
 #### To-do in class
 
 - Discuss Psycho
-- Discuss and listen to classic hollywood scores and their early film influences
+- Discuss and listen to classic Hollywood scores and their early film influences
 
 ---
 
@@ -362,7 +363,7 @@ how very old and very new classical music influences film
 #### To-do before class
 
 - Submit: Film Score Project
-- Watch: Mini-documentary on the dies Irae
+- Watch: Mini-documentary on the Dies Irae
 
 #### To-do in class
 
@@ -377,7 +378,7 @@ how very old and very new classical music influences film
 
 #### To-do
 
-- Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.
+- Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.
 
 ---
 
@@ -441,7 +442,7 @@ pastiche, irony, hyperreality, rejection of metanarratives
 
 #### To-do
 
-- Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.
+- Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.
 
 ---
 
@@ -492,7 +493,7 @@ shopping, dinner, and film screening
 - Meet at 3:00 to leave early and go to Saraga in Indianapolis
 - Dinner at Tapas Ñ 5:30
 - Pan's Labyrinth screening at 7:00
-- Home by 10:30
+- Back on campus by 10:30pm
 
 ---
 
@@ -537,7 +538,7 @@ composer/directors, temp tracks, method writing, blind writing
 
 #### To-do
 
-- Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.
+- Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.
 
 ---
 
@@ -598,7 +599,7 @@ the scary sounds that aren't music
 #### To-do before class
 
 - Watch: Mini-documentary on the Wilhelm Scream
-- Watch & Submit Reflection: The Burbs (YouTube)
+- [Watch & Submit Reflection: The Burbs - YouTube](https://www.youtube.com/watch?v=GW5AjXOWo6E)
 
 #### To-do in class
 
@@ -628,7 +629,7 @@ time stretching, LFO, misophonia, grima, psychoacoustics
 
 #### To-do
 
-- Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.
+- Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.
 
 ---
 
@@ -640,7 +641,7 @@ how a French composition style from the 1940s made it to Hollywood
 
 #### To-do before class
 
-- [Read](https://www.motionpictures.org/2021/08/how-candyman-composer-robert-aiki-aubrey-lowe-manipulated-madness-into-music)
+- [Read: Aiki Aubrey Candyman Interview](https://www.motionpictures.org/2021/08/how-candyman-composer-robert-aiki-aubrey-lowe-manipulated-madness-into-music)
 - Resubmit: Score Review Project
 - Submit Reflection: The Exorcist
 
@@ -674,7 +675,7 @@ is it music, is it sound effects?
 
 #### To-do
 
-- Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.
+- Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.
 
 ---
 
@@ -714,7 +715,7 @@ music the characters can hear
 
 #### To-do
 
-- Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.
+- Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.
 
 ---
 
@@ -767,7 +768,7 @@ the power of 'ma' (間 the silence between noises)
 
 #### To-do
 
-- Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.
+- Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.
 
 ---
 
@@ -806,7 +807,7 @@ A survey of scary (and not so scary) movie musicals
 
 #### To-do
 
-- Attend screening and write reflection after. If you have an excused absense you can arrange to view the film on your own before the next class.
+- Attend screening and write reflection after. If you have an excused absence you can arrange to view the film on your own before the next class.
 
 ---
 

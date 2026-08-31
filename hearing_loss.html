@@ -641,15 +641,62 @@
     };
   }
 
+const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
+  const _magOut = new Float32Array(AUDIOGRAM_FREQS.length);
+  const _phaseOut = new Float32Array(AUDIOGRAM_FREQS.length);
+
+  // Sets each band filter's gain so that the *combined, cascaded* response
+  // at each audiogram frequency matches the target loss value — correcting
+  // for the fact that adjacent peaking filters (Q=1.2) overlap and their
+  // dB responses stack when cascaded. Without this, a "mild" loss profile
+  // ends up sounding far more attenuated than the audiogram shows, because
+  // neighboring bands compound each other's cut.
+
+  // To model the gap between audiometric threshold and perceived loudness:
+  const SEVERITY_SCALE = 0.4;
+
   function applyProfile(chain, values) {
     if (!chain) return;
-    chain.shelf.gain.value = -values[250];
-    chain.p500.gain.value = -values[500];
-    chain.p1000.gain.value = -values[1000];
-    chain.p2000.gain.value = -values[2000];
-    chain.p4000.gain.value = -values[4000];
-    chain.p8000.gain.value = -values[8000];
+    const filters = [chain.shelf, chain.p500, chain.p1000, chain.p2000, chain.p4000, chain.p8000];
+    const targetDb = AUDIOGRAM_FREQS.map(f => -values[f] * SEVERITY_SCALE);
+
+    // Start from the naive direct-assignment values as an initial guess.
+    let gains = targetDb.slice();
+
+    for (let iter = 0; iter < 8; iter++) {
+      filters.forEach((f, i) => { f.gain.value = gains[i]; });
+
+      // Measure actual combined dB at each target frequency by summing
+      // every filter's contribution there (this captures cross-talk from
+      // neighboring bands, not just each filter's own center).
+      const actualDb = new Array(AUDIOGRAM_FREQS.length).fill(0);
+      filters.forEach(f => {
+        f.getFrequencyResponse(CORRECTION_FREQS, _magOut, _phaseOut);
+        for (let i = 0; i < AUDIOGRAM_FREQS.length; i++) {
+          actualDb[i] += 20 * Math.log10(_magOut[i]);
+        }
+      });
+
+      let maxErr = 0;
+      for (let i = 0; i < AUDIOGRAM_FREQS.length; i++) {
+        const err = targetDb[i] - actualDb[i];
+        gains[i] += err;
+        maxErr = Math.max(maxErr, Math.abs(err));
+      }
+      if (maxErr < 0.3) break; // converged
+    }
+
+    filters.forEach((f, i) => { f.gain.value = gains[i]; });
   }
+  // function applyProfile(chain, values) {
+  //   if (!chain) return;
+  //   chain.shelf.gain.value = -values[250];
+  //   chain.p500.gain.value = -values[500];
+  //   chain.p1000.gain.value = -values[1000];
+  //   chain.p2000.gain.value = -values[2000];
+  //   chain.p4000.gain.value = -values[4000];
+  //   chain.p8000.gain.value = -values[8000];
+  // }
 
   function applyAgeCutoff(chain, freq) {
     if (!chain) return;
@@ -1075,8 +1122,15 @@
       x: 12, y: CHART.h / 2, 'text-anchor': 'middle', 'font-size': '10',
       fill: dimText, transform: `rotate(-90 12 ${CHART.h / 2})`
     });
-    yTitle.textContent = 'dB HL (loss)';
+    yTitle.innerHTML = '← more&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hearing Loss (dB)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;less →';
     audiogramSvg.appendChild(yTitle);
+
+    const xTitle = el('text', {
+        x: CHART.w / 2, y: CHART.h - CHART.mBottom + 30, 'text-anchor': 'middle',
+        'font-size': '10', fill: dimText, 'font-family': 'inherit'
+      });
+    xTitle.innerHTML = 'Frequency (Hz)';
+    audiogramSvg.appendChild(xTitle);
 
     // age rolloff line
     const age = parseFloat(ageSlider.value);

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sound Walk — Ambient Amplifier</title>
+<style>
+  :root{
+    --bg:#0b0d10;
+    --panel:#15181d;
+    --accent:#7fe0c9;
+    --accent-dim:#2c4a44;
+    --text:#eef1f0;
+    --text-dim:#8a938f;
+    --danger:#e0817f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:radial-gradient(circle at 50% 0%, #1a1f24, var(--bg) 60%);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .card{
+    width:100%;
+    max-width:420px;
+    background:var(--panel);
+    border-radius:20px;
+    padding:32px 28px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.4);
+    text-align:center;
+  }
+  h1{
+    font-size:1.3rem;
+    font-weight:600;
+    margin:0 0 6px;
+    letter-spacing:0.02em;
+  }
+  .sub{
+    color:var(--text-dim);
+    font-size:0.9rem;
+    margin-bottom:28px;
+    line-height:1.4;
+  }
+  .ring-wrap{
+    position:relative;
+    width:180px;
+    height:180px;
+    margin:0 auto 28px;
+  }
+  #meterRing{
+    width:100%;
+    height:100%;
+    transform:rotate(-90deg);
+  }
+  #meterRing circle{
+    fill:none;
+    stroke-width:8;
+  }
+  .ring-bg{ stroke:#242830; }
+  .ring-fg{
+    stroke:var(--accent);
+    stroke-linecap:round;
+    transition:stroke-dashoffset 0.08s linear;
+  }
+  #toggleBtn{
+    position:absolute;
+    top:0; left:0; right:0; bottom:0;
+    margin:auto;
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    border:none;
+    background:var(--accent-dim);
+    color:var(--accent);
+    font-size:0.95rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background 0.2s, color 0.2s, transform 0.1s;
+  }
+  #toggleBtn:active{ transform:scale(0.96); }
+  #toggleBtn.on{
+    background:var(--accent);
+    color:#0b0d10;
+  }
+  .control{
+    text-align:left;
+    margin-bottom:18px;
+  }
+  .control label{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.85rem;
+    color:var(--text-dim);
+    margin-bottom:8px;
+  }
+  .control label span:last-child{
+    color:var(--text);
+    font-weight:600;
+  }
+  input[type="range"]{
+    width:100%;
+    accent-color:var(--accent);
+  }
+  .warning{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    background:rgba(224,129,127,0.08);
+    border:1px solid rgba(224,129,127,0.25);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-top:20px;
+    font-size:0.8rem;
+    color:#e3b3b1;
+    text-align:left;
+    line-height:1.4;
+  }
+  .status{
+    margin-top:18px;
+    font-size:0.8rem;
+    color:var(--text-dim);
+    min-height:18px;
+  }
+  .status.error{ color:var(--danger); }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Ambient Amplifier</h1>
+  <div class="sub">Put on headphones, tap start, and the mic-picked-up sound around you plays back boosted in your ears — live.</div>
+
+  <div class="ring-wrap">
+    <svg id="meterRing" viewBox="0 0 180 180">
+      <circle class="ring-bg" cx="90" cy="90" r="80"></circle>
+      <circle class="ring-fg" id="ringFg" cx="90" cy="90" r="80"
+        stroke-dasharray="502" stroke-dashoffset="502"></circle>
+    </svg>
+    <button id="toggleBtn">Start</button>
+  </div>
+
+  <div class="control">
+    <label><span>Boost</span><span id="gainVal">2.0x</span></label>
+    <input type="range" id="gainSlider" min="0.5" max="6" step="0.1" value="2">
+  </div>
+
+  <div class="warning">
+    ⚠️ <div>Use headphones, not the speaker. Mic-to-speaker without headphones causes loud feedback.</div>
+  </div>
+
+  <div class="status" id="statusEl">Not connected</div>
+</div>
+
+<script>
+(() => {
+  const toggleBtn = document.getElementById('toggleBtn');
+  const gainSlider = document.getElementById('gainSlider');
+  const gainVal = document.getElementById('gainVal');
+  const statusEl = document.getElementById('statusEl');
+  const ringFg = document.getElementById('ringFg');
+  const CIRC = 2 * Math.PI * 80;
+
+  let audioCtx = null;
+  let sourceNode = null;
+  let gainNode = null;
+  let analyser = null;
+  let stream = null;
+  let rafId = null;
+  let running = false;
+
+  function setStatus(msg, isError = false) {
+    statusEl.textContent = msg;
+    statusEl.className = 'status' + (isError ? ' error' : '');
+  }
+
+  function updateMeter() {
+    if (!analyser) return;
+    const data = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(data);
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+      const v = (data[i] - 128) / 128;
+      sum += v * v;
+    }
+    const rms = Math.sqrt(sum / data.length);
+    const level = Math.min(1, rms * 4); // scale for visibility
+    ringFg.style.strokeDashoffset = CIRC * (1 - level);
+    rafId = requestAnimationFrame(updateMeter);
+  }
+
+  async function start() {
+    try {
+      setStatus('Requesting microphone…');
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+          channelCount: 1
+        }
+      });
+
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+        latencyHint: 'interactive'
+      });
+      await audioCtx.resume();
+
+      sourceNode = audioCtx.createMediaStreamSource(stream);
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = parseFloat(gainSlider.value);
+
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+
+      sourceNode.connect(gainNode);
+      gainNode.connect(analyser);
+      gainNode.connect(audioCtx.destination);
+
+      running = true;
+      toggleBtn.textContent = 'Stop';
+      toggleBtn.classList.add('on');
+      setStatus('Live — listening through your headphones');
+      updateMeter();
+    } catch (err) {
+      console.error(err);
+      setStatus('Mic access failed: ' + err.message, true);
+      stop();
+    }
+  }
+
+  function stop() {
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    ringFg.style.strokeDashoffset = CIRC;
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+    if (audioCtx) {
+      audioCtx.close();
+      audioCtx = null;
+    }
+    sourceNode = null;
+    gainNode = null;
+    analyser = null;
+    toggleBtn.textContent = 'Start';
+    toggleBtn.classList.remove('on');
+    if (statusEl.textContent.startsWith('Live')) setStatus('Stopped');
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    if (running) stop();
+    else start();
+  });
+
+  gainSlider.addEventListener('input', () => {
+    const v = parseFloat(gainSlider.value);
+    gainVal.textContent = v.toFixed(1) + 'x';
+    if (gainNode) gainNode.gain.value = v;
+  });
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setStatus('This browser does not support microphone access.', true);
+    toggleBtn.disabled = true;
+  }
+
+  window.addEventListener('beforeunload', stop);
+})();
+</script>
+
+</body>
+</html>

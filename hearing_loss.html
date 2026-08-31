@@ -161,6 +161,42 @@
     min-height:18px;
   }
   .status.error{ color:var(--danger); }
+  .drop-hint{
+    font-size:0.75rem;
+    color:var(--text-dim);
+    margin-top:4px;
+    min-height:16px;
+  }
+
+  /* Drag-and-drop affordance: whole page dims slightly and the main card
+     gets a dashed ring while an audio file is being dragged over it. */
+  body.drag-over{
+    background-color:rgba(127,224,201,0.03);
+  }
+  body.drag-over #mainCard{
+    outline:2px dashed var(--accent);
+    outline-offset:6px;
+    border-radius:20px;
+  }
+  body::after{
+    content:'Drop audio file to play';
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.4rem;
+    font-weight:600;
+    color:var(--accent);
+    background:rgba(11,13,16,0.75);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.15s;
+    z-index:1000;
+  }
+  body.drag-over::after{
+    opacity:1;
+  }
 
   .audiogram-card{ text-align:left; }
   #audiogramSvg{
@@ -234,9 +270,9 @@
 </head>
 <body>
 
-<div class="card">
+<div class="card" id="mainCard">
   <h1>Hearing Loss Simulator</h1>
-  <div class="sub">Put on headphones, choose a profile for each ear, and the sound around you plays back shaped to approximate that hearing loss — live.</div>
+  <div class="sub">Put on headphones, choose a profile for each ear, and the sound around you plays back shaped to approximate that hearing loss — live. You can also drag an audio file anywhere onto this page to hear it through the filters instead.</div>
 
   <div class="ring-wrap">
     <svg id="meterRing" viewBox="0 0 180 180">
@@ -280,6 +316,7 @@
   </div>
 
   <div class="status" id="statusEl">Not connected</div>
+  <div class="drop-hint">🎵 Drag an audio file anywhere onto this page to play it through the filters</div>
 </div>
 
 <div class="card audiogram-card">
@@ -540,6 +577,11 @@
   let running = false;
   let leftChain = null;
   let rightChain = null;
+  // 'mic' or 'file' — which source is currently feeding the graph. The
+  // Start button (see toggleBtn listener below) always (re)starts the mic
+  // regardless of this value; only a dropped-in file ever sets mode to 'file'.
+  let mode = null;
+  let fileSourceNode = null;
 
   // Frequency-domain visualizer (green line on the audiogram) state.
   // Kept separate from the time-domain `analyser` used for the level ring.
@@ -883,6 +925,55 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
   }
 
   // ---------- Start / stop ----------
+
+  // Shared wiring for both input sources: mic stream or a dropped-in audio
+  // file. `srcNode` is whichever AudioNode is producing sound (a
+  // MediaStreamSource for the mic, an AudioBufferSourceNode for a file).
+  // Everything downstream — gain, meter, per-ear filters, tinnitus/flutter
+  // layers, stereo merge — is identical either way.
+  function buildAudioGraph(ctx, srcNode) {
+    sourceNode = srcNode;
+    masterGain = ctx.createGain();
+    masterGain.gain.value = parseFloat(gainSlider.value);
+
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+
+    // Frequency-domain analyser for the audiogram's live green trace.
+    // Tapped straight off the raw source, before gain/per-ear filtering,
+    // so it reflects the incoming signal itself.
+    freqAnalyser = ctx.createAnalyser();
+    freqAnalyser.fftSize = 4096;
+    freqAnalyser.smoothingTimeConstant = 0.8;
+    freqDataArray = new Uint8Array(freqAnalyser.frequencyBinCount);
+    sourceNode.connect(freqAnalyser);
+
+    const noiseBuffer = makeNoiseBuffer(ctx, 2);
+    leftChain = createEarChain(ctx, noiseBuffer);
+    rightChain = createEarChain(ctx, noiseBuffer);
+    const merger = ctx.createChannelMerger(2);
+
+    sourceNode.connect(masterGain);
+    masterGain.connect(analyser);
+    masterGain.connect(leftChain.input);
+    masterGain.connect(rightChain.input);
+    leftChain.output.connect(merger, 0, 0);
+    rightChain.output.connect(merger, 0, 1);
+    merger.connect(ctx.destination);
+
+    running = true;
+    refreshLiveFilters();
+    refreshSpecialAudioUI();
+    schedulePulseBeat();
+
+    toggleBtn.textContent = 'Stop';
+    toggleBtn.classList.add('on');
+    updateMeter();
+    drawFreqViz();
+  }
+
+  // Mic input — this is the ONLY thing the Start/Stop button's "Start"
+  // action ever triggers, regardless of whether a file was last playing.
   async function start() {
     try {
       setStatus('Requesting microphone…');
@@ -900,48 +991,49 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
       });
       await audioCtx.resume();
 
-      sourceNode = audioCtx.createMediaStreamSource(stream);
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = parseFloat(gainSlider.value);
-
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
-
-      // Frequency-domain analyser for the audiogram's live green trace.
-      // Tapped straight off the raw mic source, before gain/per-ear
-      // filtering, so it reflects the incoming signal itself.
-      freqAnalyser = audioCtx.createAnalyser();
-      freqAnalyser.fftSize = 4096;
-      freqAnalyser.smoothingTimeConstant = 0.8;
-      freqDataArray = new Uint8Array(freqAnalyser.frequencyBinCount);
-      sourceNode.connect(freqAnalyser);
-
-      const noiseBuffer = makeNoiseBuffer(audioCtx, 2);
-      leftChain = createEarChain(audioCtx, noiseBuffer);
-      rightChain = createEarChain(audioCtx, noiseBuffer);
-      const merger = audioCtx.createChannelMerger(2);
-
-      sourceNode.connect(masterGain);
-      masterGain.connect(analyser);
-      masterGain.connect(leftChain.input);
-      masterGain.connect(rightChain.input);
-      leftChain.output.connect(merger, 0, 0);
-      rightChain.output.connect(merger, 0, 1);
-      merger.connect(audioCtx.destination);
-
-      running = true;
-      refreshLiveFilters();
-      refreshSpecialAudioUI();
-      schedulePulseBeat();
-
-      toggleBtn.textContent = 'Stop';
-      toggleBtn.classList.add('on');
+      mode = 'mic';
+      buildAudioGraph(audioCtx, audioCtx.createMediaStreamSource(stream));
       setStatus('Live — listening through your headphones');
-      updateMeter();
-      drawFreqViz();
     } catch (err) {
       console.error(err);
       setStatus('Mic access failed: ' + err.message, true);
+      stop();
+    }
+  }
+
+  // Dropped-in audio file — plays once through the same per-ear filters,
+  // using whatever profiles are currently selected in the dropdowns. Only
+  // reachable by dragging a file in; the Start button never triggers this.
+  async function startFile(file) {
+    try {
+      if (running) stop();
+      setStatus('Loading "' + file.name + '"…');
+      const arrayBuffer = await file.arrayBuffer();
+
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+        latencyHint: 'interactive'
+      });
+      await audioCtx.resume();
+
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      const bufferSource = audioCtx.createBufferSource();
+      bufferSource.buffer = audioBuffer;
+      fileSourceNode = bufferSource;
+
+      mode = 'file';
+      buildAudioGraph(audioCtx, bufferSource);
+
+      // If it plays to completion on its own (rather than being stopped
+      // via the button), tear the graph down and reset the UI the same
+      // way stop() would.
+      bufferSource.onended = () => {
+        if (mode === 'file') stop();
+      };
+      bufferSource.start();
+      setStatus('Playing "' + file.name + '" through the filters');
+    } catch (err) {
+      console.error(err);
+      setStatus('Could not play that file: ' + err.message, true);
       stop();
     }
   }
@@ -958,6 +1050,11 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
     if (leftChain && leftChain.flutterTimer) { clearTimeout(leftChain.flutterTimer); leftChain.flutterTimer = null; }
     if (rightChain && rightChain.flutterTimer) { clearTimeout(rightChain.flutterTimer); rightChain.flutterTimer = null; }
     ringFg.style.strokeDashoffset = CIRC;
+    if (fileSourceNode) {
+      fileSourceNode.onended = null;
+      try { fileSourceNode.stop(); } catch (e) { /* already stopped/ended */ }
+      fileSourceNode = null;
+    }
     if (stream) {
       stream.getTracks().forEach(t => t.stop());
       stream = null;
@@ -971,11 +1068,15 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
     analyser = null;
     leftChain = null;
     rightChain = null;
+    mode = null;
     toggleBtn.textContent = 'Start';
     toggleBtn.classList.remove('on');
-    if (statusEl.textContent.startsWith('Live')) setStatus('Stopped');
+    if (statusEl.textContent.startsWith('Live') || statusEl.textContent.startsWith('Playing')) setStatus('Stopped');
   }
 
+  // Stop always stops whatever is currently running (mic or file). Start
+  // always (re)starts the mic — dragging a file in is the only way to play
+  // one; this button never resumes or re-triggers file playback.
   toggleBtn.addEventListener('click', () => {
     if (running) stop();
     else start();
@@ -1015,6 +1116,41 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
     setStatus('This browser does not support microphone access.', true);
     toggleBtn.disabled = true;
   }
+
+  // ---------- Drag & drop an audio file to play it through the filters ----------
+  // Dropping anywhere on the page stops the mic (if listening) and plays the
+  // file instead. A dragenter/dragleave counter avoids flicker as the
+  // dragover events fire over child elements.
+  let dragDepth = 0;
+  function isAudioFile(file) {
+    return file.type.startsWith('audio/') || /\.(mp3|wav|ogg|oga|m4a|flac|aac|webm|opus)$/i.test(file.name);
+  }
+  window.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+  window.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    dragDepth++;
+    document.body.classList.add('drag-over');
+  });
+  window.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) document.body.classList.remove('drag-over');
+  });
+  window.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dragDepth = 0;
+    document.body.classList.remove('drag-over');
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if (!files || !files.length) return;
+    const file = Array.from(files).find(isAudioFile);
+    if (!file) {
+      setStatus('Drop an audio file (mp3, wav, m4a, etc.)', true);
+      return;
+    }
+    startFile(file);
+  });
 
   bananaToggle.addEventListener('change', () => drawAudiogram());
   envToggle.addEventListener('change', () => drawAudiogram());

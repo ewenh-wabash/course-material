@@ -307,8 +307,8 @@
   </div>
 
   <div class="control">
-    <label><span>Age (high-frequency extent)</span><span id="ageVal">30</span></label>
-    <input type="range" id="ageSlider" min="0" max="90" step="1" value="30">
+    <label><span>Age (high-frequency extent)</span><span id="ageVal">19</span></label>
+    <input type="range" id="ageSlider" min="0" max="90" step="1" value="19">
   </div>
 
   <div class="warning">
@@ -379,7 +379,7 @@
       label: 'Sloping Loss, Severe',
       values: { 250: 20, 500: 25, 1000: 35, 2000: 55, 4000: 75, 8000: 90 }
     },
-    presbycusis_severe: {
+    presbycusis_profound: {
       label: 'Sloping Loss, Profound',
       values: { 250: 25, 500: 35, 1000: 45, 2000: 65, 4000: 95, 8000: 120 }
     },
@@ -510,15 +510,15 @@
   // Everyday reference sounds, plotted with emoji instead of labels, so
   // people can compare the speech banana against familiar noises.
   const ENVIRONMENTAL_SOUNDS = [
-    { emoji: '🥁', label: 'Drum', freq: 1000, db: 100 },
-    { emoji: '🪗', label: 'Accordion', freq: 800, db: 80 },
-    { emoji: '🪇', label: 'Maracas', freq: 6000, db: 60 },
-    { emoji: '🎷', label: 'Saxophone', freq: 700, db: 95 },
+    { emoji: '🥁', label: 'Drum', freq: 1000, db: 90 },
+    { emoji: '🪗', label: 'Accordion', freq: 800, db: 70 },
+    { emoji: '🪇', label: 'Maracas', freq: 6000, db: 35 },
+    { emoji: '🎷', label: 'Saxophone', freq: 700, db: 82 },
     { emoji: '☔️', label: 'Rain', freq: 4000, db: 50 },
-    { emoji: '⛈️', label: 'Thunder', freq: 100, db: 110 },
+    { emoji: '⛈️', label: 'Thunder', freq: 110, db: 90 },
     { emoji: '🌊', label: 'Ocean waves', freq: 500, db: 60 },
     { emoji: '🐥', label: 'Chick', freq: 3300, db: 42 },
-    { emoji: '🦅', label: 'Eagle', freq: 2000, db: 80 },
+    { emoji: '🦅', label: 'Eagle', freq: 2000, db: 60 },
     { emoji: '🍂', label: 'Leaves', freq: 7000, db: 20 }
   ];
 
@@ -1195,6 +1195,20 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
     points: ''
   });
 
+  // Visual-only low-frequency roll-off for the green trace: no adjustment
+  // at 250Hz (factor 1, full amplitude shown as-is), ramping down to 100%
+  // adjustment at 100Hz (factor 0, amplitude reads as silent/0). Purely
+  // cosmetic — it doesn't touch the actual audio signal, just how the
+  // trace is drawn.
+  const FREQ_ROLLOFF_START = 250; // no attenuation at/above this
+  const FREQ_ROLLOFF_END = 100;   // fully zeroed at/below this
+  const FREQ_VIZ_DB_MAX = 90;     // loudest the green trace ever reads, on the chart's shared dB scale
+  function lowFreqRolloff(freq) {
+    if (freq >= FREQ_ROLLOFF_START) return 1;
+    if (freq <= FREQ_ROLLOFF_END) return 0;
+    return (freq - FREQ_ROLLOFF_END) / (FREQ_ROLLOFF_START - FREQ_ROLLOFF_END);
+  }
+
   function drawFreqViz() {
     freqVizRafId = requestAnimationFrame(drawFreqViz);
     if (!freqAnalyser || !audioCtx) return;
@@ -1205,8 +1219,8 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
       const freq = i * binHz;
       if (freq < FREQ_MIN) continue;
       if (freq > FREQ_MAX) break;
-      const amp = freqDataArray[i]; // 0-255
-      const db = DB_MAX - (amp / 255) * (DB_MAX - DB_MIN);
+      const amp = freqDataArray[i] * lowFreqRolloff(freq); // 0-255, rolled off below 250Hz
+      const db = DB_MIN + (amp / 255) * (FREQ_VIZ_DB_MAX - DB_MIN);
       pts.push(xPos(freq) + ',' + yPos(db));
     }
     freqVizLine.setAttribute('points', pts.join(' '));

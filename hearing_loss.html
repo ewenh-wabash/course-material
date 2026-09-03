@@ -272,7 +272,7 @@
 
 <div class="card" id="mainCard">
   <h1>Hearing Loss Simulator</h1>
-  <div class="sub">Put on headphones, choose a profile for each ear, and the sound around you plays back shaped to approximate that hearing loss — live. You can also drag an audio file anywhere onto this page to hear it through the filters instead.</div>
+  <div class="sub">Put on headphones, choose a profile for each ear, and the sound around you plays back shaped to approximate that hearing loss — live. You can also drag an audio file anywhere onto this page, or pick a sample from the dropdown below, to hear it through the filters instead.</div>
 
   <div class="ring-wrap">
     <svg id="meterRing" viewBox="0 0 180 180">
@@ -317,6 +317,17 @@
 
   <div class="status" id="statusEl">Not connected</div>
   <div class="drop-hint">🎵 Drag an audio file anywhere onto this page to play it through the filters</div>
+
+  <div class="control" style="margin-top:14px;">
+    <label><span>Or play a sample</span></label>
+    <select id="exampleSelect">
+      <option value="">— Choose a sample —</option>
+      <option value="art_of_listening.m4a">The Art of Listening (Dawn Cordo)</option>
+      <option value="take_five_brubeck.m4a">Take Five (Dave Brubeck)</option>
+      <option value="major_general.m4a">Pirates of Penzance</option>
+      <option value="andre.m4a">My Dinner With Andre</option>
+    </select>
+  </div>
 </div>
 
 <div class="card audiogram-card">
@@ -546,6 +557,7 @@
   const pulseBpmControl = document.getElementById('pulseBpmControl');
   const pulseBpmSlider = document.getElementById('pulseBpmSlider');
   const pulseBpmVal = document.getElementById('pulseBpmVal');
+  const exampleSelect = document.getElementById('exampleSelect');
   const CIRC = 2 * Math.PI * 80;
 
   // Tinnitus pitch is shared across ears (it's perceived as one tone, not
@@ -1001,6 +1013,33 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
     }
   }
 
+  // Shared by both audio sources below (a dropped-in File and a fetched
+  // example URL): decodes the raw bytes and wires them into the same
+  // per-ear filter graph the mic uses.
+  async function playDecodedAudio(arrayBuffer, label) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+      latencyHint: 'interactive'
+    });
+    await audioCtx.resume();
+
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    const bufferSource = audioCtx.createBufferSource();
+    bufferSource.buffer = audioBuffer;
+    fileSourceNode = bufferSource;
+
+    mode = 'file';
+    buildAudioGraph(audioCtx, bufferSource);
+
+    // If it plays to completion on its own (rather than being stopped
+    // via the button), tear the graph down and reset the UI the same
+    // way stop() would.
+    bufferSource.onended = () => {
+      if (mode === 'file') stop();
+    };
+    bufferSource.start();
+    setStatus('Playing "' + label + '" through the filters');
+  }
+
   // Dropped-in audio file — plays once through the same per-ear filters,
   // using whatever profiles are currently selected in the dropdowns. Only
   // reachable by dragging a file in; the Start button never triggers this.
@@ -1009,31 +1048,28 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
       if (running) stop();
       setStatus('Loading "' + file.name + '"…');
       const arrayBuffer = await file.arrayBuffer();
-
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)({
-        latencyHint: 'interactive'
-      });
-      await audioCtx.resume();
-
-      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      const bufferSource = audioCtx.createBufferSource();
-      bufferSource.buffer = audioBuffer;
-      fileSourceNode = bufferSource;
-
-      mode = 'file';
-      buildAudioGraph(audioCtx, bufferSource);
-
-      // If it plays to completion on its own (rather than being stopped
-      // via the button), tear the graph down and reset the UI the same
-      // way stop() would.
-      bufferSource.onended = () => {
-        if (mode === 'file') stop();
-      };
-      bufferSource.start();
-      setStatus('Playing "' + file.name + '" through the filters');
+      await playDecodedAudio(arrayBuffer, file.name);
     } catch (err) {
       console.error(err);
       setStatus('Could not play that file: ' + err.message, true);
+      stop();
+    }
+  }
+
+  // Pre-made sample chosen from the dropdown — fetched from the same
+  // folder as this page (e.g. example_1.mp3), then played the same way
+  // as a dropped-in file.
+  async function startExampleAudio(url) {
+    try {
+      if (running) stop();
+      setStatus('Loading "' + url + '"…');
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('file not found (' + res.status + ')');
+      const arrayBuffer = await res.arrayBuffer();
+      await playDecodedAudio(arrayBuffer, url);
+    } catch (err) {
+      console.error(err);
+      setStatus('Could not play "' + url + '": ' + err.message, true);
       stop();
     }
   }
@@ -1154,6 +1190,15 @@ const CORRECTION_FREQS = new Float32Array(AUDIOGRAM_FREQS);
 
   bananaToggle.addEventListener('change', () => drawAudiogram());
   envToggle.addEventListener('change', () => drawAudiogram());
+
+  exampleSelect.addEventListener('change', () => {
+    const url = exampleSelect.value;
+    if (!url) return;
+    startExampleAudio(url);
+    // Reset to the placeholder so picking the same example again (after
+    // stopping) still fires a change event.
+    exampleSelect.value = '';
+  });
 
   window.addEventListener('beforeunload', stop);
 

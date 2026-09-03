@@ -98,48 +98,6 @@
     background:var(--accent);
     color:#0b0d10;
   }
-  #pauseBtn{
-    display:none;
-    margin:0 auto;
-    padding:10px 26px;
-    border-radius:999px;
-    border:1px solid var(--accent-dim);
-    background:#1c2027;
-    color:var(--text);
-    font-size:0.85rem;
-    font-weight:600;
-    font-family:inherit;
-    cursor:pointer;
-    transition:background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
-  }
-  #pauseBtn:active{ transform:scale(0.97); }
-  #pauseBtn:hover{
-    border-color:var(--accent);
-    color:var(--accent);
-  }
-  #pauseBtn.paused{
-    background:var(--accent);
-    border-color:var(--accent);
-    color:#0b0d10;
-  }
-  .scrub-wrap{
-    display:none;
-    align-items:center;
-    gap:10px;
-    margin:16px auto 0;
-    max-width:440px;
-  }
-  .scrub-wrap input[type="range"]{
-    flex:1;
-  }
-  .scrub-time{
-    font-size:0.75rem;
-    color:var(--text-dim);
-    white-space:nowrap;
-    min-width:92px;
-    text-align:right;
-    font-variant-numeric:tabular-nums;
-  }
   .control{
     text-align:left;
     margin-bottom:18px;
@@ -332,13 +290,6 @@
     <button id="toggleBtn">Start</button>
   </div>
 
-  <button id="pauseBtn">Freeze</button>
-
-  <div class="scrub-wrap" id="scrubContainer">
-    <input type="range" id="scrubBar" min="0" max="1000" step="1" value="0">
-    <span class="scrub-time" id="scrubTime">0:00 / 0:00</span>
-  </div>
-
   <div class="status" id="statusEl">Not connected</div>
   <div class="drop-hint">🎵 Drag an audio file anywhere onto this page to analyze it</div>
 
@@ -401,10 +352,6 @@
 (() => {
   // ---------- DOM refs ----------
   const toggleBtn = document.getElementById('toggleBtn');
-  const pauseBtn = document.getElementById('pauseBtn');
-  const scrubContainer = document.getElementById('scrubContainer');
-  const scrubBar = document.getElementById('scrubBar');
-  const scrubTimeEl = document.getElementById('scrubTime');
   const statusEl = document.getElementById('statusEl');
   const ringFg = document.getElementById('ringFg');
   const exampleSelect = document.getElementById('exampleSelect');
@@ -427,38 +374,15 @@
   let stream = null;
   let sourceNode = null;
   let fileSourceNode = null;
-  let freezeSourceNode = null; // looping Paulstretch-style frozen buffer
   let analyser = null;      // time-domain, drives the level ring
   let freqAnalyser = null;  // frequency-domain, drives the spectrum chart
   let freqDataArray = null;
   let rafId = null;
   let specRafId = null;
-  let scrubRafId = null;
   let running = false;
-  let paused = false;
   let mode = null; // 'mic' or 'file'
-  let currentLabel = '';
   let scaleMode = 'log'; // 'log' or 'linear'
   let fftSize = 8192; // size fed to the AnalyserNode's built-in FFT (must be a power of 2)
-
-  // Buffer-playback position tracking, needed because AudioBufferSourceNode
-  // is one-shot (no native pause/resume) — we track where we are manually
-  // so a "resume" can spin up a fresh node starting from the right spot.
-  let currentAudioBuffer = null;
-  let playStartTime = 0;   // audioCtx.currentTime when current segment started
-  let playOffset = 0;      // buffer-time (sec) that segment started from
-  let pausedOffset = 0;    // buffer-time (sec) we were at when frozen
-
-  // Scrub bar: whether the user is actively dragging it (suppresses the
-  // live position update loop so the thumb doesn't fight their mouse) and
-  // the resolution its 0..1000 range maps to.
-  let isScrubbing = false;
-  const SCRUB_RESOLUTION = 1000;
-
-  // How many seconds of frozen texture to generate per Pause. It's built
-  // to loop with zero seam (see buildFreezeBuffer), so this just needs to
-  // be long enough that a loop restart is never noticeable.
-  const FREEZE_LOOP_SECONDS = 6;
 
   // Low/high ends of the plotted range, adjustable via the sliders below.
   let FREQ_MIN = 20, FREQ_MAX = 20000;
@@ -724,274 +648,16 @@
     if (!running) drawSpectrumFrame();
   });
 
-  // ---------- Tiny FFT/DSP toolkit, used only by the Pause/freeze feature ----------
-
-  function nextPow2(n) {
-    let p = 1;
-    while (p < n) p *= 2;
-    return p;
-  }
-
-  function hannWindow(n) {
-    const w = new Float32Array(n);
-    for (let i = 0; i < n; i++) w[i] = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (n - 1));
-    return w;
-  }
-
-  // Iterative radix-2 Cooley–Tukey FFT, computed in place. re/im must be
-  // Float32Arrays of equal, power-of-2 length. invert=true runs the
-  // inverse transform (with 1/n scaling applied at the end).
-  function fft(re, im, invert) {
-    const n = re.length;
-    for (let i = 1, j = 0; i < n; i++) {
-      let bit = n >> 1;
-      for (; j & bit; bit >>= 1) j ^= bit;
-      j ^= bit;
-      if (i < j) {
-        let t = re[i]; re[i] = re[j]; re[j] = t;
-        t = im[i]; im[i] = im[j]; im[j] = t;
-      }
-    }
-    for (let len = 2; len <= n; len <<= 1) {
-      const ang = (invert ? 1 : -1) * 2 * Math.PI / len;
-      const wr = Math.cos(ang), wi = Math.sin(ang);
-      const half = len / 2;
-      for (let i = 0; i < n; i += len) {
-        let curWr = 1, curWi = 0;
-        for (let j = 0; j < half; j++) {
-          const ur = re[i + j], ui = im[i + j];
-          const vr = re[i + j + half] * curWr - im[i + j + half] * curWi;
-          const vi = re[i + j + half] * curWi + im[i + j + half] * curWr;
-          re[i + j] = ur + vr; im[i + j] = ui + vi;
-          re[i + j + half] = ur - vr; im[i + j + half] = ui - vi;
-          const nextWr = curWr * wr - curWi * wi;
-          const nextWi = curWr * wi + curWi * wr;
-          curWr = nextWr; curWi = nextWi;
-        }
-      }
-    }
-    if (invert) {
-      for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
-    }
-  }
-
-  // ---------- Paulstretch-style spectral freeze ----------
-  //
-  // Grabs the real waveform samples at the pause point (one short grain,
-  // ~150ms), takes its FFT once to get a fixed magnitude spectrum — that
-  // magnitude spectrum *is* the timbre being frozen. Then, many times over,
-  // it re-rolls every bin's phase at random, inverse-FFTs, windows, and
-  // overlap-adds the result into an output buffer. Same magnitude spectrum
-  // every grain means the same tonal color forever; fresh random phases
-  // every grain means it sounds alive instead of a static buzzing tone —
-  // this is exactly the trick Paulstretch/PaulXStretch use for infinite
-  // stretch/freeze. The overlap-add wraps around the end of the output
-  // buffer (circular), so the whole thing loops with zero seam and can be
-  // played back with loop=true to sustain indefinitely.
-  function buildFreezeBuffer(audioBuffer, startSample, durationSeconds) {
-    const sampleRate = audioBuffer.sampleRate;
-    const grainSize = nextPow2(Math.round(sampleRate * 0.15)); // ~150ms grain
-    const hop = Math.max(1, Math.floor(grainSize / 8));        // dense (87.5%) overlap for smoothness
-    const win = hannWindow(grainSize);
-    const numChannels = audioBuffer.numberOfChannels;
-
-    // Round to a whole number of hops so the circular overlap-add below
-    // wraps perfectly, with no click or seam at the loop point.
-    const outLength = hop * Math.max(1, Math.round((durationSeconds * sampleRate) / hop));
-    const outBuffer = audioCtx.createBuffer(numChannels, outLength, sampleRate);
-    const channelData = [];
-
-    for (let ch = 0; ch < numChannels; ch++) {
-      const srcData = audioBuffer.getChannelData(ch);
-
-      // The fixed grain: the actual samples playing at the instant Pause
-      // was hit (zero-padded if we're near the very end of the file).
-      const re = new Float32Array(grainSize);
-      const im = new Float32Array(grainSize);
-      for (let i = 0; i < grainSize; i++) {
-        const idx = startSample + i;
-        const s = idx < srcData.length ? srcData[idx] : 0;
-        re[i] = s * win[i];
-      }
-      fft(re, im, false);
-      const mag = new Float32Array(grainSize);
-      for (let i = 0; i < grainSize; i++) mag[i] = Math.hypot(re[i], im[i]);
-
-      const outData = new Float32Array(outLength);
-      const grains = Math.ceil(outLength / hop);
-
-      for (let g = 0; g < grains; g++) {
-        // Same magnitudes every grain (the frozen timbre); brand-new random
-        // phases every grain. Hermitian symmetry is enforced by hand so the
-        // inverse FFT comes out purely real.
-        const gre = new Float32Array(grainSize);
-        const gim = new Float32Array(grainSize);
-        gre[0] = mag[0];
-        for (let k = 1; k < grainSize / 2; k++) {
-          const phase = Math.random() * 2 * Math.PI;
-          gre[k] = mag[k] * Math.cos(phase);
-          gim[k] = mag[k] * Math.sin(phase);
-          gre[grainSize - k] = gre[k];
-          gim[grainSize - k] = -gim[k];
-        }
-        gre[grainSize / 2] = mag[grainSize / 2] * (Math.random() < 0.5 ? 1 : -1);
-
-        fft(gre, gim, true);
-
-        const pos = g * hop;
-        for (let i = 0; i < grainSize; i++) {
-          const outIdx = (pos + i) % outLength; // circular -> seamless loop
-          outData[outIdx] += gre[i] * win[i];
-        }
-      }
-      channelData.push(outData);
-    }
-
-    // Normalize once across all channels together (not per-channel) so the
-    // original stereo balance is preserved, and to guard against clipping.
-    let peak = 0;
-    for (const data of channelData) {
-      for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
-    }
-    const scale = peak > 0 ? 0.9 / peak : 1;
-    for (let ch = 0; ch < numChannels; ch++) {
-      const dst = outBuffer.getChannelData(ch);
-      const src = channelData[ch];
-      for (let i = 0; i < src.length; i++) dst[i] = src[i] * scale;
-    }
-
-    return outBuffer;
-  }
-
-  // ---------- Scrub bar helpers ----------
-
-  function formatTime(sec) {
-    if (!isFinite(sec) || sec < 0) sec = 0;
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return m + ':' + (s < 10 ? '0' : '') + s;
-  }
-
-  // Where we actually are in the buffer right now: frozen offset while
-  // paused, or offset + elapsed real time while playing normally.
-  function getCurrentPlaybackPosition() {
-    if (!currentAudioBuffer) return 0;
-    if (paused) return pausedOffset;
-    if (!audioCtx) return 0;
-    return playOffset + (audioCtx.currentTime - playStartTime);
-  }
-
-  function showScrubBar() {
-    scrubContainer.style.display = 'flex';
-  }
-  function hideScrubBar() {
-    scrubContainer.style.display = 'none';
-    scrubBar.value = 0;
-    scrubTimeEl.textContent = '0:00 / 0:00';
-  }
-
-  // Runs continuously once file playback starts. Keeps the slider and time
-  // label in sync with the live position, except while the user is actively
-  // dragging (isScrubbing) — and while frozen, pausedOffset simply doesn't
-  // change, so the thumb naturally stays put but remains fully draggable.
-  function scrubLoop() {
-    scrubRafId = requestAnimationFrame(scrubLoop);
-    if (mode !== 'file' || !currentAudioBuffer || isScrubbing) return;
-    const duration = currentAudioBuffer.duration;
-    const pos = Math.min(getCurrentPlaybackPosition(), duration);
-    scrubBar.value = String(Math.round((pos / duration) * SCRUB_RESOLUTION));
-    scrubTimeEl.textContent = formatTime(pos) + ' / ' + formatTime(duration);
-  }
-
-  // Rebuilds and starts the frozen loop at a given buffer offset. Used both
-  // by the initial Pause and by scrubbing while frozen (re-freezing at the
-  // new spot instead of silently resuming playback).
-  function freezeAt(offsetSeconds) {
-    pausedOffset = offsetSeconds;
-    if (freezeSourceNode) {
-      try { freezeSourceNode.stop(); } catch (e) {}
-      try { freezeSourceNode.disconnect(); } catch (e) {}
-      freezeSourceNode = null;
-    }
-    const startSample = Math.round(pausedOffset * currentAudioBuffer.sampleRate);
-    const freezeBuffer = buildFreezeBuffer(currentAudioBuffer, startSample, FREEZE_LOOP_SECONDS);
-    const freezeSource = audioCtx.createBufferSource();
-    freezeSource.buffer = freezeBuffer;
-    freezeSource.loop = true;
-    freezeSourceNode = freezeSource;
-    connectSource(freezeSource, true);
-    freezeSource.start();
-  }
-
-  // Seeking behaves differently depending on state: while frozen, seeking
-  // re-freezes (rebuilds the Paulstretch buffer) at the new spot so the
-  // "freeze" semantics are preserved; while playing normally, it's just a
-  // plain skip to a fresh AudioBufferSourceNode at the new offset.
-  function seekTo(seconds) {
-    if (!currentAudioBuffer || mode !== 'file' || !audioCtx) return;
-    const clamped = Math.max(0, Math.min(seconds, currentAudioBuffer.duration - 0.01));
-
-    if (paused) {
-      freezeAt(clamped);
-      setStatus('Frozen — sustaining the timbre of "' + currentLabel + '" (spectral freeze)');
-    } else {
-      if (fileSourceNode) {
-        fileSourceNode.onended = null;
-        try { fileSourceNode.stop(); } catch (e) {}
-        try { fileSourceNode.disconnect(); } catch (e) {}
-        fileSourceNode = null;
-      }
-      const bufferSource = audioCtx.createBufferSource();
-      bufferSource.buffer = currentAudioBuffer;
-      fileSourceNode = bufferSource;
-      connectSource(bufferSource, true);
-      bufferSource.onended = () => {
-        if (mode === 'file' && !paused) stop();
-      };
-      playOffset = clamped;
-      playStartTime = audioCtx.currentTime;
-      bufferSource.start(0, clamped);
-    }
-  }
-
-  // Mid-drag: cheap, label-only update, no seeking yet.
-  scrubBar.addEventListener('input', () => {
-    isScrubbing = true;
-    if (currentAudioBuffer) {
-      const frac = parseFloat(scrubBar.value) / SCRUB_RESOLUTION;
-      const pos = frac * currentAudioBuffer.duration;
-      scrubTimeEl.textContent = formatTime(pos) + ' / ' + formatTime(currentAudioBuffer.duration);
-    }
-  });
-  // On release/click: actually seek (or re-freeze).
-  scrubBar.addEventListener('change', () => {
-    if (currentAudioBuffer) {
-      const frac = parseFloat(scrubBar.value) / SCRUB_RESOLUTION;
-      const pos = frac * currentAudioBuffer.duration;
-      seekTo(pos);
-    }
-    isScrubbing = false;
-  });
-
   // ---------- Start / stop ----------
 
-  // Swaps whichever node is currently feeding the analysers/speakers for a
-  // new one, without tearing down the analysers themselves — used for the
-  // initial mic/file connection AND for switching between real playback
-  // and the frozen loop.
-  function connectSource(node, audible) {
-    if (sourceNode) {
-      try { sourceNode.disconnect(); } catch (e) { /* already disconnected */ }
-    }
-    sourceNode = node;
-    sourceNode.connect(analyser);
-    sourceNode.connect(freqAnalyser);
-    if (audible) sourceNode.connect(audioCtx.destination);
-  }
-
-  // Sets up a brand-new analysis session (fresh AnalyserNodes) for either
-  // the mic or the start of file playback.
+  // Shared wiring for both input sources: mic stream or a decoded audio
+  // file. `srcNode` is whichever AudioNode is producing sound. `audible`
+  // controls whether it's also routed to the speakers/headphones — the
+  // mic is analyzed silently (to avoid feedback), while sample tracks and
+  // dropped files are also played back so you can hear what you're seeing.
   function buildAudioGraph(ctx, srcNode, audible) {
+    sourceNode = srcNode;
+
     analyser = ctx.createAnalyser();
     analyser.fftSize = 512;
 
@@ -1000,80 +666,16 @@
     freqAnalyser.smoothingTimeConstant = 0.75;
     freqDataArray = new Uint8Array(freqAnalyser.frequencyBinCount);
 
-    connectSource(srcNode, audible);
+    sourceNode.connect(analyser);
+    sourceNode.connect(freqAnalyser);
+    if (audible) sourceNode.connect(ctx.destination);
 
     running = true;
-    paused = false;
     toggleBtn.textContent = 'Stop';
     toggleBtn.classList.add('on');
     updateMeter();
     spectrumLoop();
   }
-
-  // Only file playback can be frozen — pausing a live mic feed doesn't
-  // carry the same meaning, so the button only appears for file/sample
-  // playback.
-  function showPauseButton() {
-    pauseBtn.style.display = 'inline-block';
-    pauseBtn.textContent = 'Freeze';
-    pauseBtn.classList.remove('paused');
-  }
-  function hidePauseButton() {
-    pauseBtn.style.display = 'none';
-    pauseBtn.textContent = 'Freeze';
-    pauseBtn.classList.remove('paused');
-  }
-
-  function togglePause() {
-    if (!running || mode !== 'file' || !audioCtx) return;
-
-    if (!paused) {
-      // Where exactly are we in the buffer right now?
-      let offset = playOffset + (audioCtx.currentTime - playStartTime);
-      if (currentAudioBuffer) {
-        offset = Math.max(0, Math.min(offset, currentAudioBuffer.duration - 0.01));
-      }
-
-      // Stop real playback...
-      if (fileSourceNode) {
-        fileSourceNode.onended = null;
-        try { fileSourceNode.stop(); } catch (e) {}
-        try { fileSourceNode.disconnect(); } catch (e) {}
-        fileSourceNode = null;
-      }
-
-      // ...and build+play the Paulstretch-style frozen loop in its place.
-      freezeAt(offset);
-
-      paused = true;
-      pauseBtn.textContent = 'Unfreeze';
-      pauseBtn.classList.add('paused');
-      setStatus('Frozen — sustaining the timbre of "' + currentLabel + '" (spectral freeze)');
-    } else {
-      if (freezeSourceNode) {
-        try { freezeSourceNode.stop(); } catch (e) {}
-        try { freezeSourceNode.disconnect(); } catch (e) {}
-        freezeSourceNode = null;
-      }
-
-      const bufferSource = audioCtx.createBufferSource();
-      bufferSource.buffer = currentAudioBuffer;
-      fileSourceNode = bufferSource;
-      connectSource(bufferSource, true);
-      bufferSource.onended = () => {
-        if (mode === 'file' && !paused) stop();
-      };
-      playOffset = pausedOffset;
-      playStartTime = audioCtx.currentTime;
-      bufferSource.start(0, pausedOffset);
-
-      paused = false;
-      pauseBtn.textContent = 'Freeze';
-      pauseBtn.classList.remove('paused');
-      setStatus('Playing "' + currentLabel + '" — analyzing spectrum');
-    }
-  }
-  pauseBtn.addEventListener('click', togglePause);
 
   // Mic input — analyzed only, not played back (no feedback risk).
   async function start() {
@@ -1094,8 +696,6 @@
       await audioCtx.resume();
 
       mode = 'mic';
-      hidePauseButton();
-      hideScrubBar();
       buildAudioGraph(audioCtx, audioCtx.createMediaStreamSource(stream), false);
       setStatus('Live — analyzing microphone input');
     } catch (err) {
@@ -1115,26 +715,17 @@
     await audioCtx.resume();
 
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-    currentAudioBuffer = audioBuffer;
-
-    mode = 'file';
-    currentLabel = label;
-
     const bufferSource = audioCtx.createBufferSource();
     bufferSource.buffer = audioBuffer;
     fileSourceNode = bufferSource;
-    playOffset = 0;
-    playStartTime = audioCtx.currentTime;
 
+    mode = 'file';
     buildAudioGraph(audioCtx, bufferSource, true);
-    showPauseButton();
-    showScrubBar();
-    if (!scrubRafId) scrubLoop();
 
     bufferSource.onended = () => {
-      if (mode === 'file' && !paused) stop();
+      if (mode === 'file') stop();
     };
-    bufferSource.start(0, 0);
+    bufferSource.start();
     setStatus('Playing "' + label + '" — analyzing spectrum');
   }
 
@@ -1171,26 +762,15 @@
 
   function stop() {
     running = false;
-    paused = false;
-    isScrubbing = false;
-    hidePauseButton();
-    hideScrubBar();
     if (rafId) cancelAnimationFrame(rafId);
     if (specRafId) cancelAnimationFrame(specRafId);
-    if (scrubRafId) cancelAnimationFrame(scrubRafId);
     rafId = null;
     specRafId = null;
-    scrubRafId = null;
     freqAnalyser = null;
     freqDataArray = null;
     ringFg.style.strokeDashoffset = CIRC;
     peakFreqEl.textContent = 'Peak: —';
     peakIntensityEl.textContent = '—';
-    if (freezeSourceNode) {
-      try { freezeSourceNode.stop(); } catch (e) {}
-      try { freezeSourceNode.disconnect(); } catch (e) {}
-      freezeSourceNode = null;
-    }
     if (fileSourceNode) {
       fileSourceNode.onended = null;
       try { fileSourceNode.stop(); } catch (e) { /* already stopped/ended */ }
@@ -1207,14 +787,9 @@
     sourceNode = null;
     analyser = null;
     mode = null;
-    currentLabel = '';
-    currentAudioBuffer = null;
-    playStartTime = 0;
-    playOffset = 0;
-    pausedOffset = 0;
     toggleBtn.textContent = 'Start';
     toggleBtn.classList.remove('on');
-    if (statusEl.textContent.startsWith('Live') || statusEl.textContent.startsWith('Playing') || statusEl.textContent.startsWith('Frozen')) setStatus('Stopped');
+    if (statusEl.textContent.startsWith('Live') || statusEl.textContent.startsWith('Playing')) setStatus('Stopped');
     drawSpectrumFrame();
   }
 

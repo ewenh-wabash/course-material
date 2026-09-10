@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quick Reference</title>
+<style>
+
+  @font-face {
+    font-family: 'Maestro';
+    src: url('maestro2.ttf') format('truetype');
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: #ffffff;
+    color: #000000;
+    font-family: Georgia, 'Times New Roman', serif;
+    max-width: 760px;
+    margin: 40px auto;
+    padding: 0 24px 60px;
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-bottom: 4px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 26px;
+    margin-top: 40px;
+    margin-bottom: 2px;
+  }
+
+  h2 + p {
+    margin-top: 0;
+    margin-bottom: 14px;
+    font-style: italic;
+    color: #333;
+    font-size: 15px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    background: #ccc;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  tr:nth-child(even) td {
+    background: #eee;
+  }
+
+  .glyph {
+    font-family: 'Maestro', serif;
+    font-size: 32px;
+    text-align: center;
+    width: 90px;
+    /*line-height: 1;*/
+  }
+
+  /* Stack container: lets you overlay two or more glyphs in one cell.
+     Each layer defaults to dead-center; nudge an individual layer by
+     setting --dx / --dy (and optionally font-size) in ITS OWN style
+     attribute, e.g.  style="--dx: 3px; --dy: -6px;"
+     No new CSS classes needed per symbol. */
+  .stack {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 48px;
+    vertical-align: middle;
+  }
+
+  .stack .layer {
+    position: absolute;
+    top: calc(50% + var(--dy, 0px));
+    left: calc(50% + var(--dx, 0px));
+    transform: translate(-50%, -50%);
+    font-family: 'Maestro', serif;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* Nudge: for a single glyph that just needs a small visual offset
+     (not a multi-glyph overlay). Unlike .layer, this uses position:
+     relative, so it shifts the glyph without pulling it out of the
+     table's layout. Set --dx / --dy on the element itself. */
+  .nudge {
+    position: relative;
+    top: var(--dy, 0px);
+    left: var(--dx, 0px);
+  }
+
+  @media print {
+    body { margin: 0; padding: 20px; }
+    tr, table { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<h1>Quick Reference: Common Music Symbols</h1>
+
+<h2>Duration</h2>
+<p>how long each note lasts</p>
+<table>
+  <tr>
+    <th>Symbol</th>
+    <th>Name</th>
+    <th>Length (in a 4/4 measure)</th>
+  </tr>
+  <tr>
+    <td class="glyph"><span class="nudge" style="--dy: -8px;">w</span></td>
+    <td>whole note</td>
+    <td>lasts 1 whole measure (4 beats)</td>
+  </tr>
+  <tr>
+    <td class="glyph"><span class="nudge" style="--dy: 8px;">h</span></td>
+    <td>half note</td>
+    <td>lasts 1/2 of a measure (2 beats)</td>
+  </tr>
+  <tr>
+    <td class="glyph"><span class="nudge" style="--dy: 8px;">q</span></td>
+    <td>quarter note</td>
+    <td>lasts 1/4 of a measure (1 beat)</td>
+  </tr>
+  <tr>
+    <td class="glyph"><span class="nudge" style="--dy: 8px;">e</span></td>
+    <td>eighth note</td>
+    <td>lasts 1/8 of a measure (1/2 beat)</td>
+  </tr>
+  <tr>
+    <td class="glyph"><span class="nudge" style="--dy: 8px;">x</span></td>
+    <td>sixteenth note</td>
+    <td>lasts 1/16 of a measure (1/4 beat)</td>
+  </tr>
+</table>
+
+<h2>Dotted Durations</h2>
+<p>each dot lengthens a note 1.5 x</p>
+<table>
+  <tr>
+    <th>Symbol</th>
+    <th>Name</th>
+    <th>Length (in a 4/4 measure)</th>
+  </tr>
+  <tr>
+    <!-- <td ><span class="nudge" style="--dy: -8px;">w</span> -->
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: -2px;">w</span>
+        <span class="layer glyph" style="--dy: -1px; --dx: 12px">.</span>
+      </div>
+    </td>
+    <td>dotted whole note</td>
+    <td>lasts 1.5 whole notes (6 beats), same length as 3 half notes</td>
+  </tr>
+
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: 3px;">h</span>
+        <span class="layer glyph" style="--dy: -1px; --dx: 11px">.</span>
+      </div>
+    </td>
+    <td>dotted half note</td>
+    <td>lasts 1.5 half notes (3 beats), same length as 3 quarter notes</td>
+  </tr>
+
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: 3px;">q</span>
+        <span class="layer glyph" style="--dy: -1px; --dx: 11px">.</span>
+      </div>
+    </td>
+    <td>dotted quarter note</td>
+    <td>lasts 1.5 quarter notes (1.5 beats), same length as 3 eighth notes</td>
+  </tr>
+
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: 3px;">e</span>
+        <span class="layer glyph" style="--dy: -1px; --dx: 11px">.</span>
+      </div>
+    </td>
+    <td>dotted eighth note</td>
+    <td>lasts 1.5 eighth notes (3/4 of a beat), same length as 3 sixteenth notes</td>
+  </tr>
+</table>
+
+<h2>Clef</h2>
+<p>how to tell which note belongs on which line/space</p>
+<table>
+  <tr>
+    <th>Symbol</th>
+    <th>Name</th>
+    <th>Meaning</th>
+  </tr>
+  <tr>
+    <td>
+      <div class="stack">
+        <span class="layer glyph" style="--dy: 10px;">=</span>
+        <span class="layer glyph" style="--dy: 2px;">&amp;</span>
+      </div>
+    </td>
+    <td>treble clef</td>
+    <td>common for women's voices and many smaller instruments, the spiral curves around the "G" line</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="stack">
+        <span class="layer glyph" style="--dy: 10px;">=</span>
+        <span class="layer glyph" style="--dy: -14.5px;">?</span>
+      </div>
+    </td>
+    <td>bass clef</td>
+    <td>common for men's voices and many larger instruments, the dots surround the "F" line</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="stack">
+        <span class="layer glyph" style="--dy: 10px;">=</span>
+        <span class="layer glyph" style="--dy: 2px;">ã</span>
+      </div>
+    </td>
+    <td>percussion clef</td>
+    <td>used for unpitched percussion, where no pitches are needed</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="stack">
+        <span class="layer glyph" style="--dy: 10px;">=</span>
+        <span class="layer glyph" style="--dy: -6px;">B</span>
+      </div>
+    </td>
+    <td>alto clef</td>
+    <td>uncommon but often used with viola, the center points to the "C" line</td>
+  </tr>
+</table>
+
+<h2>Accidental</h2>
+<p>how to raise or lower the pitch of a note</p>
+<table>
+  <tr>
+    <th>Symbol</th>
+    <th>Name</th>
+    <th>Meaning</th>
+  </tr>
+  <tr>
+    <td class="glyph">n</td>
+    <td>natural</td>
+    <td>do not raise/lower the pitch</td>
+  </tr>
+  <tr>
+    <td class="glyph">#</td>
+    <td>sharp</td>
+    <td>raises the pitch by a half-step</td>
+  </tr>
+  <tr>
+    <td class="glyph">b</td>
+    <td>flat</td>
+    <td>lowers the pitch by a half-step</td>
+  </tr>
+  <tr>
+    <td class="glyph">‹</td>
+    <td>double sharp</td>
+    <td>raises the pitch by 2 half-steps (aka a whole step)</td>
+  </tr>
+  <tr>
+    <td class="glyph">∫</td>
+    <td>double flat</td>
+    <td>lowers the pitch by 2 half-steps (aka a whole step)</td>
+  </tr>
+</table>
+
+<h2>Dynamics</h2>
+<p>how loud to play a section</p>
+<table>
+  <tr>
+    <th>Symbol</th>
+    <th>Name</th>
+    <th>Meaning</th>
+  </tr>
+  <tr>
+    <td class="glyph">ñ</td>
+    <td>niente</td>
+    <td>silent</td>
+  </tr>
+  <tr>
+    <td class="glyph">∏</td>
+    <td>triple piano (aka: pianississimo)</td>
+    <td>very very quiet</td>
+  </tr>
+  <tr>
+    <td class="glyph">π</td>
+    <td>double piano (aka: pianissimo)</td>
+    <td>very quiet</td>
+  </tr>
+  <tr>
+    <td class="glyph">p</td>
+    <td>piano</td>
+    <td>quiet</td>
+  </tr>
+  <tr>
+    <td class="glyph">P</td>
+    <td>mezzo piano</td>
+    <td>moderately quiet</td>
+  </tr>
+  <tr>
+    <td class="glyph">F</td>
+    <td>mezzo forte</td>
+    <td>moderately loud</td>
+  </tr>
+  <tr>
+    <td class="glyph">f</td>
+    <td>forte</td>
+    <td>loud</td>
+  </tr>
+  <tr>
+    <td class="glyph">ƒ</td>
+    <td>double forte (aka: fortissimo)</td>
+    <td>very loud</td>
+  </tr>
+  <tr>
+    <td class="glyph">Ï</td>
+    <td>triple forte (aka: fortississimo)</td>
+    <td>very very loud</td>
+  </tr>
+  <!-- <tr>
+    <td><span class="glyph">f</span><em>pos.</em></td>
+    <td>forte</td>
+    <td>loud</td>
+  </tr> -->
+  <tr>
+    <td class="glyph">fp</td>
+    <td>forte-piano</td>
+    <td>begin forte, then immediately play piano</td>
+  </tr>
+  <tr>
+    <td class="glyph">ß</td>
+    <td>sforzando</td>
+    <td>play this one note much louder (same as <span class="nudge glyph" style="--dy: -0px;">Z</span>)</td>
+  </tr>
+</table>
+
+<h2>Meter</h2>
+<p>how beats are grouped and counted in a measure</p>
+<table>
+  <tr>
+    <th>Symbol</th>
+    <th>Name</th>
+    <th>Meaning</th>
+  </tr>
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: -8px;">4</span>
+        <span class="layer glyph" style="--dy: 8px;">4</span>
+      </div>
+    </td>
+    <td>
+      common time <span class="nudge glyph" style="--dy: -5px;">c</span><br/>
+      (aka: simple quadruple time)
+    </td>
+    <td>4 quarter-note beats per measure</td>
+  </tr>
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: -8px;">3</span>
+        <span class="layer glyph" style="--dy: 8px;">4</span>
+      </div>
+    </td>
+    <td>simple triple time</td>
+    <td>3 quarter-note beats per measure</td>
+  </tr>
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: -8px;">2</span>
+        <span class="layer glyph" style="--dy: 8px;">4</span>
+      </div>
+    </td>
+    <td>simple duple time</td>
+    <td>2 quarter-note beats per measure</td>
+  </tr>
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: -8px;">12</span>
+        <span class="layer glyph" style="--dy: 8px;">8</span>
+      </div>
+    </td>
+    <td>compound quadruple time</td>
+    <td>12 eighth notes per measure (4 groups of 3)</td>
+  </tr>
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: -8px;">9</span>
+        <span class="layer glyph" style="--dy: 8px;">8</span>
+      </div>
+    </td>
+    <td>compound triple time</td>
+    <td>9 eighth notes per measure (3 groups of 3)</td>
+  </tr>
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: -8px;">6</span>
+        <span class="layer glyph" style="--dy: 8px;">8</span>
+      </div>
+    </td>
+    <td>compound duple time</td>
+    <td>6 eighth notes per measure (2 groups of 3)</td>
+  </tr>
+  <tr>
+    <td class="glyph">
+      <div class="stack">
+        <span class="layer glyph" style="--dy: -8px;">7</span>
+        <span class="layer glyph" style="--dy: 8px;">8</span>
+      </div>
+    </td>
+    <td>7-8 time</td>
+    <td>an example of "complex meter" (any meter where the beats can't be divided evenly)</td>
+  </tr>
+</table>
+
+<h2>Articulations</h2>
+<p>how to play a note</p>
+<table>
+  <tr>
+    <th>Symbol</th>
+    <th>Name</th>
+    <th>Meaning</th>
+  </tr>
+  <tr>
+    <td style="width: 90px;">
+      <div class="stack">
+        <span class="layer glyph">q</span>
+        <span class="layer glyph" style="--dy: 13px;">></span>
+      </div>
+    </td>
+    <td>accent</td>
+    <td>play this note with emphasis</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="stack">
+        <span class="layer glyph">q</span>
+        <span class="layer glyph" style="--dy: 8px;">.</span>
+      </div>
+    </td>
+    <td>staccato</td>
+    <td>play this note shorter, detached from the next note</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="stack">
+        <span class="layer glyph">q</span>
+        <span class="layer glyph" style="--dy: 8px;">-</span>
+      </div>
+    </td>
+    <td>tenuto</td>
+    <td>play this note longer, almost no detachment from the last note</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="stack">
+        <span class="layer glyph">q</span>
+        <span class="layer glyph" style="--dy: 12px;">v</span>
+      </div>
+    </td>
+    <td>marcato</td>
+    <td>play this note with even more emphasis</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="stack">
+        <span class="layer glyph">q</span>
+        <span class="layer glyph" style="--dy: 8px;">u</span>
+      </div>
+    </td>
+    <td>fermata</td>
+    <td>stop counting time for a moment (hold the note, or extend the rest)</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="stack">
+        <span class="layer glyph" style="--dy: 18px;">q</span>
+        <span class="layer glyph" style="--dy: -28px;">Ÿ</span>
+      </div>
+    </td>
+    <td>trill</td>
+    <td>quickly alternate between this note and the scale note above it</td>
+  </tr>
+</table>
+
+</body>
+</html>
